@@ -15,18 +15,22 @@ def getToken():
         data = json.load(json_data_file)
     return data["Discord"]["Token"]
 
-initial_extensions = ['members']
-cogsDir = "cogs"
+initial_extensions = ['cogs.moderator', 'cogs.events']
+cogsDir = ".\\cogs"
 
 if __name__ == '__main__':
-    for file in os.listdir(".\\cogs"):
-        try:
-            if os.path.isfile(file):
+    # for cog in initial_extensions:
+    #     client.load_extension(cog)
+    for file in os.listdir(cogsDir):
+        if file.endswith(".py"):
+            try:
                 file = f"cogs.{file.replace('.py', '')}"
-                client.load_extension(file)
-                print("Success")
-        except Exception as error:
-            print(file + ": Error - " + str(error))
-            raise error
+                print(file)
+                client.load_extension(file)  
+            except Exception as error:
+                print(file + ": Error - " + str(error))
+                
+   
+        
     
     client.run(getToken())
