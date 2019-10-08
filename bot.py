@@ -25,7 +25,7 @@ if __name__ == '__main__':
         if file.endswith(".py"):
             try:
                 file = f"cogs.{file.replace('.py', '')}"
-                print(file)
+                # print(file)
                 client.load_extension(file)  
             except Exception as error:
                 print(file + ": Error - " + str(error))
