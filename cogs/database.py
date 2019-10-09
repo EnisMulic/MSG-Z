@@ -1,25 +1,33 @@
+import discord
+from discord.ext import commands
+
 import MySQLdb
 import json
 
 def getPassword():
-    with open(".\config.json") as json_data_file:
+    with open('.\\config.json') as json_data_file:
         data = json.load(json_data_file)
     return data["Database"]["Password"]
 
 
-db = MySQLdb.connect(\
-    host = "localhost", \
-    user = "root", \
-    passwd = "Xebec3Psy1Octo27?", \
-    db = "FIT_Community", \
-    charset = 'UTF8')
+class Database(commands.Cog):
+    def __init__(self, client):
+        self.client = client
 
-cursor = db.cursor()
+        self.db = MySQLdb.connect(\
+            host = "localhost", \
+            user = "root", \
+            passwd = getPassword(), \
+            db = "FIT_Community", \
+            charset = 'UTF8' \
+        )
+
+        self.cursor = self.db.cursor()
+
+    
 
 
-cursor.execute(\
-    'INSERT INTO STUDENT(BrojIndexa, Username, ImePrezime, Discrimintaor) \
-     VALUES("IB170097", "PancakeAlcehmist", "Enis Mulić", "8165")')
-cursor.execute('SELECT * FROM Student')
-print(cursor.fetchone()[3])
+def setup(client):
+    client.add_cog(Database(client))
+
 

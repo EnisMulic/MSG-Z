@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
+
 import asyncio
 import json
-import datetime
 import os
 import sys
 
@@ -19,18 +19,18 @@ initial_extensions = ['cogs.moderator', 'cogs.events']
 cogsDir = ".\\cogs"
 
 if __name__ == '__main__':
-    # for cog in initial_extensions:
-    #     client.load_extension(cog)
+    @client.event
+    async def on_ready():
+        print("3, 4, SAD!")
+        await client.change_presence(activity = discord.Game(name = "Development phase"))
+
     for file in os.listdir(cogsDir):
         if file.endswith(".py"):
             try:
                 file = f"cogs.{file.replace('.py', '')}"
-                # print(file)
                 client.load_extension(file)  
             except Exception as error:
                 print(file + ": Error - " + str(error))
                 
-   
-        
-    
+
     client.run(getToken())

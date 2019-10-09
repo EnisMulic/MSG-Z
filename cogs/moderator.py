@@ -2,8 +2,10 @@ import discord
 from discord.ext import commands
 
 import datetime
+from cogs import database #database.py
 
 from cogs.utils import logger
+
 
 class Moderator(commands.Cog):
     def __init__(self, client):
@@ -22,33 +24,6 @@ class Moderator(commands.Cog):
             else:
                 await ctx.send(member.nick + ' vec ima ulogu ' + newRole.name)
         
-            
-        action = discord.Embed(
-            title = "Add Role",
-            colour = discord.Colour.green().value
-        )
-        
-        action.add_field(
-            name = "Member",
-            value = member.mention + ' ' + member.name + '#' + member.discriminator,
-           inline = False
-        )
-        
-        action.add_field(
-            name = "Roles",
-            value = '\n'.join(newRolesList),
-            inline = False
-        )
-        
-        action.add_field(
-            name = "Time",
-            value = datetime.datetime.now().strftime("%d %B %Y %H:%M:%S"),
-            inline = False
-        )
-        
-        action.set_thumbnail(url = member.avatar_url)
-        
-        await logger.LogAction(self.client, action)
         
         
     @commands.command(aliases=["remove-role"])
@@ -57,28 +32,6 @@ class Moderator(commands.Cog):
         for role in roles:
             oldRole = discord.utils.get(member.guild.roles, name=str(role))
             if oldRole in member.roles:
-                action = discord.Embed().from_dict({
-                    "title": "Role removed",
-                    "colour": int(discord.Colour.green().value),
-                    "thumbnail": {"url": str(member.avatar_url)},                       
-                    "fields": [
-                        {
-                            "inline": False, 
-                            "name": "Member", 
-                            "value": member.mention + ' ' + member.name + '#' + member.discriminator
-                        },
-                        {
-                            "inline": False, 
-                            "name": "Role",  
-                            "value": oldRole.mention
-                        },
-                        {
-                            "inline": False, 
-                            "name": "Time", 
-                            "value": str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S"))
-                        }]
-                })
-                await logger.LogAction(self.client, action)
                 await member.remove_roles(oldRole)   
             else:
                 await ctx.send(member.nick + ' nema ulogu ' + oldRole.name)
@@ -99,8 +52,6 @@ class Moderator(commands.Cog):
         #log
         
         
-    
-            
-    
+       
 def setup(client):
     client.add_cog(Moderator(client))
