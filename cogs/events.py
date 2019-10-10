@@ -10,13 +10,11 @@ class Events(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_remove(self, member):
         try:
-            role = discord.utils.get(member.guild.roles, name="A New Contender")
-            
             action = discord.Embed(
-                title = 'Member Joined',
-                colour = discord.Colour.green().value
+                title = 'Member left',
+                colour = discord.Colour.red().value
             )
          
             action.add_field(
@@ -36,12 +34,53 @@ class Events(commands.Cog):
                 value = member.joined_at.strftime("%d %B %Y %H:%M:%S"),
                 inline = False
             )
+
+            action.add_field(
+                name = "Member leafet at:"
+                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
+                inline = False
+            )
         
             action.set_thumbnail(url = member.avatar_url)
         
             await logger.LogAction(self.client, action)
             await member.add_roles(role)
                 
+                
+        except:
+            print("Error")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        try:
+            role = discord.utils.get(member.guild.roles, name="A New Contender")
+            
+            action = discord.Embed(
+                title = 'Member Joined',
+                colour = discord.Colour.green().value
+            )
+         
+            action.add_field(
+                name = "Member", 
+                value = member.mention + ' ' + member.name + '#' + member.discriminator,
+                inline = False
+            )
+        
+            action.add_field(
+                name = "Time:", 
+                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
+                inline = False
+            )
+        
+            action.add_field(
+                name = "Member joined at:", 
+                value = member.joined_at.strftime("%d %B %Y %H:%M:%S"),
+                inline = False
+            )
+        
+            action.set_thumbnail(url = member.avatar_url)
+        
+            await logger.LogAction(self.client, action)                
                 
         except:
             print("Error while adding role on join")
@@ -161,6 +200,43 @@ class Events(commands.Cog):
         if before.discriminator != after.discriminator:
             print("User has changed their discriminator")
             #update database
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message):
+        if message.content.startswith("!purge"):
+            return
+
+        action = discord.Embed(
+            title = "Message deleted",
+            colour = discord.Colour.red().value
+        )
+
+        action.add_field(
+            name = "Author:",
+            value = message.author.mention + ' ' + message.author.name + '#' + message.author.discriminator,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Channel:",
+            value = message.channel.mention,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Content:",
+            value = message.content,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Created at:",
+            value = str(message.created_at.strftime("%d %B %Y %H:%M:%S")),
+            inline = False
+        )
+        
+
+        await logger.LogAction(self.client, action)
 
 def setup(client):
     client.add_cog(Events(client))

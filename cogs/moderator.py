@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 import datetime
-from cogs import database #database.py
+# import database #database.py
 
 from cogs.utils import logger
 
@@ -44,14 +44,99 @@ class Moderator(commands.Cog):
         await member.edit(nick = newName)
             
     
-    #new cog ???
+    
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
     async def purge(self, ctx, numberOfMessages = 1):
+
         await ctx.channel.purge(limit = int(numberOfMessages + 1))
-        #log
+        action = discord.Embed(
+            title = "Message(s) deleted",
+            colour = discord.Colour.red().value
+        )
+
+        action.add_field(
+            name = "Action performed by: ",
+            value = ctx.author.mention,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Channel:",
+            value = ctx.message.channel.mention,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Number of messages:",
+            value = numberOfMessages,
+            inline = False
+        )
+
+        await logger.LogAction(self.client, action)
         
+    @commands.command()
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def kick(self, ctx, member: discord.Member, reason = None):
+        await member.kick(reason = reason)
+        action = discord.Embed(
+            title = "User kicked",
+            colour = discord.Colour.red().value
+        )
+
+        action.add_field(
+            name = "Member: ",
+            value = member.mention + ' ' + member.name + '#' + member.discriminator,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Reason:",
+            value = reason,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Performed by:",
+            value = ctx.author.mention,
+            inline = False
+        )
+
+        action.set_thumbnail(url = member.avatar_url)
+
+        await logger.LogAction(self.client, action)
+
+    @commands.command()
+    @commands.has_any_role('Administrator')
+    async def ban(self, ctx, member: discord.Member, reason = None):
+        await member.ban()
         
+        action = discord.Embed(
+            title = "Member banned",
+            colour = discord.Colour.red().value
+        )
+
+        action.add_field(
+            name = "Member:",
+            value = member.mention + ' ' + member.name + '#' + member.discriminator,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Reason:",
+            value = reason,
+            inline = False
+        )
+
+        action.add_field(
+            name = "Performed by:",
+            value = ctx.author.mention,
+            inline = False
+        )
+
+        action.set_thumbnail(url = member.avatar_url)
+
+        await logger.LogAction(self.client, action)
        
 def setup(client):
     client.add_cog(Moderator(client))
