@@ -9,46 +9,6 @@ class Events(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        try:
-            action = discord.Embed(
-                title = 'Member left',
-                colour = discord.Colour.red().value
-            )
-         
-            action.add_field(
-                name = "Member", 
-                value = member.mention + ' ' + member.name + '#' + member.discriminator,
-                inline = False
-            )
-        
-            action.add_field(
-                name = "Member registered at:", 
-                value = member.created_at.strftime("%d %B %Y %H:%M:%S"),
-                inline = False
-            )
-        
-            action.add_field(
-                name = "Member joined at:", 
-                value = member.joined_at.strftime("%d %B %Y %H:%M:%S"),
-                inline = False
-            )
-
-            action.add_field(
-                name = "Member leafet at:"
-                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
-                inline = False
-            )
-        
-            action.set_thumbnail(url = member.avatar_url)
-        
-            await logger.LogAction(self.client, action)
-            await member.add_roles(role)
-                
-                
-        except:
-            print("Error")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -79,13 +39,50 @@ class Events(commands.Cog):
             )
         
             action.set_thumbnail(url = member.avatar_url)
-        
-            await logger.LogAction(self.client, action)                
-                
+
+            await member.add_roles(role)
+            await logger.LogAction(self.client, action)         
         except:
             print("Error while adding role on join")
 
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        try:
+            action = discord.Embed(
+                title = 'Member left',
+                colour = discord.Colour.red().value
+            )
+         
+            action.add_field(
+                name = "Member", 
+                value = member.mention + ' ' + member.name + '#' + member.discriminator,
+                inline = False
+            )
+        
+            action.add_field(
+                name = "Member registered at:", 
+                value = member.created_at.strftime("%d %B %Y %H:%M:%S"),
+                inline = False
+            )
+        
+            action.add_field(
+                name = "Member joined at:", 
+                value = member.joined_at.strftime("%d %B %Y %H:%M:%S"),
+                inline = False
+            )
 
+            action.add_field(
+                name = "Member leafet at:",
+                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
+                inline = False                              
+            )
+        
+            action.set_thumbnail(url = member.avatar_url)
+        
+            await logger.LogAction(self.client, action)
+            
+        except:
+            print("Error")
    
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
