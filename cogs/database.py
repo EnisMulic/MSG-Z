@@ -34,6 +34,8 @@ class Database(commands.Cog):
                     Name NVARCHAR(32) NOT NULL, \
                     Username NVARCHAR(32) NOT NULL, \
                     Discriminator VARCHAR(4) NOT NULL, \
+                    StatusFakultet NVARCHAR(20), \
+                    StatusDiscord NVARCHAR(20) NOT NULL, \
                     NumberOfPosts INT DEFAULT 0 \
                 )"
             self.cursor.execute(tableUsersQuery)
@@ -79,16 +81,20 @@ class Database(commands.Cog):
             print("Table Posts: Something went wrong: " + str(err))
             pass
     
-    @commands.command()
+    @commands.command(aliases=["insert-role"])
     @commands.has_any_role('Administrator')   
     async def InsertRole(self, ctx, role: discord.Role):
         try:
+            
+            InsertRole = 'INSERT INTO Roles(RoleID, RoleName) \
+                          VALUES({}, "{}");'.format(role.id, role.name)
+            self.cursor.execute(InsertRole)
+            self.db.commit()
             print(str(role.id) + " " + role.name)
-            InsertRole = 'INSERT INTO Roles(RoleID, RoleName) VALUES({}, {})'.format(role.id, role.name)
-            await self.cursor.execute(InsertRole)
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Role: Something went wrong: " + str(err))
             pass
+        pass
 
 def setup(client):
     client.add_cog(Database(client))
