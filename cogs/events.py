@@ -41,7 +41,7 @@ class Events(commands.Cog):
             action.set_thumbnail(url = member.avatar_url)
 
             await member.add_roles(role)
-            await logger.LogAction(self.client, action)         
+            await logger.LogAction(self.client, action)      
         except:
             print("Error while adding role on join")
 

@@ -11,6 +11,13 @@ class ModeratorUser(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.command(aliases=["set-index"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def set_index(self, ctx, member: discord.Member, userIndex):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.InsertUser(ctx, member, userIndex)
+
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):#test this

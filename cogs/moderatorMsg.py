@@ -46,7 +46,12 @@ class ModeratorMsg(commands.Cog):
     async def echo(self, ctx, channel, *, message):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
         await messageChannel.send(message)
-        print(messageChannel.last_message_id)  #for database
+        
+        
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.InsertPost(ctx, messageChannel.id, messageChannel.last_message_id)
+        
 
 
     @commands.command(aliases=["msg-edit"])

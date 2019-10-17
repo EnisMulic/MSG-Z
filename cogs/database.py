@@ -85,16 +85,50 @@ class Database(commands.Cog):
     @commands.has_any_role('Administrator')   
     async def InsertRole(self, ctx, role: discord.Role):
         try:
-            
-            InsertRole = 'INSERT INTO Roles(RoleID, RoleName) \
-                          VALUES({}, "{}");'.format(role.id, role.name)
-            self.cursor.execute(InsertRole)
+            InsertRoleQuery = 'INSERT INTO Roles(RoleID, RoleName) \
+                               VALUES({}, "{}");'.format(role.id, role.name)
+            self.cursor.execute(InsertRoleQuery)
             self.db.commit()
-            print(str(role.id) + " " + role.name)
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Role: Something went wrong: " + str(err))
             pass
         pass
+
+    async def InsertUser(self, ctx, member: discord.Member, userIndex):
+        try:
+            insertUserQuery = 'INSERT INTO Users(UserIndex, Name, Username, Discriminator, StatusDiscord)\
+                               VALUES("{}", "{}", "{}", "{}", "{}");'.format(
+                                   userIndex, member.nick, member.name, member.discriminator, "Aktivan"
+                               )
+
+            self.cursor.execute(insertUserQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Insert User: Somethin went wrong: " + str(err))
+            pass
+        pass
+
+
+    async def InsertPost(self, ctx, channelID, messageID):
+        try:
+            getUserIndexQuery = 'SELECT * \
+                                 FROM Users \
+                                 WHERE Username = "{}" AND \
+                                       Discriminator = "{}";'.format(ctx.author.name, ctx.author.discriminator)
+
+            userIndex = self.cursor.execute(getUserIndexQuery)
+
+
+            InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserIndex) \
+                               VALUES({}, {}, "{}");'.format(messageID, channelID, userIndex)
+
+            self.cursor.execute(InsertPostQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Insert Post: Somethin went wrong: " + str(err))
+            pass
+        pass
+    
 
 def setup(client):
     client.add_cog(Database(client))
