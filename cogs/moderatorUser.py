@@ -11,12 +11,33 @@ class ModeratorUser(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.command(aliases=["add-member"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def add_member(self, ctx, member: discord.Member, userIndex):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.insert_user(ctx, member, userIndex)
+
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_index(self, ctx, member: discord.Member, userIndex):
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.InsertUser(ctx, member, userIndex)
+            await database.change_member_index(ctx, member, userIndex)
+
+    @commands.command(aliases=["set-status"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def set_status(self, ctx, member: discord.Member, status, option):
+        if option == '-f':
+            database = self.client.get_cog('Database')
+            if database is not None:
+                await database.change_member_fakultet_status(ctx, member, status)
+        elif option == '-d':
+            database = self.client.get_cog('Database')
+            if database is not None:
+                await database.change_member_discord_status(ctx, member, status)
+            
+
 
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -45,9 +66,12 @@ class ModeratorUser(commands.Cog):
         
     @commands.command(aliases=["set-name"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def set_name(self, ctx, member: discord.Member, *nick):
-        newName = ' '.join(nick)
+    async def set_name(self, ctx, member: discord.Member, *name):
+        newName = ' '.join(name)
         await member.edit(nick = newName)
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.change_member_name(ctx, member, nick)
             
     
     @commands.command()
