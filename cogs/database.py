@@ -24,9 +24,9 @@ class Database(commands.Cog):
         )
 
         self.cursor = self.db.cursor()
-        self.setupDatabaseTables()
+        self.setup_database_tables()
      
-    def setupDatabaseTables(self):
+    def setup_database_tables(self):
         try:
             tableUsersQuery = "CREATE TABLE IF NOT EXISTS Users\
                 (\
@@ -83,10 +83,13 @@ class Database(commands.Cog):
     
     @commands.command(aliases=["insert-role"])
     @commands.has_any_role('Administrator')   
-    async def InsertRole(self, ctx, role: discord.Role):
+    async def insert_role(self, ctx, role: discord.Role):
         try:
             InsertRoleQuery = 'INSERT INTO Roles(RoleID, RoleName) \
-                               VALUES({}, "{}");'.format(role.id, role.name)
+                               VALUES({}, "{}");'.format(
+                                   role.id, 
+                                   role.name
+                                )
             self.cursor.execute(InsertRoleQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
@@ -94,33 +97,131 @@ class Database(commands.Cog):
             pass
         pass
 
-    async def InsertUser(self, ctx, member: discord.Member, userIndex):
+    async def insert_member(self, ctx, member: discord.Member, userIndex):
         try:
-            insertUserQuery = 'INSERT INTO Users(UserIndex, Name, Username, Discriminator, StatusDiscord)\
-                               VALUES("{}", "{}", "{}", "{}", "{}");'.format(
-                                   userIndex, member.nick, member.name, member.discriminator, "Aktivan"
-                               )
+            insertMemberQuery = 'INSERT INTO Users(\
+                                    UserIndex, \
+                                    Name,\
+                                    Username, \
+                                    Discriminator, \
+                                    StatusFakultet, \
+                                    StatusDiscord\
+                                )\
+                                VALUES(\
+                                    "{}",\
+                                    "{}",\
+                                    "{}",\
+                                    "{}",\
+                                    "{}"\
+                                );'.format(
+                                    userIndex, 
+                                    member.nick, 
+                                    member.name, 
+                                    member.discriminator,
+                                    "Aktivan", 
+                                    "Aktivan"
+                                )
 
             self.cursor.execute(insertUserQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Insert User: Somethin went wrong: " + str(err))
+            print("Procedure Insert User: Something went wrong: " + str(err))
+            pass
+        pass
+
+    async def change_member_index(self, ctx, member: discord.Member, userIndex):
+        try:
+            changeMemberIndexQuery = 'UPDATE Users\
+                                      SET UserIndex = "{}"\
+                                      WHERE Username = "{}" AND\
+                                            Discriminator = "{}"'.format(
+                                                userIndex,
+                                                member.name,
+                                                member.discriminator
+                                            )
+            
+            self.cursor.execute(changeMemberIndexQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change User Index: Something went wrong: " + str(err))
+            pass
+        pass    
+
+    async def change_member_fakultet_status(self, ctx, member: discord.Member, status):
+        try:
+            changeMemberFakultetStatusQuery = 'UPDATE Users\
+                                               SET StatusFakultet = "{}"\
+                                               WHERE Username = "{}" AND\
+                                               Discriminator = "{}"'.format(
+                                                   status,
+                                                   member.name,
+                                                   member.discriminator
+                                               )
+            
+            self.cursor.execute(changeMemberFakultetStatusQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change User Index: Something went wrong: " + str(err))
+            pass
+        pass
+
+    async def change_member_discord_status(self, ctx, member: discord.Member, status):
+        try:
+            changeMemberDiscordStatusQuery = 'UPDATE Users\
+                                              SET StatusDiscord = "{}"\
+                                              WHERE Username = "{}" AND\
+                                              Discriminator = "{}"'.format(
+                                                  status,
+                                                  member.name,
+                                                  member.discriminator
+                                              )
+            
+            self.cursor.execute(changeMemberDiscordStatusQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change User Index: Something went wrong: " + str(err))
+            pass
+        pass
+
+        # Change users in-server nickname
+        async def change_member_name(self, ctx, member: discord.Member, name):
+        try:
+            changeMemberNameQuery = 'UPDATE Users\
+                                     SET Name = "{}"\
+                                     WHERE Username = "{}" AND\
+                                           Discriminator = "{}"'.format(
+                                                name, 
+                                                member.name,
+                                                member.discriminator
+                                            ) 
+            
+            self.cursor.execute(changeMemberNameQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change User Index: Something went wrong: " + str(err))
             pass
         pass
 
 
-    async def InsertPost(self, ctx, channelID, messageID):
+    async def insert_post(self, ctx, channelID, messageID):
         try:
             getUserIndexQuery = 'SELECT * \
                                  FROM Users \
                                  WHERE Username = "{}" AND \
-                                       Discriminator = "{}";'.format(ctx.author.name, ctx.author.discriminator)
+                                       Discriminator = "{}";'.format(
+                                           ctx.author.name, 
+                                           ctx.author.discriminator
+                                        )
 
             userIndex = self.cursor.execute(getUserIndexQuery)
 
 
             InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserIndex) \
-                               VALUES({}, {}, "{}");'.format(messageID, channelID, userIndex)
+                               VALUES({}, {}, "{}");'.format(
+                                   messageID, 
+                                   channelID, 
+                                   userIndex
+                                )
 
             self.cursor.execute(InsertPostQuery)
             self.db.commit()
@@ -128,6 +229,9 @@ class Database(commands.Cog):
             print("Procedure Insert Post: Somethin went wrong: " + str(err))
             pass
         pass
+
+    
+
     
 
 def setup(client):
