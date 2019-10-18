@@ -50,7 +50,7 @@ class ModeratorMsg(commands.Cog):
         
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.InsertPost(ctx, messageChannel.id, messageChannel.last_message_id)
+            await database.insert_post(ctx, messageChannel.id, messageChannel.last_message_id)
         
 
 
@@ -65,7 +65,7 @@ class ModeratorMsg(commands.Cog):
     @commands.has_any_role('Administrator', 'Moderator')
     async def move(self, ctx, oldChannel, id: int, newChannel, option = None):
 
-        if option != None and option != '--delete' and option != '--d':
+        if option != None and option != '--delete' and option != '-d':
             return
 
         fromChannel = self.client.get_channel(int(oldChannel[2:len(oldChannel) - 1]))
@@ -101,7 +101,7 @@ class ModeratorMsg(commands.Cog):
 
         toChannel = self.client.get_channel(int(newChannel[2:len(newChannel) - 1]))
         
-        if option == '--delete' or option == '--d':
+        if option == '--delete' or option == '-d':
             await message.delete()
 
         await toChannel.send(embed = messageEmbed)
