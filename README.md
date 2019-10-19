@@ -1,44 +1,51 @@
 # FIT-Community-Discord-Bot
 
-```
-.
-|   
-|   
-+---database
-|       change_member_discord_status
-|       change_member_fakultet_status
-|       change_member_index
-|       change_member_name
-|       Insert_member
-|       insert_post
-|       Insert_role
-|       setup_database_tables
-|       
-+---events
-|       on_member_join
-|       on_member_remove
-|       on_member_update
-|       on_message_delete
-|       on_user_update
-|       
-+---moderatorMsg
-|       echo
-|       edit
-|       move
-|       purge
-|       
-+---moderatorUser
-|       add_member
-|       add_role
-|       ban
-|       kick
-|       remove_role
-|       set_index
-|       set_status
-|       
-\---utils
-        getChannelID
-        logAction
-```
-        
+
+## moderatorUser
+
+`async def add_member(self, ctx, member: discord.Member, userIndex)`
+* add member to database (test for adding same index)
+
+`async def set_index(self, ctx, member: discord.Member, userIndex)`
+* change index of member in database
+
+`async def set_status(self, ctx, member: discord.Member, status, option)`
+* set status of member
+    * option: '-d' - discord status (Active/Left/Kicked/Banned)
+    * option: '-f' - fakultet status (Aktivan/Napustio/Zaledio)
+
+`async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):`
+* update database UserRole (ToDo)
+
+`async def remove_role(self, ctx, member: discord.Member, *roles: discord.Role)`
+* update database UserRole (ToDo)
+
+`async def set_name(self, ctx, member: discord.Member, *name)`
+* updates database
+
+`async def kick(self, ctx, member: discord.Member, reason = None):`
+* kick member from server
+* change discord status to kicked (ToDo)
+
+`async def ban(self, ctx, member: discord.Member, reason = None)`
+* ban member from server
+* change discord status to banned (ToDo)
+
+## moderatorMsg
+
+`async def purge(self, ctx, numberOfMessages = 1)`
+* delete n number of messages
+* default n = 1
+
+`async def echo(self, ctx, channel, *, message)`
+* write message as bot to a specific channel
+
+`async def edit(self, ctx, channel, id: int, *, newMessage)`
+* edit bots message in specific channel
+* enable developer options in order to copy message ID
+
+`async def move(self, ctx, oldChannel, id: int, newChannel, option = None)`
+* moves message from channelA to channelB in form of an embed
+* if option --delete or -d, deletes message after move
+
 
