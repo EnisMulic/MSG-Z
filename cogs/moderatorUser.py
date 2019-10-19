@@ -71,7 +71,7 @@ class ModeratorUser(commands.Cog):
         await member.edit(nick = newName)
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.change_member_name(ctx, member, nick)
+            await database.change_member_name(ctx, member, name)
             
     
     @commands.command()
