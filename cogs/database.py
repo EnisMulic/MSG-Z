@@ -122,10 +122,10 @@ class Database(commands.Cog):
                                     "Aktivan"
                                 )
 
-            self.cursor.execute(insertUserQuery)
+            self.cursor.execute(insertMemberQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Insert User: Something went wrong: " + str(err))
+            print("Procedure Insert Member: Something went wrong: " + str(err))
             pass
         pass
 
@@ -143,7 +143,7 @@ class Database(commands.Cog):
             self.cursor.execute(changeMemberIndexQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Change User Index: Something went wrong: " + str(err))
+            print("Procedure Change Member Index: Something went wrong: " + str(err))
             pass
         pass    
 
@@ -161,7 +161,7 @@ class Database(commands.Cog):
             self.cursor.execute(changeMemberFakultetStatusQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Change User Index: Something went wrong: " + str(err))
+            print("Procedure Change Member Fakultet Status: Something went wrong: " + str(err))
             pass
         pass
 
@@ -179,12 +179,12 @@ class Database(commands.Cog):
             self.cursor.execute(changeMemberDiscordStatusQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Change User Index: Something went wrong: " + str(err))
+            print("Procedure Change Member Discord Status: Something went wrong: " + str(err))
             pass
         pass
 
         # Change users in-server nickname
-        async def change_member_name(self, ctx, member: discord.Member, name):
+    async def change_member_name(self, ctx, member: discord.Member, name):
         try:
             changeMemberNameQuery = 'UPDATE Users\
                                      SET Name = "{}"\
@@ -198,10 +198,46 @@ class Database(commands.Cog):
             self.cursor.execute(changeMemberNameQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Change User Index: Something went wrong: " + str(err))
+            print("Procedure Change Member Name: Something went wrong: " + str(err))
             pass
         pass
 
+    async def change_member_username(self, before: discord.Member, after: discord.Member):
+        try:
+            changeMemberUsernameQuery = 'UPDATE Users\
+                                         SET Username = "{}"\
+                                         WHERE Username = "{}" AND\
+                                               Discriminator = "{}";'.format(
+                                                   after.nick,
+                                                   before.nick,
+                                                   before.discriminator
+                                               )
+            
+            self.cursor.execute(changeMemberUsernameQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change Member Username: Something went wrong: " + str(err))
+            pass
+        pass
+
+    #probably works?
+    async def change_member_discriminator(self, before: discord.Member, after: discord.Member):
+        try:
+            changeMemberDiscriminatorQuery = 'UPDATE Users\
+                                              SET Discriminator = "{}"\
+                                              WHERE Username = "{}" AND\
+                                                    Discriminator = "{}";'.format(
+                                                        after.discriminator,
+                                                        before.nick,
+                                                        before.discriminator
+                                                    )
+            
+            self.cursor.execute(changeMemberDiscriminatorQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Change Member Disciminator: Something went wrong: " + str(err))
+            pass
+        pass
 
     async def insert_post(self, ctx, channelID, messageID):
         try:
