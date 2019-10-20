@@ -193,13 +193,11 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
         if before.name != after.name:
-            print("User has changed their name")
             database = self.client.get_cog('Database')
             if database is not None:
                 await database.change_member_username(before, after)
         
         if before.discriminator != after.discriminator:
-            print("User has changed their discriminator")
             database = self.client.get_cog('Database')
             if database is not None:
                 await database.change_member_discriminator(before, after)

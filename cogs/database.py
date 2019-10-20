@@ -208,8 +208,8 @@ class Database(commands.Cog):
                                          SET Username = "{}"\
                                          WHERE Username = "{}" AND\
                                                Discriminator = "{}";'.format(
-                                                   after.nick,
-                                                   before.nick,
+                                                   after.name,
+                                                   before.name,
                                                    before.discriminator
                                                )
             
@@ -228,7 +228,7 @@ class Database(commands.Cog):
                                               WHERE Username = "{}" AND\
                                                     Discriminator = "{}";'.format(
                                                         after.discriminator,
-                                                        before.nick,
+                                                        before.name,
                                                         before.discriminator
                                                     )
             
