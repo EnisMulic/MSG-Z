@@ -30,12 +30,13 @@ class Database(commands.Cog):
         try:
             tableUsersQuery = "CREATE TABLE IF NOT EXISTS Users\
                 (\
-                    UserIndex NVARCHAR(8) NOT NULL PRIMARY KEY, \
-                    Name NVARCHAR(32) NOT NULL, \
-                    Username NVARCHAR(32) NOT NULL, \
-                    Discriminator VARCHAR(4) NOT NULL, \
-                    StatusFakultet NVARCHAR(20), \
-                    StatusDiscord NVARCHAR(20) NOT NULL, \
+                    UserID BIGINT NOT NULL PRIMARY KEY,\
+                    UserIndex NVARCHAR(8) NOT NULL, \
+                    Name NVARCHAR(32) NOT NULL,\
+                    Username NVARCHAR(32) NOT NULL,\
+                    Discriminator VARCHAR(4) NOT NULL,\
+                    StatusFakultet NVARCHAR(20),\
+                    StatusDiscord NVARCHAR(20) NOT NULL,\
                     NumberOfPosts INT DEFAULT 0 \
                 )"
             self.cursor.execute(tableUsersQuery)
@@ -57,11 +58,11 @@ class Database(commands.Cog):
         try:
             tableUsersRolesQuery = "CREATE TABLE IF NOT EXISTS UsersRoles\
                 (\
-                    UserIndex NVARCHAR(8) NOT NULL, \
+                    UserID BIGINT NOT NULL, \
                     RoleID BIGINT NOT NULL, \
-                    FOREIGN KEY (UserIndex) REFERENCES Users(UserIndex), \
+                    FOREIGN KEY (UserID) REFERENCES Users(UserID), \
                     FOREIGN KEY (RoleID) REFERENCES Roles(RoleID), \
-                    PRIMARY KEY (UserIndex, RoleID) \
+                    PRIMARY KEY (UserID, RoleID) \
                 )"
             self.cursor.execute(tableUsersRolesQuery)
         except MySQLdb.ProgrammingError as err:
@@ -73,8 +74,8 @@ class Database(commands.Cog):
                 (\
                     PostID BIGINT NOT NULL PRIMARY KEY, \
                     ChannelID BIGINT NOT NULL, \
-                    UserIndex NVARCHAR(8) NOT NULL, \
-                    FOREIGN KEY (UserIndex) REFERENCES Users(UserIndex) \
+                    UserID BIGINT NOT NULL, \
+                    FOREIGN KEY (UserID) REFERENCES Users(UserID) \
                 )"
             self.cursor.execute(tablePostsQuery)
         except MySQLdb.ProgrammingError as err:
@@ -97,9 +98,10 @@ class Database(commands.Cog):
             pass
         pass
 
-    async def insert_member(self, ctx, member: discord.Member, userIndex):
+    async def insert_member(self, ctx, member: discord.Member, UserIndex):
         try:
             insertMemberQuery = 'INSERT INTO Users(\
+                                    UserID, \
                                     UserIndex, \
                                     Name,\
                                     Username, \
@@ -108,13 +110,16 @@ class Database(commands.Cog):
                                     StatusDiscord\
                                 )\
                                 VALUES(\
+                                     {},\
+                                    "{}",\
                                     "{}",\
                                     "{}",\
                                     "{}",\
                                     "{}",\
                                     "{}"\
                                 );'.format(
-                                    userIndex, 
+                                    member.id,
+                                    UserIndex, 
                                     member.nick, 
                                     member.name, 
                                     member.discriminator,
@@ -129,21 +134,19 @@ class Database(commands.Cog):
             pass
         pass
 
-    async def change_member_index(self, ctx, member: discord.Member, userIndex):
+    async def change_member_index(self, ctx, member: discord.Member, UserIndex):
         try:
-            changeMemberIndexQuery = 'UPDATE Users\
-                                      SET UserIndex = "{}"\
-                                      WHERE Username = "{}" AND\
-                                            Discriminator = "{}"'.format(
-                                                userIndex,
-                                                member.name,
-                                                member.discriminator
+            changeMemberUserIndexQuery = 'UPDATE Users\
+                                          SET UserIndex = "{}"\
+                                          WHERE UserID = {};'.format(
+                                                UserIndex,
+                                                member.id
                                             )
             
-            self.cursor.execute(changeMemberIndexQuery)
+            self.cursor.execute(changeMemberUserIndexQuery)
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
-            print("Procedure Change Member Index: Something went wrong: " + str(err))
+            print("Procedure Change Member UserIndex: Something went wrong: " + str(err))
             pass
         pass    
 
@@ -151,11 +154,9 @@ class Database(commands.Cog):
         try:
             changeMemberFakultetStatusQuery = 'UPDATE Users\
                                                SET StatusFakultet = "{}"\
-                                               WHERE Username = "{}" AND\
-                                               Discriminator = "{}"'.format(
+                                               WHERE UserID = {};'.format(
                                                    status,
-                                                   member.name,
-                                                   member.discriminator
+                                                   member.id
                                                )
             
             self.cursor.execute(changeMemberFakultetStatusQuery)
@@ -169,12 +170,10 @@ class Database(commands.Cog):
         try:
             changeMemberDiscordStatusQuery = 'UPDATE Users\
                                               SET StatusDiscord = "{}"\
-                                              WHERE Username = "{}" AND\
-                                              Discriminator = "{}"'.format(
+                                              WHERE UserID = {};'.format(
                                                   status,
-                                                  member.name,
-                                                  member.discriminator
-                                              )
+                                                  member.id
+                                                )
             
             self.cursor.execute(changeMemberDiscordStatusQuery)
             self.db.commit()
@@ -188,11 +187,9 @@ class Database(commands.Cog):
         try:
             changeMemberNameQuery = 'UPDATE Users\
                                      SET Name = "{}"\
-                                     WHERE Username = "{}" AND\
-                                           Discriminator = "{}"'.format(
+                                     WHERE UserID = {}'.format(
                                                 name, 
-                                                member.name,
-                                                member.discriminator
+                                                member.id
                                             ) 
             
             self.cursor.execute(changeMemberNameQuery)
@@ -202,15 +199,13 @@ class Database(commands.Cog):
             pass
         pass
 
-    async def change_member_username(self, before: discord.Member, after: discord.Member):
+    async def change_member_username(self, member: discord.Member):
         try:
             changeMemberUsernameQuery = 'UPDATE Users\
                                          SET Username = "{}"\
-                                         WHERE Username = "{}" AND\
-                                               Discriminator = "{}";'.format(
-                                                   after.name,
-                                                   before.name,
-                                                   before.discriminator
+                                         WHERE UserID = {};'.format(
+                                                   member.name,
+                                                   member.id
                                                )
             
             self.cursor.execute(changeMemberUsernameQuery)
@@ -221,15 +216,13 @@ class Database(commands.Cog):
         pass
 
     #probably works?
-    async def change_member_discriminator(self, before: discord.Member, after: discord.Member):
+    async def change_member_discriminator(self, member: discord.Member):
         try:
             changeMemberDiscriminatorQuery = 'UPDATE Users\
                                               SET Discriminator = "{}"\
-                                              WHERE Username = "{}" AND\
-                                                    Discriminator = "{}";'.format(
-                                                        after.discriminator,
-                                                        before.name,
-                                                        before.discriminator
+                                              WHERE UserID = {};'.format(
+                                                        member.discriminator,
+                                                        member.id
                                                     )
             
             self.cursor.execute(changeMemberDiscriminatorQuery)
@@ -241,22 +234,11 @@ class Database(commands.Cog):
 
     async def insert_post(self, ctx, channelID, messageID):
         try:
-            getUserIndexQuery = 'SELECT * \
-                                 FROM Users \
-                                 WHERE Username = "{}" AND \
-                                       Discriminator = "{}";'.format(
-                                           ctx.author.name, 
-                                           ctx.author.discriminator
-                                        )
-
-            userIndex = self.cursor.execute(getUserIndexQuery)
-
-
-            InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserIndex) \
-                               VALUES({}, {}, "{}");'.format(
+            InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserID) \
+                               VALUES({}, {}, {});'.format(
                                    messageID, 
                                    channelID, 
-                                   userIndex
+                                   ctx.author.id
                                 )
 
             self.cursor.execute(InsertPostQuery)

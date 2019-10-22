@@ -16,7 +16,7 @@ class ModeratorUser(commands.Cog):
     async def add_member(self, ctx, member: discord.Member, userIndex):
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.insert_user(ctx, member, userIndex)
+            await database.insert_member(ctx, member, userIndex)
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -41,7 +41,7 @@ class ModeratorUser(commands.Cog):
 
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):#test this
+    async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
         newRolesList = []
         for role in roles:
             newRole = discord.utils.get(member.guild.roles, name=str(role))

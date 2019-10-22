@@ -9,7 +9,6 @@ class Events(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-
     @commands.Cog.listener()
     async def on_member_join(self, member):
         try:
@@ -195,12 +194,12 @@ class Events(commands.Cog):
         if before.name != after.name:
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_username(before, after)
+                await database.change_member_username(after)
         
         if before.discriminator != after.discriminator:
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_discriminator(before, after)
+                await database.change_member_discriminator(after)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
