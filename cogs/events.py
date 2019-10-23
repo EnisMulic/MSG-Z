@@ -101,23 +101,20 @@ class Events(commands.Cog):
             roleSet = set(before.roles) - set(after.roles)
             roles = []
             for role in roleSet:
-                roles += [role]
+                action.add_field(
+                    name = "Role:",
+                    value = role.mention
+                )
 
+                action.add_field(
+                    name = "Time:",
+                    value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
+                    inline = False
+                )
+                
+                action.set_thumbnail(url = before.avatar_url)
 
-            action.add_field(
-                name = "Role:",
-                value = roles[0].mention
-            )
-
-            action.add_field(
-                name = "Time:",
-                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
-                inline = False
-            )
-            
-            action.set_thumbnail(url = before.avatar_url)
-
-            await logger.LogAction(self.client, action)
+                await logger.LogAction(self.client, action)
         elif before.roles > after.roles:
             action = discord.Embed(
                 title = 'Role added',
@@ -131,25 +128,22 @@ class Events(commands.Cog):
             )
 
             roleSet = set(after.roles) - set(before.roles)
-            roles = []
             for role in roleSet:
-                roles += [role]
+                
+                action.add_field(
+                    name = "Role:",
+                    value = role.mention
+                )
 
+                action.add_field(
+                    name = "Time:",
+                    value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
+                    inline = False
+                )
+                
+                action.set_thumbnail(url = before.avatar_url)
 
-            action.add_field(
-                name = "Role:",
-                value = roles[0].mention
-            )
-
-            action.add_field(
-                name = "Time:",
-                value = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S")),
-                inline = False
-            )
-            
-            action.set_thumbnail(url = before.avatar_url)
-
-            await logger.LogAction(self.client, action)
+                await logger.LogAction(self.client, action)
         
             
         

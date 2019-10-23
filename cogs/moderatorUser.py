@@ -42,12 +42,16 @@ class ModeratorUser(commands.Cog):
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
+        database = self.client.get_cog('Database')
+
         newRolesList = []
         for role in roles:
             newRole = discord.utils.get(member.guild.roles, name=str(role))
             if newRole not in member.roles:
                 newRolesList += [newRole.mention]
                 await member.add_roles(newRole)
+                if database is not None:
+                    await database.insert_users_role(member, newRole)
             else:
                 await ctx.send(member.nick + ' vec ima ulogu ' + newRole.name)
         

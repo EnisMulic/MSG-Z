@@ -232,6 +232,21 @@ class Database(commands.Cog):
             pass
         pass
 
+    async def insert_users_role(self, member: discord.Member, role: discord.Role):
+        try:
+            insertUsersRoleQuery = 'INSERT INTO UsersRoles(RoleID, UserID)\
+                                    VALUES({}, {});'.format(
+                                        role.id,
+                                        member.id
+                                    )
+            
+            self.cursor.execute(insertUsersRoleQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Insert Users Role: Something went wrong: " + str(err))
+            pass
+        pass
+
     async def insert_post(self, ctx, channelID, messageID):
         try:
             InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserID) \
