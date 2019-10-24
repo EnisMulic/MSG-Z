@@ -5,10 +5,10 @@ import MySQLdb
 import json
 
 
-def getPassword():
+def getDatabaseParamater(param):
     with open('.\\config.json') as json_data_file:
         data = json.load(json_data_file)
-    return data["Database"]["Password"]
+    return data["Database"][param]
 
 
 class Database(commands.Cog):
@@ -16,10 +16,10 @@ class Database(commands.Cog):
         self.client = client
 
         self.db = MySQLdb.connect(\
-            host = "localhost", \
-            user = "root", \
-            passwd = getPassword(), \
-            db = "FIT_Community", \
+            host = getDatabaseParamater("host"), \
+            user = getDatabaseParamater("user"), \
+            passwd = getDatabaseParamater("password"), \
+            db = getDatabaseParamater("database_name"), \
             charset = 'UTF8' \
         )
 

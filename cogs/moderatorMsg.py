@@ -2,10 +2,9 @@ import discord
 from discord.ext import commands
 
 import datetime
-# import database #database.py
 
-from cogs.utils import logger
-from cogs.utils import misc
+from utils import logger
+
 
 class ModeratorMsg(commands.Cog):
     def __init__(self, client):

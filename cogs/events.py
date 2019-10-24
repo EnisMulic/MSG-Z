@@ -3,7 +3,8 @@ from discord.ext import commands
 
 import datetime
 
-from cogs.utils import logger
+# from cogs.utils import logger
+from utils import logger
 
 class Events(commands.Cog):
     def __init__(self, client):
