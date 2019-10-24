@@ -8,7 +8,7 @@ import sys
 
 from notifications import Discord_Bot_Notification
 
-client = commands.Bot(command_prefix = '!')
+client = commands.Bot(command_prefix = '$')
 
 def getToken():
     with open("config.json") as json_data_file:
@@ -32,5 +32,6 @@ if __name__ == '__main__':
             except Exception as error:
                 print(file + ": Error - " + str(error))
                 
+    
 
     client.run(getToken())
