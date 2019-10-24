@@ -1,6 +1,6 @@
 import discord
 
-from . import misc
+from utils import misc
 
 async def LogAction(client, embed):
     channel = client.get_channel(misc.getChannelID(client, 'logger'))
