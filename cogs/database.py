@@ -36,8 +36,7 @@ class Database(commands.Cog):
                     Username NVARCHAR(32) NOT NULL,\
                     Discriminator VARCHAR(4) NOT NULL,\
                     StatusFakultet NVARCHAR(20),\
-                    StatusDiscord NVARCHAR(20) NOT NULL,\
-                    NumberOfPosts INT DEFAULT 0 \
+                    StatusDiscord NVARCHAR(20) NOT NULL\
                 )"
             self.cursor.execute(tableUsersQuery)
         except MySQLdb.ProgrammingError as err:
@@ -263,9 +262,52 @@ class Database(commands.Cog):
             pass
         pass
 
-    
+    @commands.command(aliases=["get-member-userID", "get-member-uid"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def get_member_by_UserID(self, ctx, member: discord.Member):
+        try:
+            getMemberQuery = 'SELECT * FROM Users WHERE UserID = {};'.format(member.id)
+            self.cursor.execute(getMemberQuery)
+            self.db.commit()
+            records = self.cursor.fetchall()
 
-    
+            
+            for record in records:
+                await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+                            record[2],
+                            record[1],
+                            record[3] + "#" + record[4],
+                            record[5],
+                            record[6]
+                        ))
+
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Get Member (by UserID): Smething went wrong: " + str(err))
+            pass
+        pass
+
+    @commands.command(aliases=["get-member-index", "get-member-idx"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def get_member_by_UserIndex(self, ctx, userIndex: str):
+        try:
+            getMemberQuery = 'SELECT * FROM Users WHERE UserIndex = "{}";'.format(userIndex)
+            self.cursor.execute(getMemberQuery)
+            self.db.commit()
+            records = self.cursor.fetchall()
+            
+            for record in records:
+                await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+                            record[2],
+                            record[1],
+                            record[3] + "#" + record[4],
+                            record[5],
+                            record[6]
+                        ))
+
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Get Member (by UserIndex): Smething went wrong: " + str(err))
+            pass
+        pass
 
 def setup(client):
     client.add_cog(Database(client))
