@@ -18,10 +18,10 @@ class ModeratorUser(commands.Cog):
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def set_index(self, ctx, member: discord.Member, userIndex):
+    async def set_index(self, ctx, member: discord.Member, userIndex: str):
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.change_member_index(ctx, member, userIndex)
+            await database.change_member_index(ctx, member, userIndex.upper())
 
     @commands.command(aliases=["set-status"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -68,12 +68,12 @@ class ModeratorUser(commands.Cog):
         
     @commands.command(aliases=["set-name"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def set_name(self, ctx, member: discord.Member, *name):
+    async def set_name(self, ctx, member: discord.Member, *name: str):
         newName = ' '.join(name)
         await member.edit(nick = newName)
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.change_member_name(ctx, member, name)
+            await database.change_member_name(ctx, member, newName)
             
     
     @commands.command()
@@ -107,6 +107,10 @@ class ModeratorUser(commands.Cog):
 
         await logger.LogAction(self.client, action)
 
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.change_member_discord_status(ctx, member, "Kicked")
+
     @commands.command()
     @commands.has_any_role('Administrator')
     async def ban(self, ctx, member: discord.Member, reason = None):
@@ -138,6 +142,10 @@ class ModeratorUser(commands.Cog):
         action.set_thumbnail(url = member.avatar_url)
 
         await logger.LogAction(self.client, action)
+
+        database = self.client.get_cog('Database')
+        if database is not None:
+            await database.change_member_discord_status(ctx, member, "Banned")
 
 
 def setup(client):
