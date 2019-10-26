@@ -6,7 +6,7 @@ import json
 import os
 import sys
 
-from notifications import Discord_Bot_Notification
+
 
 client = commands.Bot(command_prefix = '$')
 
