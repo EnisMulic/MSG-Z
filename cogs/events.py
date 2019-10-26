@@ -3,7 +3,6 @@ from discord.ext import commands
 
 import datetime
 
-# from cogs.utils import logger
 from utils import logger
 
 class Events(commands.Cog):
@@ -198,7 +197,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
-        if message.content.startswith("!purge"):
+        if message.content.startswith("$purge"):
             return
 
         action = discord.Embed(
@@ -232,6 +231,7 @@ class Events(commands.Cog):
         
 
         await logger.LogAction(self.client, action)
+
 
 def setup(client):
     client.add_cog(Events(client))

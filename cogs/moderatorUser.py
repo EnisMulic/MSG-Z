@@ -147,6 +147,6 @@ class ModeratorUser(commands.Cog):
         if database is not None:
             await database.change_member_discord_status(ctx, member, "Banned")
 
-
+        
 def setup(client):
     client.add_cog(ModeratorUser(client))
