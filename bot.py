@@ -15,14 +15,13 @@ def getToken():
         data = json.load(json_data_file)
     return data["Discord"]["Token"]
 
-initial_extensions = ['cogs.moderator', 'cogs.events']
 cogsDir = ".\\cogs"
 
 if __name__ == '__main__':
     @client.event
     async def on_ready():
         print("3, 4, SAD!")
-        await client.change_presence(activity = discord.Game(name = "Development phase"))
+        await client.change_presence(activity = discord.Game(name = "This is (not) a bot"))
 
     for file in os.listdir(cogsDir):
         if file.endswith(".py"):
@@ -33,5 +32,5 @@ if __name__ == '__main__':
                 print(file + ": Error - " + str(error))
                 
     
-
+    
     client.run(getToken())
