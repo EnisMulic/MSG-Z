@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext import tasks
 
 import requests
 import json
@@ -79,13 +80,12 @@ class Scraper(commands.Cog):
                     date = new.find("span", {"id": "lblDatum"}).text[:16]
                     subject = new.find("span", {"id": "lblPredmet"}).text
                     author = new.find("a", {"id": "HyperLink9"}).text
-                    mail = new.find("a", {"id": "HyperLink9"}).get("href")[7:]
                     content = new.find("div", {"class": "abstract"}).text
 
                     
                     notificationsList.append(
                         notifications.DLWMS_Notification(
-                            link, title, date, subject, author, mail, content
+                            link, title, date, subject, author, content
                         )
                     )
                 
@@ -96,10 +96,12 @@ class Scraper(commands.Cog):
             except Exception as err:
                 print("Error: " + str(err))
 
-
-    @commands.command()
-    @commands.has_any_role('Administrator')
-    async def sendNotification(self, ctx):
+    
+    # @commands.command()
+    # @commands.has_any_role('Administrator')
+    @tasks.loop(minutes = 1)
+    async def sendNotification(self):
+        print("Sending...")
         notificationsList = self.getNotifications()
 
         lastNotificationJson = {}
@@ -113,14 +115,18 @@ class Scraper(commands.Cog):
             lastNotificationJson["date"],
             lastNotificationJson["subject"],
             lastNotificationJson["author"],
-            lastNotificationJson["mail"],
             lastNotificationJson["content"]
         )
 
-               
+        # for notification in notificationsList:
+        #     if notification > lastNotification:
+        #         print(notification)
+
+        
         for notification in notificationsList or []:
+            print(notification)
             if notification == lastNotification:
-                break
+                break;
             else:
                 with open(".\\config.json") as jsonSubjectChannel:
                     data = json.load(jsonSubjectChannel)
@@ -136,9 +142,9 @@ class Scraper(commands.Cog):
                 if channel is not None:
                     await channel.send(embed = notification.getEmbed())
 
-               
-                with open(".\\lastNotification.json", "w") as jsonDataFile:
-                    json.dump(notification.__dict__, jsonDataFile, indent = 4)
+
+        with open(".\\lastNotification.json", "w") as jsonDataFile:
+            json.dump(notificationsList[0].__dict__, jsonDataFile, indent = 4)
 
 def setup(client):
     client.add_cog(Scraper(client))

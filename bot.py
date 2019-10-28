@@ -23,6 +23,10 @@ if __name__ == '__main__':
         print("3, 4, SAD!")
         await client.change_presence(activity = discord.Game(name = "This is (not) a bot"))
 
+        scraper = client.get_cog('Scraper')
+        if scraper is not None:
+            await scraper.sendNotification.start()
+
     for file in os.listdir(cogsDir):
         if file.endswith(".py"):
             try:
