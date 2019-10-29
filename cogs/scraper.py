@@ -19,7 +19,6 @@ class Scraper(commands.Cog):
             data = json.load(json_for_url)
         self.loginUrl = data["DLWMS"]["url"]
 
-        
 
     def getValueForInput(self, html, inputName):
         return "" if html.find("input", {"name": inputName}) is None\
@@ -88,17 +87,14 @@ class Scraper(commands.Cog):
                             link, title, date, subject, author, content
                         )
                     )
-                
-                # notificationsList.reverse()
-                
+                                
                 return notificationsList
             
             except Exception as err:
                 print("Error: " + str(err))
 
     
-    # @commands.command()
-    # @commands.has_any_role('Administrator')
+
     @tasks.loop(minutes = 1)
     async def sendNotification(self):
         print("Sending...")
@@ -118,16 +114,11 @@ class Scraper(commands.Cog):
             lastNotificationJson["content"]
         )
 
-        # for notification in notificationsList:
-        #     if notification > lastNotification:
-        #         print(notification)
+        lastSent = lastNotification
 
-        
+        notificationsList.reverse()
         for notification in notificationsList or []:
-            print(notification)
-            if notification == lastNotification:
-                break;
-            else:
+            if notification > lastNotification:
                 with open(".\\config.json") as jsonSubjectChannel:
                     data = json.load(jsonSubjectChannel)
 
@@ -141,10 +132,12 @@ class Scraper(commands.Cog):
                 channel = self.client.get_channel(misc.getChannelID(self.client, channelName))
                 if channel is not None:
                     await channel.send(embed = notification.getEmbed())
+                lastSent = notification
 
 
-        with open(".\\lastNotification.json", "w") as jsonDataFile:
-            json.dump(notificationsList[0].__dict__, jsonDataFile, indent = 4)
+        if lastSent != lastNotification:
+            with open(".\\lastNotification.json", "w") as jsonDataFile:
+                json.dump(lastSent.__dict__, jsonDataFile, indent = 4)
 
 def setup(client):
     client.add_cog(Scraper(client))

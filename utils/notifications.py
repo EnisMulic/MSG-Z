@@ -39,8 +39,7 @@ class DLWMS_Notification:
         
     
     def __eq__(self, other):
-        return self.link == other.link and \
-               self.title == other.title and \
+        return self.title == other.title and \
                self.date == other.date and \
                self.subject == other.subject and \
                self.author == other.author
