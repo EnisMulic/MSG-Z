@@ -4,6 +4,7 @@ from discord.ext import commands
 import MySQLdb
 import json
 
+from utils import misc
 
 def getDatabaseParamater(param):
     with open('.\\config.json') as json_data_file:
@@ -25,6 +26,7 @@ class Database(commands.Cog):
 
         self.cursor = self.db.cursor()
         self.setup_database_tables()
+        self.detect_anomalies()
      
     def setup_database_tables(self):
         try:
@@ -80,6 +82,49 @@ class Database(commands.Cog):
         except MySQLdb.ProgrammingError as err:
             print("Table Posts: Something went wrong: " + str(err))
             pass
+
+    def detect_anomalies(self):
+        
+        misc.printMembers(self.client)
+        # for member in members:
+        #     print("Here")
+        #     memberInDB = self.cursor.execute(
+        #         'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(
+        #             member.id)).fetchone()
+                
+        #     print(memberInDB[0])
+        #     if memberInDB[0] != member.nick:
+        #             self.change_member_name(member, member.nick)
+                
+        #     if memberInDB[1] != member.name:
+        #         self.change_member_username(member)
+            
+        #     if memberInDB[2] != member.discriminator:
+        #         self.change_member_discriminator(member)
+                
+
+                
+    @commands.command()
+    async def test(self, ctx, member: discord.Member):
+        queryTest = 'SELECT UR.RoleID\
+                     FROM USERS as U INNER JOIN USERSROLES as UR\
+                          ON U.UserID = UR.UserID\
+                     WHERE U.UserID = {};'.format(member.id)
+        
+        self.cursor.execute(queryTest)
+        dbRoles = self.cursor.fetchall()
+
+
+        memberRoles = []
+        for role in member.roles:
+            memberRoles.append(role.id)
+        
+        for dbRole in dbRoles:
+            if dbRole not in memberRoles:
+                print(dbRole)
+        
+
+                
     
     @commands.command(aliases=["insert-role"])
     @commands.has_any_role('Administrator')   
@@ -182,7 +227,7 @@ class Database(commands.Cog):
         pass
 
         # Change users in-server nickname
-    async def change_member_name(self, ctx, member: discord.Member, name):
+    async def change_member_name(self, member: discord.Member, name):
         try:
             changeMemberNameQuery = 'UPDATE Users\
                                      SET Name = "{}"\

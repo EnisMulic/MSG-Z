@@ -9,6 +9,8 @@ class ModeratorUser(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+        print(self.client.guilds)
+
     @commands.command(aliases=["add-member"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_member(self, ctx, member: discord.Member, userIndex):
@@ -73,7 +75,7 @@ class ModeratorUser(commands.Cog):
         await member.edit(nick = newName)
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.change_member_name(ctx, member, newName)
+            await database.change_member_name(member, newName)
             
     
     @commands.command()

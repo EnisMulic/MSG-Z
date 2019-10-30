@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
         scraper = client.get_cog('Scraper')
         if scraper is not None:
-            await scraper.sendNotification.start()
+            await scraper.send_notification.start()
 
     for file in os.listdir(cogsDir):
         if file.endswith(".py"):
@@ -38,3 +38,4 @@ if __name__ == '__main__':
     
     
     client.run(getToken())
+    
