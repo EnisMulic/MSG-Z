@@ -20,17 +20,17 @@ class Scraper(commands.Cog):
         self.loginUrl = data["DLWMS"]["url"]
 
 
-    def getValueForInput(self, html, inputName):
+    def get_value_for_input(self, html, inputName):
         return "" if html.find("input", {"name": inputName}) is None\
                   else html.find("input", {"name": inputName})["value"]
 
-    def getValueForSelect(self, html, selectText):
+    def get_value_for_select(self, html, selectText):
         for option in html.select("#listInstitucija option"):
             if option.text == selectText:
                 return str(option["value"])
         return ""
 
-    def getLogin(self):
+    def get_login(self):
         loginData = {}
 
         response = requests.get(self.loginUrl)
@@ -48,7 +48,7 @@ class Scraper(commands.Cog):
         ]
         
         for hiddenInput in hiddenInputArray:
-            loginData[hiddenInput] = self.getValueForInput(site, hiddenInput)
+            loginData[hiddenInput] = self.get_value_for_input(site, hiddenInput)
 
         with open(".\\config.json") as json_data_file:
             data = json.load(json_data_file)
@@ -56,19 +56,19 @@ class Scraper(commands.Cog):
         #Login info
         loginData["txtBrojDosijea"] = data["DLWMS"]["userID"]
         loginData["txtLozinka"] = data["DLWMS"]["password"]
-        loginData["listInstitucija"] = self.getValueForSelect(site, "Fakultet informacijskih tehnologija")
+        loginData["listInstitucija"] = self.get_value_for_select(site, "Fakultet informacijskih tehnologija")
 
             
         #Submit button
-        loginData["btnPrijava"] = self.getValueForInput(site, "btnPrijava")
+        loginData["btnPrijava"] = self.get_value_for_input(site, "btnPrijava")
     
 
         return loginData
 
-    def getNotifications(self):
+    def get_notifications(self):
         with requests.session() as session:
             try:
-                loginResponse = session.post(self.loginUrl, data = self.getLogin())
+                loginResponse = session.post(self.loginUrl, data = self.get_login())
                 response = BeautifulSoup(loginResponse.text, "html.parser")
 
                 notificationsList = []
@@ -96,9 +96,9 @@ class Scraper(commands.Cog):
     
 
     @tasks.loop(minutes = 1)
-    async def sendNotification(self):
+    async def send_notification(self):
         print("Sending...")
-        notificationsList = self.getNotifications()
+        notificationsList = self.get_notifications()
 
         lastNotificationJson = {}
         
