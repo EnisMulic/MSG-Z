@@ -12,7 +12,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         try:
-            role = discord.utils.get(member.guild.roles, name="A New Contender")
+            role = discord.utils.get(member.guild.roles, name = "Neregistrovan(a)")
             
             action = discord.Embed(
                 title = 'Member Joined',
