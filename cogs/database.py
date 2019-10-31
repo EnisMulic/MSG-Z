@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ext import tasks
 
 import MySQLdb
 import json
@@ -26,8 +27,8 @@ class Database(commands.Cog):
 
         self.cursor = self.db.cursor()
         self.setup_database_tables()
-        self.detect_anomalies()
-     
+
+    
     def setup_database_tables(self):
         try:
             tableUsersQuery = "CREATE TABLE IF NOT EXISTS Users\
@@ -83,49 +84,59 @@ class Database(commands.Cog):
             print("Table Posts: Something went wrong: " + str(err))
             pass
 
-    def detect_anomalies(self):
-        
-        misc.printMembers(self.client)
-        # for member in members:
-        #     print("Here")
-        #     memberInDB = self.cursor.execute(
-        #         'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(
-        #             member.id)).fetchone()
-                
-        #     print(memberInDB[0])
-        #     if memberInDB[0] != member.nick:
-        #             self.change_member_name(member, member.nick)
-                
-        #     if memberInDB[1] != member.name:
-        #         self.change_member_username(member)
-            
-        #     if memberInDB[2] != member.discriminator:
-        #         self.change_member_discriminator(member)
-                
+    @tasks.loop(minutes = 1)
+    async def detect_anomalies(self):
+        self.cursor.execute('SELECT RoleID FROM ROLES')
+        allRolesInDB = self.cursor.fetchall()
+        allRoles = []
+        for role in allRolesInDB:
+            allRoles.append(role[0])
 
-                
-    @commands.command()
-    async def test(self, ctx, member: discord.Member):
-        queryTest = 'SELECT UR.RoleID\
-                     FROM USERS as U INNER JOIN USERSROLES as UR\
-                          ON U.UserID = UR.UserID\
-                     WHERE U.UserID = {};'.format(member.id)
-        
-        self.cursor.execute(queryTest)
-        dbRoles = self.cursor.fetchall()
+        for guild in self.client.guilds:                                                        
+            for member in guild.members:
+                self.cursor.execute(
+                    'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(member.id)
+                )
+
+                memberInDB = self.cursor.fetchone()
+                if memberInDB is not None:
+                    if memberInDB[0] != member.nick:
+                        await self.change_member_name(member, member.nick)
+                            
+                    if memberInDB[1] != member.name:
+                        await self.change_member_username(member)
+                        
+                    if memberInDB[2] != member.discriminator:
+                        await self.change_member_discriminator(member)
+
+                    self.cursor.execute('SELECT UR.RoleID\
+                                         FROM USERS AS U INNER JOIN USERSROLES AS UR\
+                                              ON U.UserID = UR.UserID\
+                                         WHERE U.UserID = {};'.format(member.id))
+                    
+                    dbRoles = self.cursor.fetchall()
+                    dbRolesList = []
+                    for role in dbRoles:
+                        dbRolesList.append(role[0])
+                    
+
+                    memberRoles = []
+                    for role in member.roles:
+                        memberRoles.append(role.id)
+                    
+
+                    for memberRole in memberRoles:
+                        if memberRole in allRoles:
+                            if memberRole not in dbRolesList:
+                                try:
+                                    role = guild.get_role(memberRole)
+                                    await self.insert_users_role(member, role)
+                                except Exception as err:
+                                    print(err)
+                                    pass
+                                pass
 
 
-        memberRoles = []
-        for role in member.roles:
-            memberRoles.append(role.id)
-        
-        for dbRole in dbRoles:
-            if dbRole not in memberRoles:
-                print(dbRole)
-        
-
-                
-    
     @commands.command(aliases=["insert-role"])
     @commands.has_any_role('Administrator')   
     async def insert_role(self, ctx, role: discord.Role):

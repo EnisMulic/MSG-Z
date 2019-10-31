@@ -9,8 +9,6 @@ class ModeratorUser(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-        print(self.client.guilds)
-
     @commands.command(aliases=["add-member"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_member(self, ctx, member: discord.Member, userIndex):
