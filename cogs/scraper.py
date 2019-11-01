@@ -19,6 +19,8 @@ class Scraper(commands.Cog):
             data = json.load(json_for_url)
         self.loginUrl = data["DLWMS"]["url"]
 
+        self.send_notification.start()
+
 
     def get_value_for_input(self, html, inputName):
         return "" if html.find("input", {"name": inputName}) is None\
@@ -97,7 +99,7 @@ class Scraper(commands.Cog):
 
     @tasks.loop(minutes = 1)
     async def send_notification(self):
-        print("Sending...")
+        print("Scraping...")
         notificationsList = self.get_notifications()
 
         lastNotificationJson = {}
@@ -138,6 +140,15 @@ class Scraper(commands.Cog):
         if lastSent != lastNotification:
             with open(".\\lastNotification.json", "w") as jsonDataFile:
                 json.dump(lastSent.__dict__, jsonDataFile, indent = 4)
+
+
+    def cog_unload(self):
+        self.send_notification.cancel()
+
+    @send_notification.before_loop
+    async def before_send_notification(self):
+        print('Scraper: Waiting...')
+        await self.client.wait_until_ready()
 
 def setup(client):
     client.add_cog(Scraper(client))

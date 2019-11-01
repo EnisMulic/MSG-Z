@@ -27,6 +27,7 @@ class Database(commands.Cog):
 
         self.cursor = self.db.cursor()
         self.setup_database_tables()
+        self.detect_anomalies.start()
 
     
     def setup_database_tables(self):
@@ -83,59 +84,6 @@ class Database(commands.Cog):
         except MySQLdb.ProgrammingError as err:
             print("Table Posts: Something went wrong: " + str(err))
             pass
-
-    @tasks.loop(minutes = 1)
-    async def detect_anomalies(self):
-        self.cursor.execute('SELECT RoleID FROM ROLES')
-        allRolesInDB = self.cursor.fetchall()
-        allRoles = []
-        for role in allRolesInDB:
-            allRoles.append(role[0])
-
-        for guild in self.client.guilds:                                                        
-            for member in guild.members:
-                self.cursor.execute(
-                    'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(member.id)
-                )
-
-                memberInDB = self.cursor.fetchone()
-                if memberInDB is not None:
-                    if memberInDB[0] != member.nick:
-                        await self.change_member_name(member, member.nick)
-                            
-                    if memberInDB[1] != member.name:
-                        await self.change_member_username(member)
-                        
-                    if memberInDB[2] != member.discriminator:
-                        await self.change_member_discriminator(member)
-
-                    self.cursor.execute('SELECT UR.RoleID\
-                                         FROM USERS AS U INNER JOIN USERSROLES AS UR\
-                                              ON U.UserID = UR.UserID\
-                                         WHERE U.UserID = {};'.format(member.id))
-                    
-                    dbRoles = self.cursor.fetchall()
-                    dbRolesList = []
-                    for role in dbRoles:
-                        dbRolesList.append(role[0])
-                    
-
-                    memberRoles = []
-                    for role in member.roles:
-                        memberRoles.append(role.id)
-                    
-
-                    for memberRole in memberRoles:
-                        if memberRole in allRoles:
-                            if memberRole not in dbRolesList:
-                                try:
-                                    role = guild.get_role(memberRole)
-                                    await self.insert_users_role(member, role)
-                                except Exception as err:
-                                    print(err)
-                                    pass
-                                pass
-
 
     @commands.command(aliases=["insert-role"])
     @commands.has_any_role('Administrator')   
@@ -364,6 +312,68 @@ class Database(commands.Cog):
             print("Procedure Get Member (by UserIndex): Smething went wrong: " + str(err))
             pass
         pass
+
+    @tasks.loop(hours = 7 * 24)
+    async def detect_anomalies(self):
+        print("Anomalysing...")
+
+        self.cursor.execute('SELECT RoleID FROM ROLES')
+        allRolesInDB = self.cursor.fetchall()
+        allRoles = []
+        for role in allRolesInDB:
+            allRoles.append(role[0])
+
+        for guild in self.client.guilds:                                                        
+            for member in guild.members:
+                self.cursor.execute(
+                    'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(member.id)
+                )
+
+                memberInDB = self.cursor.fetchone()
+                if memberInDB is not None:
+                    if memberInDB[0] != member.nick:
+                        await self.change_member_name(member, member.nick)
+                            
+                    if memberInDB[1] != member.name:
+                        await self.change_member_username(member)
+                        
+                    if memberInDB[2] != member.discriminator:
+                        await self.change_member_discriminator(member)
+
+                    self.cursor.execute('SELECT UR.RoleID\
+                                         FROM USERS AS U INNER JOIN USERSROLES AS UR\
+                                              ON U.UserID = UR.UserID\
+                                         WHERE U.UserID = {};'.format(member.id))
+                    
+                    dbRoles = self.cursor.fetchall()
+                    dbRolesList = []
+                    for role in dbRoles:
+                        dbRolesList.append(role[0])
+                    
+
+                    memberRoles = []
+                    for role in member.roles:
+                        memberRoles.append(role.id)
+                    
+
+                    for memberRole in memberRoles:
+                        if memberRole in allRoles:
+                            if memberRole not in dbRolesList:
+                                try:
+                                    role = guild.get_role(memberRole)
+                                    await self.insert_users_role(member, role)
+                                except Exception as err:
+                                    print(err)
+                                    pass
+                                pass
+
+    def cog_unload(self):
+        self.detect_anomalies.cancel()
+
+    @detect_anomalies.before_loop
+    async def before_detect_anomalies(self):
+        print('Database: Waiting...')
+        await self.client.wait_until_ready()
 
 def setup(client):
     client.add_cog(Database(client))
