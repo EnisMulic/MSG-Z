@@ -15,6 +15,7 @@ class ModeratorUser(commands.Cog):
         database = self.client.get_cog('Database')
         if database is not None:
             await database.insert_member(ctx, member, userIndex)
+            await ctx.send("Member added")
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -22,6 +23,7 @@ class ModeratorUser(commands.Cog):
         database = self.client.get_cog('Database')
         if database is not None:
             await database.change_member_index(ctx, member, userIndex.upper())
+            ctx.send("Index set")
 
     @commands.command(aliases=["set-status"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -30,13 +32,13 @@ class ModeratorUser(commands.Cog):
             database = self.client.get_cog('Database')
             if database is not None:
                 await database.change_member_fakultet_status(ctx, member, status)
+                await ctx.send("Status set")
         elif option == '-d':
             database = self.client.get_cog('Database')
             if database is not None:
                 await database.change_member_discord_status(ctx, member, status)
+                await ctx.send("Status set")
             
-
-
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
@@ -74,6 +76,7 @@ class ModeratorUser(commands.Cog):
         database = self.client.get_cog('Database')
         if database is not None:
             await database.change_member_name(member, newName)
+            await ctx.send("Name set")
             
     
     @commands.command()
