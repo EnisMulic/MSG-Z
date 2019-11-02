@@ -25,7 +25,7 @@ class ModeratorUser(commands.Cog):
             await database.change_member_index(ctx, member, userIndex.upper())
             ctx.send("Index set")
 
-    @commands.command(aliases=["set-status"])
+    @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_status(self, ctx, member: discord.Member, status, option):
         if option == '-f':

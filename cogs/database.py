@@ -85,7 +85,7 @@ class Database(commands.Cog):
             print("Table Posts: Something went wrong: " + str(err))
             pass
 
-    @commands.command(aliases=["insert-role"])
+    @commands.command(aliases=["insert-role"], description = "Add role to the database")
     @commands.has_any_role('Administrator')   
     async def insert_role(self, ctx, role: discord.Role):
         try:

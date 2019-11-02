@@ -10,7 +10,7 @@ class ModeratorMsg(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command()
+    @commands.command(description = "Delete N last messages")
     @commands.has_any_role('Administrator', 'Moderator')
     async def purge(self, ctx, numberOfMessages = 1):
 
@@ -40,7 +40,7 @@ class ModeratorMsg(commands.Cog):
 
         await logger.LogAction(self.client, action)
 
-    @commands.command(aliases=["msg-echo"])
+    @commands.command(aliases=["msg-echo"], description = "Send message to a channel as the bot")
     @commands.has_any_role('Administrator', 'Moderator')
     async def echo(self, ctx, channel, *, message):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
@@ -53,14 +53,16 @@ class ModeratorMsg(commands.Cog):
         
 
 
-    @commands.command(aliases=["msg-edit"])
+    @commands.command(aliases=["msg-edit"], description = "Edit message sent as the bot")
     @commands.has_any_role('Administrator', 'Moderator')
     async def edit(self, ctx, channel, id: int, *, newMessage):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
         message = await messageChannel.fetch_message(id)
         await message.edit(content = newMessage)
 
-    @commands.command(aliases=["msg-move"])
+    @commands.command(aliases=["msg-move"], 
+                      description = "Move a message from one channel to another\
+                                     \n\nOption: \n -d or --delete = delete message after move")
     @commands.has_any_role('Administrator', 'Moderator')
     async def move(self, ctx, oldChannel, id: int, newChannel, option = None):
 
