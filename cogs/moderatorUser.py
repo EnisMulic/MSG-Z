@@ -31,12 +31,12 @@ class ModeratorUser(commands.Cog):
         if option == '-f':
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_fakultet_status(ctx, member, status)
+                await database.change_member_fakultet_status(member, status)
                 await ctx.send("Status set")
         elif option == '-d':
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_discord_status(ctx, member, status)
+                await database.change_member_discord_status(member, status)
                 await ctx.send("Status set")
             
     @commands.command(aliases=["add-role"])

@@ -20,7 +20,7 @@ if __name__ == '__main__':
     @client.event
     async def on_ready():
         print("3, 4, SAD!")
-        await client.change_presence(activity = discord.Game(name = "This is (not) a bot"))
+        await client.change_presence(activity = discord.Game(name = "In development"))
 
 
     for file in os.listdir(cogsDir):

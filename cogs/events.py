@@ -79,7 +79,11 @@ class Events(commands.Cog):
             action.set_thumbnail(url = member.avatar_url)
         
             await logger.LogAction(self.client, action)
-            
+            database = self.client.get_cog('Database')
+            if database is not None:
+                await database.remove_member(member)
+                await database.change_member_discord_status(member, "Napustio")
+                
         except:
             print("Error")
    
@@ -180,7 +184,6 @@ class Events(commands.Cog):
             action.set_thumbnail(url = before.avatar_url)
 
             await logger.LogAction(self.client, action)
-
 
 
     @commands.Cog.listener()
