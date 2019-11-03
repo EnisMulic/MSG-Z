@@ -153,7 +153,7 @@ class Database(commands.Cog):
             pass
         pass    
 
-    async def change_member_fakultet_status(self, ctx, member: discord.Member, status):
+    async def change_member_fakultet_status(self, member: discord.Member, status):
         try:
             changeMemberFakultetStatusQuery = 'UPDATE Users\
                                                SET StatusFakultet = "{}"\
@@ -169,7 +169,7 @@ class Database(commands.Cog):
             pass
         pass
 
-    async def change_member_discord_status(self, ctx, member: discord.Member, status):
+    async def change_member_discord_status(self, member: discord.Member, status):
         try:
             changeMemberDiscordStatusQuery = 'UPDATE Users\
                                               SET StatusDiscord = "{}"\
@@ -313,6 +313,16 @@ class Database(commands.Cog):
             pass
         pass
 
+    async def remove_member(self, member: discord.Member):
+        try:
+            clearMemberQuery = 'DELETE FROM USERSROLES WHERE UserID = {};'.format(member.id)
+            self.cursor.execute(clearMemberQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Clear Member: Something went wrong: " + str(err))
+            pass
+        pass
+
     @tasks.loop(hours = 7 * 24)
     async def detect_anomalies(self):
         print("Anomalysing...")
@@ -325,47 +335,54 @@ class Database(commands.Cog):
 
         for guild in self.client.guilds:                                                        
             for member in guild.members:
-                self.cursor.execute(
-                    'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(member.id)
-                )
+                try:
+                    self.cursor.execute(
+                        'SELECT Name, Username, Discriminator FROM USERS WHERE UserID = {};'.format(member.id)
+                    )
+                
 
-                memberInDB = self.cursor.fetchone()
-                if memberInDB is not None:
-                    if memberInDB[0] != member.nick:
-                        await self.change_member_name(member, member.nick)
+                    memberInDB = self.cursor.fetchone()
+                    if memberInDB is not None:
+                        if memberInDB[0] != member.nick:
+                            await self.change_member_name(member, member.nick)
+                                
+                        if memberInDB[1] != member.name:
+                            await self.change_member_username(member)
                             
-                    if memberInDB[1] != member.name:
-                        await self.change_member_username(member)
+                        if memberInDB[2] != member.discriminator:
+                            await self.change_member_discriminator(member)
+
+                        self.cursor.execute('SELECT UR.RoleID\
+                                            FROM USERS AS U INNER JOIN USERSROLES AS UR\
+                                                ON U.UserID = UR.UserID\
+                                            WHERE U.UserID = {};'.format(member.id))
                         
-                    if memberInDB[2] != member.discriminator:
-                        await self.change_member_discriminator(member)
+                        dbRoles = self.cursor.fetchall()
+                        dbRolesList = []
+                        for role in dbRoles:
+                            dbRolesList.append(role[0])
+                        
 
-                    self.cursor.execute('SELECT UR.RoleID\
-                                         FROM USERS AS U INNER JOIN USERSROLES AS UR\
-                                              ON U.UserID = UR.UserID\
-                                         WHERE U.UserID = {};'.format(member.id))
-                    
-                    dbRoles = self.cursor.fetchall()
-                    dbRolesList = []
-                    for role in dbRoles:
-                        dbRolesList.append(role[0])
-                    
+                        memberRoles = []
+                        for role in member.roles:
+                            memberRoles.append(role.id)
+                        
 
-                    memberRoles = []
-                    for role in member.roles:
-                        memberRoles.append(role.id)
-                    
-
-                    for memberRole in memberRoles:
-                        if memberRole in allRoles:
-                            if memberRole not in dbRolesList:
-                                try:
-                                    role = guild.get_role(memberRole)
-                                    await self.insert_users_role(member, role)
-                                except Exception as err:
-                                    print(err)
+                        for memberRole in memberRoles:
+                            if memberRole in allRoles:
+                                if memberRole not in dbRolesList:
+                                    try:
+                                        role = guild.get_role(memberRole)
+                                        await self.insert_users_role(member, role)
+                                    except Exception as err:
+                                        print(err)
+                                        pass
                                     pass
-                                pass
+                
+                except MySQLdb.Error as err:
+                    print(member.name + " not in the database")
+                    pass
+                pass
 
     def cog_unload(self):
         self.detect_anomalies.cancel()
