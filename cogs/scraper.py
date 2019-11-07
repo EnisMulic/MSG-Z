@@ -116,8 +116,8 @@ class Scraper(commands.Cog):
                     try:
                         channelName = data["DLWMS"]["subjects"][notification.subject]
                     except:
-                        channelName = "generalna-diskusija-3"
-                        pass
+                        channelName = "obavijesti"
+                        
 
                         
                     channel = self.client.get_channel(misc.getChannelID(self.client, channelName))
