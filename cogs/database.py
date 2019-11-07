@@ -45,7 +45,7 @@ class Database(commands.Cog):
             self.cursor.execute(tableUsersQuery)
         except MySQLdb.ProgrammingError as err:
             print("Table Users: Something went wrong: " + str(err))
-            pass
+            
 
         try:
             tableRolesQuery = "CREATE TABLE IF NOT EXISTS Roles\
@@ -56,7 +56,7 @@ class Database(commands.Cog):
             self.cursor.execute(tableRolesQuery)
         except MySQLdb.ProgrammingError as err:
             print("Table Roles: Something went wrong: " + str(err))
-            pass
+            
 
         try:
             tableUsersRolesQuery = "CREATE TABLE IF NOT EXISTS UsersRoles\
@@ -70,7 +70,7 @@ class Database(commands.Cog):
             self.cursor.execute(tableUsersRolesQuery)
         except MySQLdb.ProgrammingError as err:
             print("Table UsersRoles: Something went wrong: " + str(err))
-            pass
+            
 
         try:
             tablePostsQuery = "CREATE TABLE IF NOT EXISTS Posts\
@@ -83,7 +83,7 @@ class Database(commands.Cog):
             self.cursor.execute(tablePostsQuery)
         except MySQLdb.ProgrammingError as err:
             print("Table Posts: Something went wrong: " + str(err))
-            pass
+            
 
     @commands.command(aliases=["insert-role"], description = "Add role to the database")
     @commands.has_any_role('Administrator')   
@@ -98,8 +98,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Role: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     async def insert_member(self, ctx, member: discord.Member, UserIndex):
         try:
@@ -134,8 +133,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Member: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     async def change_member_index(self, ctx, member: discord.Member, UserIndex):
         try:
@@ -150,8 +148,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member UserIndex: Something went wrong: " + str(err))
-            pass
-        pass    
+                
 
     async def change_member_fakultet_status(self, member: discord.Member, status):
         try:
@@ -166,8 +163,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member Fakultet Status: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     async def change_member_discord_status(self, member: discord.Member, status):
         try:
@@ -182,8 +178,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member Discord Status: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
         # Change users in-server nickname
     async def change_member_name(self, member: discord.Member, name):
@@ -199,8 +194,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member Name: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     async def change_member_username(self, member: discord.Member):
         try:
@@ -215,8 +209,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member Username: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     #probably works?
     async def change_member_discriminator(self, member: discord.Member):
@@ -232,8 +225,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Change Member Disciminator: Something went wrong: " + str(err))
-            pass
-        pass
+            
 
     async def insert_users_role(self, member: discord.Member, role: discord.Role):
         try:
@@ -247,8 +239,20 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Users Role: Something went wrong: " + str(err))
-            pass
-        pass
+
+    async def remove_users_role(self, member: discord.Member, role: discord.Role):
+        try:
+            removeUsersRoleQuery = 'DELETE FROM USERSROLES\
+                                    WHERE RoleID = {} AND UserID = {};'.format(
+                                        role.id,
+                                        member.id
+                                    )
+            
+            self.cursor.execute(removeUsersRoleQuery)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Remove Users Role: Something went wrong: " + str(err))
+            
 
     async def insert_post(self, ctx, channelID, messageID):
         try:
@@ -263,8 +267,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Insert Post: Somethin went wrong: " + str(err))
-            pass
-        pass
+            
 
     @commands.command(aliases=["get-member-userID", "get-member-uid"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -287,8 +290,7 @@ class Database(commands.Cog):
 
         except MySQLdb.ProgrammingError as err:
             print("Procedure Get Member (by UserID): Smething went wrong: " + str(err))
-            pass
-        pass
+            
 
     @commands.command(aliases=["get-member-index", "get-member-idx"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -310,8 +312,7 @@ class Database(commands.Cog):
 
         except MySQLdb.ProgrammingError as err:
             print("Procedure Get Member (by UserIndex): Smething went wrong: " + str(err))
-            pass
-        pass
+        
 
     async def remove_member(self, member: discord.Member):
         try:
@@ -320,8 +321,7 @@ class Database(commands.Cog):
             self.db.commit()
         except MySQLdb.ProgrammingError as err:
             print("Procedure Clear Member: Something went wrong: " + str(err))
-            pass
-        pass
+        
 
     @tasks.loop(hours = 7 * 24)
     async def detect_anomalies(self):
@@ -376,13 +376,16 @@ class Database(commands.Cog):
                                         await self.insert_users_role(member, role)
                                     except Exception as err:
                                         print(err)
-                                        pass
-                                    pass
+
+                        for dbRole in dbRolesList:
+                            if dbRole not in memberRoles:
+                                role = guild.get_role(dbRole)
+                                await self.remove_users_role(member, role)
+                                   
                 
                 except MySQLdb.Error as err:
                     print(member.name + " not in the database")
-                    pass
-                pass
+                
 
     def cog_unload(self):
         self.detect_anomalies.cancel()
