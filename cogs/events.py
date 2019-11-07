@@ -89,7 +89,9 @@ class Events(commands.Cog):
    
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-            
+        database = self.client.get_cog('Database')
+
+        # Roles removed
         if before.roles < after.roles:
             action = discord.Embed(
                 title = 'Role removed',
@@ -117,8 +119,12 @@ class Events(commands.Cog):
                 )
                 
                 action.set_thumbnail(url = before.avatar_url)
-
                 await logger.LogAction(self.client, action)
+
+                if database is not None:
+                    await database.remove_users_role(before, role)
+
+        # Role added           
         elif before.roles > after.roles:
             action = discord.Embed(
                 title = 'Role added',
@@ -148,6 +154,8 @@ class Events(commands.Cog):
                 action.set_thumbnail(url = before.avatar_url)
 
                 await logger.LogAction(self.client, action)
+                if database is not None:
+                    await database.insert_users_role(before, role)
         
             
         
@@ -184,6 +192,8 @@ class Events(commands.Cog):
             action.set_thumbnail(url = before.avatar_url)
 
             await logger.LogAction(self.client, action)
+            if database is not None:
+                await database.change_member_name(after, after.nick)
 
 
     @commands.Cog.listener()
