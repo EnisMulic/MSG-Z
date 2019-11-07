@@ -23,7 +23,7 @@ class ModeratorUser(commands.Cog):
         database = self.client.get_cog('Database')
         if database is not None:
             await database.change_member_index(ctx, member, userIndex.upper())
-            ctx.send("Index set")
+            await ctx.send("Index set")
 
     @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
     @commands.has_any_role('Administrator', 'Moderator')
@@ -60,10 +60,14 @@ class ModeratorUser(commands.Cog):
     @commands.command(aliases=["remove-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_role(self, ctx, member: discord.Member, *roles: discord.Role):
+        database = self.client.get_cog('Database')
+
         for role in roles:
             oldRole = discord.utils.get(member.guild.roles, name=str(role))
             if oldRole in member.roles:
-                await member.remove_roles(oldRole)   
+                await member.remove_roles(oldRole) 
+                if database is not None:
+                    await database.remove_users_role(member, oldRole)  
             else:
                 await ctx.send(member.nick + ' nema ulogu ' + oldRole.name)
         
