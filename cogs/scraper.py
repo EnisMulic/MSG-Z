@@ -84,7 +84,8 @@ class Scraper(commands.Cog):
                 subject = new.find("span", {"id": "lblPredmet"}).text
                 author = new.find("a", {"id": "HyperLink9"}).text
                 content = new.find("div", {"class": "abstract"}).text
-
+                
+                if content.isspace(): content = "N/A"
                     
                 notificationsList.append(
                     notifications.DLWMS_Notification(
