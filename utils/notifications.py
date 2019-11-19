@@ -42,7 +42,8 @@ class DLWMS_Notification:
         return self.title == other.title and \
                self.date == other.date and \
                self.subject == other.subject and \
-               self.author == other.author
+               self.author == other.author and \
+               self.link == other.link
 
     def __gt__(self, other):
         if self.date == "" or other.date == "": return True

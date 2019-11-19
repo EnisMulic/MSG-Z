@@ -110,7 +110,7 @@ class Scraper(commands.Cog):
             lastSent = lastNotification
             notificationsList.reverse()
             for notification in notificationsList or []:
-                if notification > lastNotification:
+                if notification > lastNotification and notification.link != lastNotification.link:
                     with open(".\\config.json") as jsonSubjectChannel:
                         data = json.load(jsonSubjectChannel)
 
