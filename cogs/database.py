@@ -395,6 +395,23 @@ class Database(commands.Cog):
         print('Database: Waiting...')
         await self.client.wait_until_ready()
 
+    def get_users(self, listOfUsers: list):
+        queryList = "("
+        for user in listOfUsers:
+            queryList = queryList + '"' + user + '",'
+        queryList = queryList[:-1]
+        queryList = queryList + ')'
+
+       
+        self.cursor.execute('SELECT UserID FROM Users WHERE Name IN ' + queryList)
+        users = self.cursor.fetchall()
+        
+        usersList = []
+        for user in users:
+            usersList.append(user[0])
+
+        return usersList
+
 def setup(client):
     client.add_cog(Database(client))
 

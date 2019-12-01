@@ -114,11 +114,22 @@ class Scraper(commands.Cog):
                     with open(".\\config.json") as jsonSubjectChannel:
                         data = json.load(jsonSubjectChannel)
 
-                    try:
-                        notification.subject = notification.subject.translate({ord(i): None for i in '*'})
-                        channelName = data["DLWMS"]["subjects"][notification.subject]
-                    except:
-                        channelName = "obavijesti"
+                    if "Neum" in notification.title:
+                        database = self.client.get_cog('Database')
+                        if database is not None:
+                            userIDs = database.get_users(data["Neum"])
+                            for userID in userIDs:
+                                try:
+                                    member = self.client.get_user(userID)
+                                    await member.send(embed = notification.getEmbed())
+                                except:
+                                    pass
+                    else:
+                        try:  
+                            notification.subject = notification.subject.translate({ord(i): None for i in '*'})
+                            channelName = data["DLWMS"]["subjects"][notification.subject]
+                        except:
+                            channelName = "obavijesti"
                         
 
                         
