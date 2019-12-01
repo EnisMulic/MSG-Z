@@ -115,6 +115,7 @@ class Scraper(commands.Cog):
                         data = json.load(jsonSubjectChannel)
 
                     try:
+                        notification.subject = notification.subject.translate({ord(i): None for i in '*'})
                         channelName = data["DLWMS"]["subjects"][notification.subject]
                     except:
                         channelName = "obavijesti"
