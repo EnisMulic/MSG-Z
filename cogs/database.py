@@ -83,6 +83,19 @@ class Database(commands.Cog):
             self.cursor.execute(tablePostsQuery)
         except MySQLdb.ProgrammingError as err:
             print("Table Posts: Something went wrong: " + str(err))
+
+        try:
+            tableYoutubeQuery = "CREATE TABLE IF NOT EXISTS Youtube\
+                (\
+                    ChannelID NVARCHAR(32) NOT NULL PRIMARY KEY,\
+                    ChannelName NVARCHAR(256) NOT NULL, \
+                    Title NVARCHAR(256) NOT NULL,\
+                    PublishedAt NVARCHAR(10) NOT NULL,\
+                    VideoID NVARCHAR(32) NOT NULL\
+                )"
+            self.cursor.execute(tableYoutubeQuery)
+        except MySQLdb.ProgrammingError as err:
+            print("Table Youtube: Something went wrong: " + str(err))
             
 
     @commands.command(aliases=["insert-role"], description = "Add role to the database")
@@ -386,6 +399,24 @@ class Database(commands.Cog):
                 except MySQLdb.Error as err:
                     print(member.name + " not in the database")
                 
+
+    async def update_youtube_channel_info(self, info):
+        try:
+            changeYoutubeChannelInfo = 'UPDATE Youtube\
+                                        SET Title = "{}", \
+                                            PublishedAt = "{}", \
+                                            VideoID = "{}" \
+                                        WHERE ChannelID = "{}";'.format(
+                                            info["snippet"]["title"],
+                                            info["snippet"]["publishedAt"][:10],
+                                            info["id"]["videoId"],
+                                            info["snippet"]["channelId"]
+                                        )
+            
+            self.cursor.execute(changeYoutubeChannelInfo)
+            self.db.commit()
+        except MySQLdb.ProgrammingError as err:
+            print("Procedure Update Youtube Channel Info: Something went wrong: " + str(err))
 
     def cog_unload(self):
         self.detect_anomalies.cancel()
