@@ -104,7 +104,7 @@ class Youtube(commands.Cog):
     @tasks.loop(minutes = 15)
     async def send_videos(self):
         youtube_channels = self.get_channels()
-        discord_channel = self.client.get_channel(misc.getChannelID(self.client, "logger"))
+        discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         database = self.client.get_cog("Database")
 
         for youtube_channel in youtube_channels:
