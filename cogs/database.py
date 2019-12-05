@@ -90,7 +90,6 @@ class Database(commands.Cog):
                     ChannelID NVARCHAR(32) NOT NULL PRIMARY KEY,\
                     ChannelName NVARCHAR(256) NOT NULL, \
                     Title NVARCHAR(256) NOT NULL,\
-                    PublishedAt NVARCHAR(10) NOT NULL,\
                     VideoID NVARCHAR(32) NOT NULL\
                 )"
             self.cursor.execute(tableYoutubeQuery)
@@ -400,17 +399,15 @@ class Database(commands.Cog):
                     print(member.name + " not in the database")
                 
 
-    async def update_youtube_channel_info(self, info):
+    async def update_youtube_channel_info(self, channel_id, info):
         try:
             changeYoutubeChannelInfo = 'UPDATE Youtube\
                                         SET Title = "{}", \
-                                            PublishedAt = "{}", \
                                             VideoID = "{}" \
                                         WHERE ChannelID = "{}";'.format(
-                                            info["snippet"]["title"],
-                                            info["snippet"]["publishedAt"][:10],
-                                            info["id"]["videoId"],
-                                            info["snippet"]["channelId"]
+                                            info[0],
+                                            info[1],
+                                            channel_id
                                         )
             
             self.cursor.execute(changeYoutubeChannelInfo)
