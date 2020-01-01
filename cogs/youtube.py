@@ -14,7 +14,7 @@ class Youtube(commands.Cog):
         self.client = client
 
         self.base_search_url = 'https://www.youtube.com/channel/{}/videos'
-        self.youtube_url = 'https://www.youtube.com/'
+        self.youtube_url = 'https://www.youtube.com'
 
         self.get_videos()
     
@@ -44,7 +44,7 @@ class Youtube(commands.Cog):
         return videos
 
     @commands.command(aliases=["get-channels"])
-    async def get_channels(self, ctx):
+    async def _get_channels(self, ctx):
         database = self.client.get_cog('Database')
         if database is not None:
             database.cursor.execute('SELECT * FROM Youtube')
@@ -103,6 +103,7 @@ class Youtube(commands.Cog):
 
     @tasks.loop(minutes = 15)
     async def send_videos(self):
+        print("Scraping Youtube...")
         youtube_channels = self.get_channels()
         discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         database = self.client.get_cog("Database")
@@ -110,11 +111,10 @@ class Youtube(commands.Cog):
         for youtube_channel in youtube_channels:
             videos = self.get_videos_for_channel(youtube_channel[0])
             for video in videos:
-                print("Title: " + video[0] + " | " + youtube_channel[2] + "\nLink " + video[1] + " | " + youtube_channel[3])
-                if video[0] == youtube_channel[2] and video[1] == youtube_channel[3]:
+                print("Link " + video[1] + " | " + youtube_channel[3])
+                if video[1] == youtube_channel[3]:
                     break
                 else:
-                    print("Here")
                     await discord_channel.send(self.youtube_url + video[1])
 
                     if database is not None:
