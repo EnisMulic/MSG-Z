@@ -1,16 +1,34 @@
-from sqlalchemy import Column, Integer, String, BigInteger, Table, ForeignKey
+# coding=utf-8
+
+from sqlalchemy import Column, String, Integer, Date, Table, ForeignKey, BigInteger
 from sqlalchemy.orm import relationship
 
-from data import base
+from data.base import Base
 
-
-users_roles_association = Table('Users_Roles', base.Base.metadata,
-    Column('UserId', BigInteger, ForeignKey('User.UserId')),
-    Column('RoleId', BigInteger, ForeignKey('Role.RoleId'))
+users_roles_association = Table('UsersRoles', Base.metadata,
+    Column('UserId', BigInteger, ForeignKey('Users.UserId')),
+    Column('RoleId', BigInteger, ForeignKey('Roles.RoleId'))
 )
+
+# movies_actors_association = Table(
+#     'movies_actors', Base.metadata,
+#     Column('movie_id', Integer, ForeignKey('movies.id')),
+#     Column('actor_id', Integer, ForeignKey('actors.id'))
+# )
+
+
 
 class User(Base):
     __tablename__ = 'Users'
+
+    # id = Column(Integer, primary_key=True)
+    # title = Column(String)
+    # release_date = Column(Date)
+    # actors = relationship("Actor", secondary=movies_actors_association)
+
+    # def __init__(self, title, release_date):
+    #     self.title = title
+    #     self.release_date = release_date
 
     UserId = Column(BigInteger, primary_key = True)
     UserIndex = Column(String(8), nullable = False)
@@ -37,4 +55,3 @@ class User(Base):
         self.StatusDiscord = StatusDiscord
         self.NumberOfMessages = NumberOfMessages
         self.Points = Points
-
