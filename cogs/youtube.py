@@ -89,8 +89,8 @@ class Youtube(commands.Cog):
         if database is not None:
             try:
                 if videos:
-                    video_id = videos[0][0]
-                    video_title = videos[0][1]
+                    video_id = videos[0][1]
+                    video_title = videos[0][0]
                 else:
                     video_id = ""
                     video_title = ""
@@ -100,27 +100,7 @@ class Youtube(commands.Cog):
                 database.session.commit()
             except SQLAlchemyError as err:
                 print(str(err))
-            # try:
-            #     database.cursor.execute('INSERT INTO Youtube(\
-            #                                 ChannelID,\
-            #                                 ChannelName,\
-            #                                 Title,\
-            #                                 VideoID\
-            #                             )\
-            #                             VALUES(\
-            #                                 "{}",\
-            #                                 "{}",\
-            #                                 "{}",\
-            #                                 "{}"\
-            #                             );'.format(
-            #                                 channel_id,
-            #                                 channel_name,
-            #                                 videos[0][0],
-            #                                 videos[0][1]
-            #                             ))
-            #     database.db.commit()
-            # except:
-            #     print("Procedure Insert Channel: Something went wrong:")
+
 
     def get_videos(self):
         try:
@@ -140,7 +120,7 @@ class Youtube(commands.Cog):
         for youtube_channel in youtube_channels:
             videos = self.get_videos_for_channel(youtube_channel.ChannelId)
             for video in videos:
-                print("Link " + video[1] + " | " + youtube_channel[3])
+                print("Link " + video[1] + " | " + youtube_channel.VideoId)
                 if video[1] == youtube_channel.VideoId:
                     break
                 else:
@@ -150,11 +130,11 @@ class Youtube(commands.Cog):
                         channel = database.session.query(yt.Youtube) \
                                     .filter(yt.Youtube.ChannelId == youtube_channel.ChannelId) \
                                     .one()
-                        channel.VideoId = video[0][0]
-                        channel.VideoTitle = video[0][1]
+                        channel.VideoId = video[0][1]
+                        channel.VideoTitle = video[0][0]
 
                         database.session.commit()
-                        await database.update_youtube_channel_info(youtube_channel[0], video)
+                        #await database.update_youtube_channel_info(youtube_channel[0], video)
 
     
     def cog_unload(self):

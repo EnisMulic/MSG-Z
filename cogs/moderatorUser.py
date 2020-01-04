@@ -48,7 +48,6 @@ class ModeratorUser(commands.Cog):
                             .one()
                 user.UserIndex = userIndex
                 session.commit()
-                # await database.change_member_index(ctx, member, userIndex.upper())
                 session.close()
                 await ctx.send("Index set")
             except SQLAlchemyError as err:

@@ -95,7 +95,6 @@ class Events(commands.Cog):
                     session.close()
                 except SQLAlchemyError as err:
                     print(str(err))
-                    # await database.change_member_discord_status(member, "Napustio")
                 
         except:
             print("Error")
@@ -144,12 +143,9 @@ class Events(commands.Cog):
                                 .filter(User.UserId == before.id) \
                                 .one()
                     
-                    for x in user.Roles:
-                        print(x)
                     user.Roles.remove(removedRole)
                     session.commit()
                     session.close()
-                    # await database.remove_users_role(before, role)
 
         # Role added           
         elif before.roles > after.roles:
@@ -194,10 +190,7 @@ class Events(commands.Cog):
                     user.Roles.append(addedRole)
                     session.commit()
                     session.close()
-                    # await database.insert_users_role(before, role)
-        
-            
-        
+                
         if before.nick != after.nick:
             action = discord.Embed(
                 title = "Name changed",
