@@ -1,7 +1,13 @@
 import discord
 from discord.ext import commands
 
+import sqlalchemy.orm.query
+from sqlalchemy.exc import SQLAlchemyError
+
 import datetime
+
+from models.user import User
+from models.role import Role
 
 from utils import logger
 
@@ -14,30 +20,64 @@ class ModeratorUser(commands.Cog):
     async def add_member(self, ctx, member: discord.Member, userIndex):
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.insert_member(ctx, member, userIndex)
-            await ctx.send("Member added")
+            try:
+                memberNick = member.nick if member.nick is not None else member.name
+                session = database.Session()
+                newUser = User(
+                    member.id, userIndex, memberNick, 
+                    member.name, member.discriminator, 
+                    "Aktivan", "Aktivan"
+                )
+                session.add(newUser)
+                session.commit()
+                session.close()
+                # await database.insert_member(ctx, member, userIndex)
+                await ctx.send("Member added")
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_index(self, ctx, member: discord.Member, userIndex: str):
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.change_member_index(ctx, member, userIndex.upper())
-            await ctx.send("Index set")
+            try:
+                session = database.Session()
+                user = session.query(User) \
+                            .filter(User.UserId == member.id) \
+                            .one()
+                user.UserIndex = userIndex
+                session.commit()
+                # await database.change_member_index(ctx, member, userIndex.upper())
+                session.close()
+                await ctx.send("Index set")
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
 
     @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_status(self, ctx, member: discord.Member, status, option):
-        if option == '-f':
-            database = self.client.get_cog('Database')
-            if database is not None:
-                await database.change_member_fakultet_status(member, status)
-                await ctx.send("Status set")
-        elif option == '-d':
-            database = self.client.get_cog('Database')
-            if database is not None:
-                await database.change_member_discord_status(member, status)
-                await ctx.send("Status set")
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                user = session.query(User) \
+                        .filter(User.UserId == member.id) \
+                        .one()
+                
+
+                if option == '-f':
+                    user.StatusFakultet = status
+                    session.commit()
+                    await ctx.send("FakultetStatus set")    
+                elif option == '-d':
+                    user.StatusDiscord = status
+                    session.commit()
+                    await ctx.send("DiscordStatus set") 
+                
+                session.close()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
             
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -50,8 +90,7 @@ class ModeratorUser(commands.Cog):
             if newRole not in member.roles:
                 newRolesList += [newRole.mention]
                 await member.add_roles(newRole)
-                if database is not None:
-                    await database.insert_users_role(member, newRole)
+                # event.py triggered
             else:
                 await ctx.send(member.nick + ' vec ima ulogu ' + newRole.name)
         
@@ -66,8 +105,7 @@ class ModeratorUser(commands.Cog):
             oldRole = discord.utils.get(member.guild.roles, name=str(role))
             if oldRole in member.roles:
                 await member.remove_roles(oldRole) 
-                if database is not None:
-                    await database.remove_users_role(member, oldRole)  
+                # event.py triggered
             else:
                 await ctx.send(member.nick + ' nema ulogu ' + oldRole.name)
         
@@ -77,10 +115,8 @@ class ModeratorUser(commands.Cog):
     async def set_name(self, ctx, member: discord.Member, *name: str):
         newName = ' '.join(name)
         await member.edit(nick = newName)
-        database = self.client.get_cog('Database')
-        if database is not None:
-            await database.change_member_name(member, newName)
-            await ctx.send("Name set")
+        # event.py triggered
+        await ctx.send("Name set")
             
     
     @commands.command()
@@ -116,6 +152,18 @@ class ModeratorUser(commands.Cog):
 
         database = self.client.get_cog('Database')
         if database is not None:
+            try:
+                session = database.Session()
+                user = session.query(User) \
+                        .filter(User.UserId == member.id) \
+                        .one()
+                
+                user.StatusDiscord = "Kicked"
+                session.commit()
+                session.close()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
+
             await database.change_member_discord_status(ctx, member, "Kicked")
 
     @commands.command()
@@ -152,6 +200,18 @@ class ModeratorUser(commands.Cog):
 
         database = self.client.get_cog('Database')
         if database is not None:
+            try:
+                session = database.Session()
+                user = session.query(User) \
+                        .filter(User.UserId == member.id) \
+                        .one()
+                
+                user.StatusDiscord = "Discord"
+                session.commit()
+                session.close()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
+
             await database.change_member_discord_status(ctx, member, "Banned")
 
         

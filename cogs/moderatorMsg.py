@@ -3,7 +3,11 @@ from discord.ext import commands
 
 import datetime
 
+from models.post import Post
+from models.user import User
+
 from utils import logger
+
 
 
 class ModeratorMsg(commands.Cog):
@@ -49,7 +53,15 @@ class ModeratorMsg(commands.Cog):
         
         database = self.client.get_cog('Database')
         if database is not None:
-            await database.insert_post(ctx, messageChannel.id, messageChannel.last_message_id)
+            session = database.Session()
+            user = session.query(User) \
+                    .filter(User.UserId == ctx.author.id) \
+                    .one()
+
+            newPost = Post(messageChannel.last_message_id, messageChannel.id, user)
+            session.add(newPost)
+            session.commit()
+            session.close()
         
 
 
@@ -59,6 +71,14 @@ class ModeratorMsg(commands.Cog):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
         message = await messageChannel.fetch_message(id)
         await message.edit(content = newMessage)
+
+        database = self.client.get_cog('Database')
+        if database is not None:
+            post = database.session.query(Post) \
+                        .filter(Post.PostId == id) \
+                        .one()
+            post.UserId = ctx.author.id
+            database.session.commit()
 
     @commands.command(aliases=["msg-move"], 
                       description = "Move a message from one channel to another\

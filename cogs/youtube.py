@@ -6,6 +6,11 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+import sqlalchemy.orm.query
+from sqlalchemy.exc import SQLAlchemyError
+
+import models.youtube as yt
+
 from utils import misc
 
 
@@ -21,10 +26,11 @@ class Youtube(commands.Cog):
     def get_channels(self):
         database = self.client.get_cog('Database')
         if database is not None:
-            database.cursor.execute('SELECT * FROM Youtube')
-            channels = database.cursor.fetchall()
+            return database.session.query(yt.Youtube).all()
+            # database.cursor.execute('SELECT * FROM Youtube')
+            # channels = database.cursor.fetchall()
 
-            return channels
+            # return channels
 
 
 
@@ -47,51 +53,74 @@ class Youtube(commands.Cog):
     async def _get_channels(self, ctx):
         database = self.client.get_cog('Database')
         if database is not None:
-            database.cursor.execute('SELECT * FROM Youtube')
-            channels = database.cursor.fetchall()
+            #database.cursor.execute('SELECT * FROM Youtube')
+            #channels = database.cursor.fetchall()
+            session = database.Session()
+            channels = session.query(yt.Youtube).all()
 
             for channel in channels:
-                await ctx.send(channel[1] + ": " + "https://www.youtube.com/channel/" + channel[0])
-    
+                await ctx.send(channel.ChannelName + ": " + "https://www.youtube.com/channel/" + channel.ChannelId)
+
+            session.close()
+
     @commands.command(aliases=["remove-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_channel(self, ctx, channel_id: str):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
+                channel = database.session.query(yt.Youtube) \
+                            .filter(yt.Youtube.ChannelId == channel_id) \
+                            .one()
+                database.session.delete(channel)
+                database.session.commit()
+
                 database.cursor.execute('DELETE FROM Youtube WHERE ChannelID = "{}";'.format(channel_id,))
                 database.db.commit()
             except:
-                print("Procedure Insert Channel: Something went wrong:")
+                print("Procedure Remove Channel: Something went wrong:")
     
     @commands.command(aliases=["add-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def add_channel(self, ctx, channel_id: str, *channel_name: str):
+    async def add_channel(self, ctx, channel_id: str, *channel_name: str, member: discord.Member = None):
         videos = self.get_videos_for_channel(channel_id)
         channel_name = ' '.join(channel_name)
         database = self.client.get_cog('Database')
         if database is not None:
             try:
-                database.cursor.execute('INSERT INTO Youtube(\
-                                            ChannelID,\
-                                            ChannelName,\
-                                            Title,\
-                                            VideoID\
-                                        )\
-                                        VALUES(\
-                                            "{}",\
-                                            "{}",\
-                                            "{}",\
-                                            "{}"\
-                                        );'.format(
-                                            channel_id,
-                                            channel_name,
-                                            videos[0][0],
-                                            videos[0][1]
-                                        ))
-                database.db.commit()
-            except:
-                print("Procedure Insert Channel: Something went wrong:")
+                if videos:
+                    video_id = videos[0][0]
+                    video_title = videos[0][1]
+                else:
+                    video_id = ""
+                    video_title = ""
+
+                newChannel = yt.Youtube(channel_id, channel_name, video_id, video_title, member)
+                database.session.add(newChannel)
+                database.session.commit()
+            except SQLAlchemyError as err:
+                print(str(err))
+            # try:
+            #     database.cursor.execute('INSERT INTO Youtube(\
+            #                                 ChannelID,\
+            #                                 ChannelName,\
+            #                                 Title,\
+            #                                 VideoID\
+            #                             )\
+            #                             VALUES(\
+            #                                 "{}",\
+            #                                 "{}",\
+            #                                 "{}",\
+            #                                 "{}"\
+            #                             );'.format(
+            #                                 channel_id,
+            #                                 channel_name,
+            #                                 videos[0][0],
+            #                                 videos[0][1]
+            #                             ))
+            #     database.db.commit()
+            # except:
+            #     print("Procedure Insert Channel: Something went wrong:")
 
     def get_videos(self):
         try:
@@ -109,15 +138,22 @@ class Youtube(commands.Cog):
         database = self.client.get_cog("Database")
 
         for youtube_channel in youtube_channels:
-            videos = self.get_videos_for_channel(youtube_channel[0])
+            videos = self.get_videos_for_channel(youtube_channel.ChannelId)
             for video in videos:
                 print("Link " + video[1] + " | " + youtube_channel[3])
-                if video[1] == youtube_channel[3]:
+                if video[1] == youtube_channel.VideoId:
                     break
                 else:
                     await discord_channel.send(self.youtube_url + video[1])
 
                     if database is not None:
+                        channel = database.session.query(yt.Youtube) \
+                                    .filter(yt.Youtube.ChannelId == youtube_channel.ChannelId) \
+                                    .one()
+                        channel.VideoId = video[0][0]
+                        channel.VideoTitle = video[0][1]
+
+                        database.session.commit()
                         await database.update_youtube_channel_info(youtube_channel[0], video)
 
     

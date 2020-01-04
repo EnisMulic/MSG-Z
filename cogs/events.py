@@ -4,6 +4,9 @@ from discord.ext import commands
 import datetime
 
 from utils import logger
+from models.user import User
+from sqlalchemy.exc import SQLAlchemyError
+from models.role import Role
 
 class Events(commands.Cog):
     def __init__(self, client):
@@ -81,8 +84,18 @@ class Events(commands.Cog):
             await logger.LogAction(self.client, action)
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.remove_member(member)
-                await database.change_member_discord_status(member, "Napustio")
+                try:
+                    session = database.Session()
+                    user = session.query(User) \
+                            .filter(User.UserId == member.id) \
+                            .one()
+                    
+                    user.DiscordStatus = "Kicked"
+                    session.commit()
+                    session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
+                    # await database.change_member_discord_status(member, "Napustio")
                 
         except:
             print("Error")
@@ -122,7 +135,21 @@ class Events(commands.Cog):
                 await logger.LogAction(self.client, action)
 
                 if database is not None:
-                    await database.remove_users_role(before, role)
+                    session = database.Session()
+                    removedRole = session.query(Role) \
+                                    .filter(Role.RoleId == role.id) \
+                                    .one()
+
+                    user = session.query(User) \
+                                .filter(User.UserId == before.id) \
+                                .one()
+                    
+                    for x in user.Roles:
+                        print(x)
+                    user.Roles.remove(removedRole)
+                    session.commit()
+                    session.close()
+                    # await database.remove_users_role(before, role)
 
         # Role added           
         elif before.roles > after.roles:
@@ -155,7 +182,19 @@ class Events(commands.Cog):
 
                 await logger.LogAction(self.client, action)
                 if database is not None:
-                    await database.insert_users_role(before, role)
+                    session = database.Session()
+                    addedRole = session.query(Role) \
+                                    .filter(Role.RoleId == role.id) \
+                                    .one()
+                    
+                    user = session.query(User) \
+                                .filter(User.UserId == before.id) \
+                                .one()
+
+                    user.Roles.append(addedRole)
+                    session.commit()
+                    session.close()
+                    # await database.insert_users_role(before, role)
         
             
         
@@ -193,7 +232,18 @@ class Events(commands.Cog):
 
             await logger.LogAction(self.client, action)
             if database is not None:
-                await database.change_member_name(after, after.nick)
+                # await database.change_member_name(after, after.nick)
+                try:
+                    session = database.Session()
+                    user = session.query(User) \
+                            .filter(User.UserId == after.id) \
+                            .one()
+                    
+                    user.Name = after.nick
+                    session.commit()
+                    session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
 
 
     @commands.Cog.listener()
@@ -201,12 +251,34 @@ class Events(commands.Cog):
         if before.name != after.name:
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_username(after)
+                # await database.change_member_username(after)
+                try:
+                    session = database.Session()
+                    user = session.query(User) \
+                            .filter(User.UserId == after.id) \
+                            .one()
+                    
+                    user.Username = after.name
+                    session.commit()
+                    session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
         
         if before.discriminator != after.discriminator:
             database = self.client.get_cog('Database')
             if database is not None:
-                await database.change_member_discriminator(after)
+                # await database.change_member_discriminator(after)
+                try:
+                    session = database.Session()
+                    user = session.query(User) \
+                            .filter(User.UserId == after.id) \
+                            .one()
+                    
+                    user.Discriminator = after.discriminator
+                    session.commit()
+                    session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):

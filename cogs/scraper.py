@@ -6,6 +6,11 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+import sqlalchemy.orm.query
+from sqlalchemy.exc import SQLAlchemyError
+
+from models.user import User
+
 from utils import notifications
 from utils import misc
 from utils import logger
@@ -117,10 +122,15 @@ class Scraper(commands.Cog):
                     if "Neum" in notification.title:
                         database = self.client.get_cog('Database')
                         if database is not None:
-                            userIDs = database.get_users(data["Neum"])
-                            for userID in userIDs:
+                            session = database.Session()
+                            users = session.query(User) \
+                                        .filter(User.Name.in_(data["Neum"])) \
+                                        .all()
+                            users = database.get_users(data["Neum"])
+                            session.close()
+                            for user in users:
                                 try:
-                                    member = self.client.get_user(userID)
+                                    member = self.client.get_user(user.UserId)
                                     await member.send(embed = notification.getEmbed())
                                 except:
                                     pass

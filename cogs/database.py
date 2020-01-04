@@ -2,8 +2,18 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
-import MySQLdb
 import json
+import sqlalchemy.orm.query
+from sqlalchemy.exc import SQLAlchemyError
+
+import models.base as base
+from models.base import Base, Session, engine
+from models.post import Post
+from models.role import Role
+from models.user import User
+from models.youtube import Youtube
+
+import MySQLdb
 
 from utils import misc
 
@@ -26,10 +36,15 @@ class Database(commands.Cog):
         )
 
         self.cursor = self.db.cursor()
-        self.setup_database_tables()
-        self.detect_anomalies.start()
+        # self.setup_database_tables()
+        # self.detect_anomalies.start()
 
-    
+        Base.metadata.create_all(engine)
+        self.session = Session()
+
+    def Session(self):
+        return base.Session();
+
     def setup_database_tables(self):
         try:
             tableUsersQuery = "CREATE TABLE IF NOT EXISTS Users\
@@ -100,16 +115,22 @@ class Database(commands.Cog):
     @commands.command(aliases=["insert-role"], description = "Add role to the database")
     @commands.has_any_role('Administrator')   
     async def insert_role(self, ctx, role: discord.Role):
+        # try:
+        #     InsertRoleQuery = 'INSERT INTO Roles(RoleID, RoleName) \
+        #                        VALUES({}, "{}");'.format(
+        #                            role.id, 
+        #                            role.name
+        #                         )
+        #     self.cursor.execute(InsertRoleQuery)
+        #     self.db.commit()
+        # except MySQLdb.ProgrammingError as err:
+        #     print("Procedure Insert Role: Something went wrong: " + str(err))
         try:
-            InsertRoleQuery = 'INSERT INTO Roles(RoleID, RoleName) \
-                               VALUES({}, "{}");'.format(
-                                   role.id, 
-                                   role.name
-                                )
-            self.cursor.execute(InsertRoleQuery)
-            self.db.commit()
-        except MySQLdb.ProgrammingError as err:
-            print("Procedure Insert Role: Something went wrong: " + str(err))
+            newRole = Role(role.id, role.name)
+            self.session.add(newRole)
+            self.session.commit()
+        except SQLAlchemyError as err:
+            print(str(err))
             
 
     async def insert_member(self, ctx, member: discord.Member, UserIndex):
@@ -266,73 +287,102 @@ class Database(commands.Cog):
             print("Procedure Remove Users Role: Something went wrong: " + str(err))
             
 
-    async def insert_post(self, ctx, channelID, messageID):
-        try:
-            InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserID) \
-                               VALUES({}, {}, {});'.format(
-                                   messageID, 
-                                   channelID, 
-                                   ctx.author.id
-                                )
+    # async def insert_post(self, ctx, channelID, messageID):
+    #     try:
+    #         InsertPostQuery = 'INSERT INTO Posts(PostID, ChannelID, UserID) \
+    #                            VALUES({}, {}, {});'.format(
+    #                                messageID, 
+    #                                channelID, 
+    #                                ctx.author.id
+    #                             )
 
-            self.cursor.execute(InsertPostQuery)
-            self.db.commit()
-        except MySQLdb.ProgrammingError as err:
-            print("Procedure Insert Post: Somethin went wrong: " + str(err))
+    #         self.cursor.execute(InsertPostQuery)
+    #         self.db.commit()
+    #     except MySQLdb.ProgrammingError as err:
+    #         print("Procedure Insert Post: Somethin went wrong: " + str(err))
             
 
     @commands.command(aliases=["get-member-userID", "get-member-uid"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def get_member_by_UserID(self, ctx, member: discord.Member):
-        try:
-            getMemberQuery = 'SELECT * FROM Users WHERE UserID = {};'.format(member.id)
-            self.cursor.execute(getMemberQuery)
-            self.db.commit()
-            records = self.cursor.fetchall()
+        # try:
+        #     getMemberQuery = 'SELECT * FROM Users WHERE UserID = {};'.format(member.id)
+        #     self.cursor.execute(getMemberQuery)
+        #     self.db.commit()
+        #     records = self.cursor.fetchall()
 
             
-            for record in records:
-                await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
-                            record[2],
-                            record[1],
-                            record[3] + "#" + record[4],
-                            record[5],
-                            record[6]
-                        ))
+        #     for record in records:
+        #         await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+        #                     record[2],
+        #                     record[1],
+        #                     record[3] + "#" + record[4],
+        #                     record[5],
+        #                     record[6]
+        #                 ))
 
-        except MySQLdb.ProgrammingError as err:
-            print("Procedure Get Member (by UserID): Smething went wrong: " + str(err))
+        # except MySQLdb.ProgrammingError as err:
+        #     print("Procedure Get Member (by UserID): Smething went wrong: " + str(err))
+
+        try:
+            user = self.session.query(User) \
+                    .filter(User.UserId == member.id) \
+                    .one()
+
+            await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+                            user.Name,
+                            user.UserIndex,
+                            user.Username + "#" + user.Discriminator,
+                            user.StatusFakultet,
+                            user.StatusDiscord
+                        ))
+        except SQLAlchemyError as err:
+            print(str(err))
             
 
     @commands.command(aliases=["get-member-index", "get-member-idx"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def get_member_by_UserIndex(self, ctx, userIndex: str):
-        try:
-            getMemberQuery = 'SELECT * FROM Users WHERE UserIndex = "{}";'.format(userIndex)
-            self.cursor.execute(getMemberQuery)
-            self.db.commit()
-            records = self.cursor.fetchall()
+        # try:
+        #     getMemberQuery = 'SELECT * FROM Users WHERE UserIndex = "{}";'.format(userIndex)
+        #     self.cursor.execute(getMemberQuery)
+        #     self.db.commit()
+        #     records = self.cursor.fetchall()
             
-            for record in records:
-                await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
-                            record[2],
-                            record[1],
-                            record[3] + "#" + record[4],
-                            record[5],
-                            record[6]
-                        ))
+        #     for record in records:
+        #         await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+        #                     record[2],
+        #                     record[1],
+        #                     record[3] + "#" + record[4],
+        #                     record[5],
+        #                     record[6]
+        #                 ))
 
-        except MySQLdb.ProgrammingError as err:
-            print("Procedure Get Member (by UserIndex): Smething went wrong: " + str(err))
-        
-
-    async def remove_member(self, member: discord.Member):
+        # except MySQLdb.ProgrammingError as err:
+        #     print("Procedure Get Member (by UserIndex): Smething went wrong: " + str(err))
         try:
-            clearMemberQuery = 'DELETE FROM USERSROLES WHERE UserID = {};'.format(member.id)
-            self.cursor.execute(clearMemberQuery)
-            self.db.commit()
-        except MySQLdb.ProgrammingError as err:
-            print("Procedure Clear Member: Something went wrong: " + str(err))
+            user = self.session.query(User) \
+                    .filter(User.UserIndex == userIndex) \
+                    .one()
+                    
+            await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'.format(
+                            user.Name,
+                            user.UserIndex,
+                            user.Username + "#" + user.Discriminator,
+                            user.StatusFakultet,
+                            user.StatusDiscord
+                        ))
+        except SQLAlchemyError as err:
+            print(str(err))
+        
+    #
+    # async def remove_member(self, member: discord.Member):
+    #     try:
+    #         clearMemberQuery = 'DELETE FROM USERSROLES WHERE UserID = {};'.format(member.id)
+    #         self.cursor.execute(clearMemberQuery)
+    #         self.db.commit()
+    #     except MySQLdb.ProgrammingError as err:
+    #         print("Procedure Clear Member: Something went wrong: " + str(err))
         
 
     @tasks.loop(hours = 7 * 24)
