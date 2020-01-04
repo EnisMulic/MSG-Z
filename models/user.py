@@ -3,32 +3,16 @@
 from sqlalchemy import Column, String, Integer, Date, Table, ForeignKey, BigInteger
 from sqlalchemy.orm import relationship
 
-from data.base import Base
+from models.base import Base
 
 users_roles_association = Table('UsersRoles', Base.metadata,
     Column('UserId', BigInteger, ForeignKey('Users.UserId')),
     Column('RoleId', BigInteger, ForeignKey('Roles.RoleId'))
 )
 
-# movies_actors_association = Table(
-#     'movies_actors', Base.metadata,
-#     Column('movie_id', Integer, ForeignKey('movies.id')),
-#     Column('actor_id', Integer, ForeignKey('actors.id'))
-# )
-
-
 
 class User(Base):
     __tablename__ = 'Users'
-
-    # id = Column(Integer, primary_key=True)
-    # title = Column(String)
-    # release_date = Column(Date)
-    # actors = relationship("Actor", secondary=movies_actors_association)
-
-    # def __init__(self, title, release_date):
-    #     self.title = title
-    #     self.release_date = release_date
 
     UserId = Column(BigInteger, primary_key = True)
     UserIndex = Column(String(8), nullable = False)
@@ -44,7 +28,7 @@ class User(Base):
 
     def __init__(self, 
         UserId, UserIndex, Name, Username, Discriminator, 
-        StatusFakultet, StatusDiscord, NumberOfMessages, Points
+        StatusFakultet, StatusDiscord, NumberOfMessages, Points, Roles = None
     ):
         self.UserId = UserId
         self.UserIndex = UserIndex
@@ -55,3 +39,4 @@ class User(Base):
         self.StatusDiscord = StatusDiscord
         self.NumberOfMessages = NumberOfMessages
         self.Points = Points
+        self.Roles = Roles

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, BigInteger, Table, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
-from data.base import Base
+from models.base import Base
 
 
 # users_roles_association = Table('Users_Roles', Base.metadata,

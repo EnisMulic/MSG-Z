@@ -1,9 +1,7 @@
-# coding=utf-8
-
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, BigInteger, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from data.base import Base
+from models.base import Base
 
 
 class Youtube(Base):
@@ -13,7 +11,7 @@ class Youtube(Base):
     ChannelName = Column(String(256), nullable = False)
     VideoTitle = Column(String(256), nullable = False)
     VideoId = Column(String(32), nullable = False)
-    DateTime = Column(DateTime)
+    
 
     UserId = Column(BigInteger, ForeignKey('Users.UserId'), nullable = True)
     User = relationship('User')
