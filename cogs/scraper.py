@@ -126,7 +126,6 @@ class Scraper(commands.Cog):
                             users = session.query(User) \
                                         .filter(User.Name.in_(data["Neum"])) \
                                         .all()
-                            users = database.get_users(data["Neum"])
                             session.close()
                             for user in users:
                                 try:
