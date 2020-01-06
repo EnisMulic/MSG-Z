@@ -28,7 +28,8 @@ class User(Base):
 
     def __init__(self, 
         UserId, UserIndex, Name, Username, Discriminator, 
-        StatusFakultet, StatusDiscord, NumberOfMessages, Points, Roles = None
+        StatusFakultet = "Aktivan", StatusDiscord = "Aktivan", 
+        NumberOfMessages = 0, Points = 0, Roles = []
     ):
         self.UserId = UserId
         self.UserIndex = UserIndex

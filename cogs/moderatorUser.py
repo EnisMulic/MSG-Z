@@ -25,8 +25,7 @@ class ModeratorUser(commands.Cog):
                 session = database.Session()
                 newUser = User(
                     member.id, userIndex, memberNick, 
-                    member.name, member.discriminator, 
-                    "Aktivan", "Aktivan"
+                    member.name, member.discriminator
                 )
                 session.add(newUser)
                 session.commit()
@@ -210,8 +209,6 @@ class ModeratorUser(commands.Cog):
                 session.close()
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
-
-            await database.change_member_discord_status(ctx, member, "Banned")
 
         
 def setup(client):
