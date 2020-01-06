@@ -27,10 +27,6 @@ class Youtube(commands.Cog):
         database = self.client.get_cog('Database')
         if database is not None:
             return database.session.query(yt.Youtube).all()
-            # database.cursor.execute('SELECT * FROM Youtube')
-            # channels = database.cursor.fetchall()
-
-            # return channels
 
 
 
@@ -53,8 +49,6 @@ class Youtube(commands.Cog):
     async def _get_channels(self, ctx):
         database = self.client.get_cog('Database')
         if database is not None:
-            #database.cursor.execute('SELECT * FROM Youtube')
-            #channels = database.cursor.fetchall()
             session = database.Session()
             channels = session.query(yt.Youtube).all()
 
@@ -130,11 +124,11 @@ class Youtube(commands.Cog):
                         channel = database.session.query(yt.Youtube) \
                                     .filter(yt.Youtube.ChannelId == youtube_channel.ChannelId) \
                                     .one()
-                        channel.VideoId = video[0][1]
-                        channel.VideoTitle = video[0][0]
+                        
+                        channel.VideoId = video[1]
+                        channel.VideoTitle = video[0]
 
                         database.session.commit()
-                        #await database.update_youtube_channel_info(youtube_channel[0], video)
 
     
     def cog_unload(self):
