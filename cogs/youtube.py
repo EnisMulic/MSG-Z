@@ -10,6 +10,7 @@ import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
 import models.youtube as yt
+from models.user import User
 
 from utils import misc
 
@@ -95,6 +96,28 @@ class Youtube(commands.Cog):
             except SQLAlchemyError as err:
                 print(str(err))
 
+    @commands.command(aliases=["link-channel"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def link_channel(self, ctx, member: discord.Member, channel_id: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+
+                user = session.query(User) \
+                        .filter(User.UserId == member.id) \
+                        .one()
+                
+                channel = session.query(yt.Youtube) \
+                            .filter(yt.Youtube.ChannelId == channel_id) \
+                            .one()
+
+                channel.UserId = user.UserId
+                session.commit()
+                session.close()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
+            
 
     def get_videos(self):
         try:
