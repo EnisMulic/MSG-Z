@@ -31,28 +31,6 @@ class Youtube(commands.Cog):
         if database is not None:
             return session.query(yt.Youtube).all()
 
-    @commands.command()
-    async def Test(self, ctx):
-        f = open("logxml.txt", "a", encoding='utf8')
-
-        channels = self.get_channels()
-        for channel in channels:
-            response = requests.get(self.youtube_rss + channel.ChannelId)
-            response = BeautifulSoup(response.text, "lxml")
-
-            videos = response.select("entry")
-            
-            for video in videos:
-                videoId = video.find("yt:videoid")
-                title = video.find("title")
-                published = video.find("published")
-
-                published_date = published.text[:10]
-                published_time = published.text[11:19]
-                f.write(str(videoId.text) + ' | ' + str(title.text) + ' | ' 
-                            + published_date + ' | ' + published_time  + '\n')
-                f.write("------------------------------------" + "\n")
-        f.close()
 
     def get_videos_for_channel(self, channel_id):
 
