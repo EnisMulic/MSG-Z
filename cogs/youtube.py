@@ -5,6 +5,7 @@ from discord.ext import tasks
 import requests
 import json
 from bs4 import BeautifulSoup
+import datetime
 
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,35 +15,63 @@ from models.user import User
 
 from utils import misc
 
+import io
 
 class Youtube(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-        self.base_search_url = 'https://www.youtube.com/channel/{}/videos'
-        self.youtube_url = 'https://www.youtube.com'
+        self.youtube_url = 'https://www.youtube.com/watch?v='
+        self.youtube_rss = "https://www.youtube.com/feeds/videos.xml?channel_id="
 
         self.get_videos()
     
-    def get_channels(self):
+    def get_channels(self, session):
         database = self.client.get_cog('Database')
         if database is not None:
-            return database.session.query(yt.Youtube).all()
+            return session.query(yt.Youtube).all()
 
+    @commands.command()
+    async def Test(self, ctx):
+        f = open("logxml.txt", "a", encoding='utf8')
 
+        channels = self.get_channels()
+        for channel in channels:
+            response = requests.get(self.youtube_rss + channel.ChannelId)
+            response = BeautifulSoup(response.text, "lxml")
+
+            videos = response.select("entry")
+            
+            for video in videos:
+                videoId = video.find("yt:videoid")
+                title = video.find("title")
+                published = video.find("published")
+
+                published_date = published.text[:10]
+                published_time = published.text[11:19]
+                f.write(str(videoId.text) + ' | ' + str(title.text) + ' | ' 
+                            + published_date + ' | ' + published_time  + '\n')
+                f.write("------------------------------------" + "\n")
+        f.close()
 
     def get_videos_for_channel(self, channel_id):
 
-        response = requests.get(self.base_search_url.format(channel_id))
-        response = BeautifulSoup(response.text, "html.parser")
+        response = requests.get(self.youtube_rss + channel_id)
+        response = BeautifulSoup(response.text, "lxml")
 
-        video_data = response.select("a.yt-uix-tile-link")
+        video_data = response.select("entry")
         videos = []
 
         for video in video_data:
-            title = video.get("title")
-            videoId = video.get("href")
-            videos.append([title, videoId])
+            videoId = video.find("yt:videoid")
+            title = video.find("title")
+            published = video.find("published")
+
+            published_date = published.text[:10]
+            published_time = published.text[11:19]
+
+            videos.append([videoId.text, title.text, published_date + " " + published_time])
+
 
         return videos
 
@@ -63,17 +92,17 @@ class Youtube(commands.Cog):
     async def remove_channel(self, ctx, channel_id: str):
         database = self.client.get_cog('Database')
         if database is not None:
+            session = database.Session()
             try:
-                channel = database.session.query(yt.Youtube) \
+                channel = session.query(yt.Youtube) \
                             .filter(yt.Youtube.ChannelId == channel_id) \
                             .one()
-                database.session.delete(channel)
-                database.session.commit()
-
-                database.cursor.execute('DELETE FROM Youtube WHERE ChannelID = "{}";'.format(channel_id,))
-                database.db.commit()
+                session.delete(channel)
+                session.commit()
             except:
                 print("Procedure Remove Channel: Something went wrong:")
+            finally:
+                session.close()
     
     @commands.command(aliases=["add-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -82,19 +111,25 @@ class Youtube(commands.Cog):
         channel_name = ' '.join(channel_name)
         database = self.client.get_cog('Database')
         if database is not None:
+            session = database.Session()
             try:
                 if videos:
-                    video_id = videos[0][1]
-                    video_title = videos[0][0]
+                    video_id = videos[0][0]
+                    video_title = videos[0][1]
+                    video_timestamp = datetime.datetime.strptime(videos[0][2], "%Y-%m-%d %H:%M:%S")
                 else:
                     video_id = ""
                     video_title = ""
+                    video_timestamp = datetime.datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+                    
 
-                newChannel = yt.Youtube(channel_id, channel_name, video_id, video_title, member)
-                database.session.add(newChannel)
-                database.session.commit()
+                newChannel = yt.Youtube(channel_id, channel_name, video_id, video_title, video_timestamp, member)
+                session.add(newChannel)
+                session.commit()
             except SQLAlchemyError as err:
                 print(str(err))
+            finally:
+                session.close()
 
     @commands.command(aliases=["link-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -130,29 +165,34 @@ class Youtube(commands.Cog):
     @tasks.loop(minutes = 15)
     async def send_videos(self):
         print("Scraping Youtube...")
-        youtube_channels = self.get_channels()
-        discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         database = self.client.get_cog("Database")
+        session = database.Session()
 
+        youtube_channels = self.get_channels(session)
+        discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
+        
+        
         for youtube_channel in youtube_channels:
+            print(youtube_channel.ChannelName)
+
             videos = self.get_videos_for_channel(youtube_channel.ChannelId)
+            
+            videos = videos[::-1]
             for video in videos:
-                print("Link " + video[1] + " | " + youtube_channel.VideoId)
-                if video[1] == youtube_channel.VideoId:
-                    break
-                else:
-                    await discord_channel.send(self.youtube_url + video[1])
+                
+
+                if str(youtube_channel.Published) < video[2] and video[0] != youtube_channel.VideoId:
+                    await discord_channel.send(self.youtube_url + video[0])
 
                     if database is not None:
-                        channel = database.session.query(yt.Youtube) \
-                                    .filter(yt.Youtube.ChannelId == youtube_channel.ChannelId) \
-                                    .one()
-                        
-                        channel.VideoId = video[1]
-                        channel.VideoTitle = video[0]
 
-                        database.session.commit()
+                        youtube_channel.VideoId = video[0]
+                        youtube_channel.VideoTitle = video[1]
+                        youtube_channel.Published = datetime.datetime.strptime(video[2], "%Y-%m-%d %H:%M:%S")
 
+                        session.commit()
+
+        session.close()
     
     def cog_unload(self):
         self.send_videos.cancel()
