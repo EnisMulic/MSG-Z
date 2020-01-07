@@ -1,21 +1,20 @@
 import discord
-from discord.ext import commands
-from discord.ext import tasks
+from discord.ext import commands, tasks
 
 import requests
-import json
 from bs4 import BeautifulSoup
-import datetime
 
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
+
+import datetime
+import json
 
 import models.youtube as yt
 from models.user import User
 
 from utils import misc
 
-import io
 
 class Youtube(commands.Cog):
     def __init__(self, client):
@@ -151,8 +150,6 @@ class Youtube(commands.Cog):
         
         
         for youtube_channel in youtube_channels:
-            print(youtube_channel.ChannelName)
-
             videos = self.get_videos_for_channel(youtube_channel.ChannelId)
             
             videos = videos[::-1]
