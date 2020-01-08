@@ -52,16 +52,27 @@ class Youtube(commands.Cog):
 
         return videos
 
-    @commands.command(aliases=["get-channels"])
-    async def _get_channels(self, ctx):
+
+    @commands.command(aliases=["youtube"])
+    async def _get_channels(self, ctx, *, search: str = ''):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
-            channels = session.query(yt.Youtube).all()
+            channels = session.query(yt.Youtube) \
+                        .filter(yt.Youtube.ChannelName.ilike(f"%{search}%"))
 
+
+            description = '\n'
             for channel in channels:
-                await ctx.send(channel.ChannelName + ": " + "https://www.youtube.com/channel/" + channel.ChannelId)
-
+                description += f"\n[{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId})"
+                              
+            embed = discord.Embed(
+                title = "Youtube",
+                description = description,
+                colour = discord.Colour.red().value
+            ) 
+            
+            await ctx.send(embed = embed)
             session.close()
 
     @commands.command(aliases=["remove-channel"])
@@ -174,7 +185,7 @@ class Youtube(commands.Cog):
 
     @send_videos.before_loop
     async def before_send_videos(self):
-        print('Youtube API: Waiting...')
+        print('Youtube RSS: Waiting...')
         await self.client.wait_until_ready()
 
 def setup(client):
