@@ -75,12 +75,12 @@ class Database(commands.Cog):
         print("Anomalysing...")
 
         
-        allRoles = session.query(Role).all()
-
+        allRoles = self.session.query(Role).all()
+        
         for guild in self.client.guilds:                                                        
             for member in guild.members:
                 try:
-                    user = session.query(User) \
+                    user = self.session.query(User) \
                             .filter(User.UserId == member.id) \
                             .one()
 
