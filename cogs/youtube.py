@@ -25,7 +25,7 @@ class Youtube(commands.Cog):
 
         self.get_videos()
     
-    def get_channels(self, session):
+    def _get_channels(self, session):
         database = self.client.get_cog('Database')
         if database is not None:
             return session.query(yt.Youtube) \
@@ -56,7 +56,7 @@ class Youtube(commands.Cog):
 
 
     @commands.command(aliases=["youtube"])
-    async def _get_channels(self, ctx, *, search: str = ''):
+    async def get_channels(self, ctx, *, search: str = ''):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -159,7 +159,7 @@ class Youtube(commands.Cog):
         database = self.client.get_cog("Database")
         session = database.Session()
 
-        youtube_channels = self.get_channels(session)
+        youtube_channels = self._get_channels(session)
         discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         
         

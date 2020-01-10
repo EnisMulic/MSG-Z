@@ -30,9 +30,9 @@ class Database(commands.Cog):
         return base.Session();
             
 
-    @commands.command(aliases=["get-member-userID", "get-member-uid"])
+    @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
-    async def get_member_by_UserID(self, ctx, member: discord.Member):
+    async def whois(self, ctx, member: discord.Member):
         try:
             user = self.session.query(User) \
                     .filter(User.UserId == member.id) \
@@ -50,9 +50,9 @@ class Database(commands.Cog):
             print(str(err))
             
 
-    @commands.command(aliases=["get-member-index", "get-member-idx"])
+    @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
-    async def get_member_by_UserIndex(self, ctx, userIndex: str):
+    async def student(self, ctx, userIndex: str):
         try:
             user = self.session.query(User) \
                     .filter(User.UserIndex == userIndex) \
@@ -68,7 +68,7 @@ class Database(commands.Cog):
                         ))
         except SQLAlchemyError as err:
             print(str(err))
-        
+
 
     @tasks.loop(hours = 7 * 24)
     async def detect_anomalies(self):
