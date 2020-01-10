@@ -1,5 +1,9 @@
 # My sketchy files
 *.json
+alembic.ini
+
+# Database schema migrations
+alembic/version/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
