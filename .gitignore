@@ -3,7 +3,7 @@
 alembic.ini
 
 # Database schema migrations
-alembic/version/
+alembic/versions/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
