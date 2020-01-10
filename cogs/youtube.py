@@ -28,7 +28,9 @@ class Youtube(commands.Cog):
     def get_channels(self, session):
         database = self.client.get_cog('Database')
         if database is not None:
-            return session.query(yt.Youtube).all()
+            return session.query(yt.Youtube) \
+                .filter(yt.Youtube.Output == True) \
+                .all()
 
 
     def get_videos_for_channel(self, channel_id):
@@ -64,7 +66,8 @@ class Youtube(commands.Cog):
 
             description = '\n'
             for channel in channels:
-                description += f"\n[{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId})"
+                mark = ":white_check_mark:" if channel.Output else ":negative_squared_cross_mark:"
+                description += f"\n[{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId}) {mark}"
                               
             embed = discord.Embed(
                 title = "Youtube",
@@ -101,7 +104,7 @@ class Youtube(commands.Cog):
         if database is not None:
             session = database.Session()
             try:
-                if videos:
+                if videos: 
                     video_id = videos[0][0]
                     video_title = videos[0][1]
                     video_timestamp = datetime.datetime.strptime(videos[0][2], "%Y-%m-%d %H:%M:%S")
