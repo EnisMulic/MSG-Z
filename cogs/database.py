@@ -28,6 +28,34 @@ class Database(commands.Cog):
 
     def Session(self):
         return base.Session();
+
+    @commands.command()
+    @commands.has_any_role('Administrator') 
+    async def report(self, ctx):
+        f = open("report", "w", encoding='utf-8')
+        for guild in self.client.guilds:                                                        
+            for member in guild.members:
+                role = guild.get_role(499945447616544798) # quick fix
+                if role not in member.roles:
+                    try:
+                        user = self.session.query(User) \
+                                .filter(User.UserId == member.id) \
+                                .one()
+                    except SQLAlchemyError:
+                        f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
+        f.close()
+                
+
+
+    @commands.command(aliases=["insert-role"], description = "Add role to the database")
+    @commands.has_any_role('Administrator')   
+    async def insert_role(self, ctx, role: discord.Role):
+        try:
+            newRole = Role(role.id, role.name)
+            self.session.add(newRole)
+            self.session.commit()
+        except SQLAlchemyError as err:
+            print(str(err))
             
 
     @commands.command()
@@ -74,48 +102,58 @@ class Database(commands.Cog):
     async def detect_anomalies(self):
         print("Anomalysing...")
 
-        
+        f = open("report-anomalys", "w", encoding='utf-8')
+
         allRoles = self.session.query(Role).all()
         
         for guild in self.client.guilds:                                                        
             for member in guild.members:
-                try:
-                    user = self.session.query(User) \
-                            .filter(User.UserId == member.id) \
-                            .one()
+                role = guild.get_role(499945447616544798) # quick fix
+                if role not in member.roles:
+                    try:
+                        user = self.session.query(User) \
+                                .filter(User.UserId == member.id) \
+                                .one()
 
 
-                    if user is not None:
-                        if user.Name != member.nick:
-                            user.Name = member.nick
-                                
-                        if user.Username != member.name:
-                            user.Username = member.name
+                        if user is not None:
+                            # if member.nick is None:
+                            #     user.Name = member.name
                             
-                        if user.Discriminator != member.discriminator:
-                            user.Discriminator = member.discriminator
+                            if user.Name != member.nick:
+                                if member.Nick is not None:
+                                    user.Name = member.nick
+                                    
+                            if user.Username != member.name:
+                                user.Username = member.name
+                                
+                            if user.Discriminator != member.discriminator:
+                                user.Discriminator = member.discriminator
 
 
-                        memberRoles = []
-                        for role in member.roles:
-                            memberRoles.append(Role(role.id, role.name))
-                        
+                            memberRoles = []
+                            for role in member.roles:
+                                memberRoles.append(Role(role.id, role.name))
+                            
 
-                        for memberRole in memberRoles:
-                            if memberRole in allRoles:
-                                if memberRole not in user.Roles:
-                                    try:
-                                        user.Roles.append(memberRole)
-                                    except Exception as err:
-                                        print(err)
+                            for memberRole in memberRoles:
+                                if memberRole in allRoles:
+                                    if memberRole not in user.Roles:
+                                        try:
+                                            user.Roles.append(memberRole)
+                                        except Exception as err:
+                                            print(err)
 
-                        for dbRole in user.Roles:
-                            if dbRole not in memberRoles:
-                                user.Roles.remove(dbRole)
-                                   
-                
-                except SQLAlchemyError as err:
-                    print(member.name + " not in the database")
+                            for dbRole in user.Roles:
+                                if dbRole not in memberRoles:
+                                    user.Roles.remove(dbRole)
+                                    
+                    
+                    except SQLAlchemyError as err:
+                        print(err)
+                        print(member.name)
+                        f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
+        f.close()
                 
 
     def cog_unload(self):
