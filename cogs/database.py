@@ -11,6 +11,7 @@ from models.base import Base, Session, engine
 from models.post import Post
 from models.role import Role
 from models.user import User
+from models.channel import Channel
 from models.youtube import Youtube
 
 
@@ -32,7 +33,7 @@ class Database(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def report(self, ctx):
-        f = open("report", "w", encoding='utf-8')
+        f = open("report.txt", "w", encoding='utf-8')
         for guild in self.client.guilds:                                                        
             for member in guild.members:
                 role = guild.get_role(499945447616544798) # quick fix
@@ -45,7 +46,16 @@ class Database(commands.Cog):
                         f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
         f.close()
                 
-
+    @commands.command(aliases=["insert-channel"], description = "Add channel to the database")
+    @commands.has_any_role('Administrator') 
+    async def insert_channel(self, ctx, channel: discord.TextChannel):
+        try:
+            newChannel = Channel(channel.id, channel.name)
+            self.session.add(newChannel)
+            self.session.commit()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
+            self.session.rollback()
 
     @commands.command(aliases=["insert-role"], description = "Add role to the database")
     @commands.has_any_role('Administrator')   
@@ -55,7 +65,8 @@ class Database(commands.Cog):
             self.session.add(newRole)
             self.session.commit()
         except SQLAlchemyError as err:
-            print(str(err))
+            await ctx.send(str(err))
+            self.session.rollback()
             
 
     @commands.command()
@@ -102,7 +113,7 @@ class Database(commands.Cog):
     async def detect_anomalies(self):
         print("Anomalysing...")
 
-        f = open("report-anomalys", "w", encoding='utf-8')
+        f = open("report-anomalys.txt", "w", encoding='utf-8')
 
         allRoles = self.session.query(Role).all()
         
