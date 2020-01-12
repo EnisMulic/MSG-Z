@@ -67,7 +67,7 @@ class Youtube(commands.Cog):
             description = '\n'
             for channel in channels:
                 mark = ":white_check_mark:" if channel.Output else ":negative_squared_cross_mark:"
-                description += f"\n[{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId}) {mark}"
+                description += f"\n{mark} | [{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId})"
                               
             embed = discord.Embed(
                 title = "Youtube",
