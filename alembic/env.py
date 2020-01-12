@@ -24,7 +24,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 ROOT_PATH = os.path.join(current_path, '..')
 sys.path.append(ROOT_PATH)
 
-from models import base, post, youtube, user, role, channel
+from models import base, post, youtube, user, role, channel, tag
 
 target_metadata = base.Base.metadata
 
