@@ -132,7 +132,7 @@ class Database(commands.Cog):
                             #     user.Name = member.name
                             
                             if user.Name != member.nick:
-                                if member.Nick is not None:
+                                if member.nick is not None:
                                     user.Name = member.nick
                                     
                             if user.Username != member.name:
