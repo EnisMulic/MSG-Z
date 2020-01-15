@@ -12,8 +12,8 @@ import string
 import random
 import datetime
 
-def generate_id(size = 4, chars = string.ascii_letters + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+
+
 
 class Tag(commands.Cog):
     def __init__(self, client):
@@ -65,7 +65,7 @@ class Tag(commands.Cog):
 
 
     @commands.command(aliases=["rename-tag"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    #@commands.has_any_role('Administrator', 'Moderator')
     async def rename_tag(self, ctx, id: int, *name: str):
         tag_name = ' '.join(name)
         database = self.client.get_cog('Database')
@@ -75,17 +75,21 @@ class Tag(commands.Cog):
                 tag = session.query(tg.Tag) \
                     .filter(tg.Tag.Id == id) \
                     .one()
-                tag.Name = tag_name
-                session.commit()
 
-                await ctx.send("Tag renamed")
+                if tag.UserId == ctx.author.id:
+                    tag.Name = tag_name
+                    session.commit()
+
+                    await ctx.send("Tag renamed")
+                else:
+                    await ctx.send("Only the owner can rename the tag")
             except SQLAlchemyError as err:
                 print(str(err))
             finally:
                 session.close()
     
     @commands.command(aliases=["edit-tag"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    #@commands.has_any_role('Administrator', 'Moderator')
     async def edit_tag(self, ctx, id: int, link: str):
         database = self.client.get_cog('Database')
         if database is not None:
@@ -94,8 +98,15 @@ class Tag(commands.Cog):
                 tag = session.query(tg.Tag) \
                     .filter(tg.Tag.Id == id) \
                     .one()
-                tag.Link = link
-                session.commit()
+                
+
+                if tag.UserId == ctx.author.id:
+                    tag.Link = link
+                    tag.Count = 0
+                    session.commit()
+                else:
+                    await ctx.send("Only the owner can edit the tag")
+               
 
             except SQLAlchemyError as err:
                 print(str(err))
@@ -177,6 +188,34 @@ class Tag(commands.Cog):
                 print(str(err))
             finally:
                 session.close()
+
+    @commands.command(aliases=["tags"])
+    async def get_tags(self, ctx, member: discord.Member = None):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            session = database.Session()
+
+            memberId = member.id if member is not None else ctx.author.id
+            tags = session.query(tg.Tag) \
+                .filter(tg.Tag.UserId == memberId)
+
+
+            description = "<@" + str(memberId) + ">\n"
+            for tag in tags:
+                description += f"\n:bookmark: | [{tag.Name}]({tag.Link})"
+                tag.Count += 1
+                              
+            embed = discord.Embed(
+                title = "Tags",
+                description = description,
+                colour = discord.Colour.blurple().value
+            ) 
+
+            embed.set_author
+            
+            await ctx.send(embed = embed)
+            
+            session.close()
 
 def setup(client):
     client.add_cog(Tag(client))
