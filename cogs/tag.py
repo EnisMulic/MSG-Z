@@ -11,6 +11,7 @@ from models.user import User
 import string
 import random
 import datetime
+import re
 
 
 
@@ -20,28 +21,29 @@ class Tag(commands.Cog):
         self.client = client
 
     @commands.command(aliases=["add-tag"])
-    async def add_tag(self, ctx, url: str, *name: str):
-        tag_name = ' '.join(name)
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
+    async def add_tag(self, ctx, link: str, *name: str):
+        if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
+            tag_name = ' '.join(name)
+            database = self.client.get_cog('Database')
+            if database is not None:
+                try:
+                    session = database.Session()
 
-                user = session.query(User) \
-                        .filter(User.UserId == ctx.author.id) \
-                        .one()
+                    user = session.query(User) \
+                            .filter(User.UserId == ctx.author.id) \
+                            .one()
 
 
-                newTag = tg.Tag(tag_name, url, datetime.datetime.now(), user)
-                session.add(newTag)
-                session.commit()
+                    newTag = tg.Tag(tag_name, link, datetime.datetime.now(), user)
+                    session.add(newTag)
+                    session.commit()
 
-                await ctx.send("Tag added")
-            except SQLAlchemyError as err:
-                print(str(err))
-                session.rollback()
-            finally:
-                session.close()
+                    await ctx.send("Tag added")
+                except SQLAlchemyError as err:
+                    print(str(err))
+                    session.rollback()
+                finally:
+                    session.close()
 
     @commands.command(aliases=["remove-tag"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -91,27 +93,28 @@ class Tag(commands.Cog):
     @commands.command(aliases=["edit-tag"])
     #@commands.has_any_role('Administrator', 'Moderator')
     async def edit_tag(self, ctx, id: int, link: str):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Id == id) \
-                    .one()
+        if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
+            database = self.client.get_cog('Database')
+            if database is not None:
+                try:
+                    session = database.Session()
+                    tag = session.query(tg.Tag) \
+                        .filter(tg.Tag.Id == id) \
+                        .one()
+                    
+
+                    if tag.UserId == ctx.author.id:
+                        tag.Link = link
+                        tag.Count = 0
+                        session.commit()
+                    else:
+                        await ctx.send("Only the owner can edit the tag")
                 
 
-                if tag.UserId == ctx.author.id:
-                    tag.Link = link
-                    tag.Count = 0
-                    session.commit()
-                else:
-                    await ctx.send("Only the owner can edit the tag")
-               
-
-            except SQLAlchemyError as err:
-                print(str(err))
-            finally:
-                session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
+                finally:
+                    session.close()
 
     @commands.command(aliases=["tag"])
     async def get_tag(self, ctx, *, search: str):
