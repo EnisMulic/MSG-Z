@@ -63,7 +63,7 @@ class ModeratorUser(commands.Cog):
                         .filter(User.UserId == member.id) \
                         .one()
                 
-
+        
                 if option == '-f':
                     user.StatusFakultet = status
                     session.commit()
