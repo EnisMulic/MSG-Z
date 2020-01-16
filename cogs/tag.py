@@ -13,8 +13,7 @@ import random
 import datetime
 import re
 
-
-
+from utils import misc
 
 class Tag(commands.Cog):
     def __init__(self, client):
@@ -127,14 +126,16 @@ class Tag(commands.Cog):
 
             description = '\n'
             for tag in tags:
-                description += f"\n:bookmark: | [{tag.Name}]({tag.Link})"
+                description += f"\n:label: [{tag.Name}]({tag.Link})"
                 tag.Count += 1
                               
             embed = discord.Embed(
                 title = "Tags",
                 description = description,
-                colour = discord.Colour.blurple().value
+                colour = discord.Colour.blurple()
             ) 
+            
+            embed.set_thumbnail(url = self.client.user.avatar_url)
             
             await ctx.send(embed = embed)
             session.commit()
@@ -150,14 +151,22 @@ class Tag(commands.Cog):
                     .filter(tg.Tag.Name.ilike(f"%{search}%")) \
                     .one()
 
+                member = misc.getMember(self.client, tag.User.UserId)
+
                 embed = discord.Embed(
-                    title = ":bookmark: Tag info",
-                    colour = discord.Colour.blurple().value
+                    title = ":label: Tag info",
+                    colour = discord.Colour.blurple()
                 ) 
 
                 embed.add_field(
                     name = "Id",
                     value = str(tag.Id),
+                    inline = True
+                )
+
+                embed.add_field(
+                    name = "Count",
+                    value = str(tag.Count),
                     inline = True
                 )
 
@@ -168,22 +177,21 @@ class Tag(commands.Cog):
                 )
 
                 embed.add_field(
-                    name = "Count",
-                    value = str(tag.Count),
+                    name = "Owner",
+                    value = member.mention,
                     inline = False
                 )
 
                 embed.add_field(
-                    name = "Created at",
+                    name = "Tag created at",
                     value = tag.Created.strftime("%d.%m.%Y %H:%M:%S"),
                     inline = True
                 )
 
-                embed.add_field(
-                    name = "Owner",
-                    value = "<@" + str(tag.User.UserId) + ">",
-                    inline = False
-                )
+                
+
+                
+                embed.set_thumbnail(url = member.avatar_url)
 
                 
                 await ctx.send(embed = embed)
@@ -198,23 +206,38 @@ class Tag(commands.Cog):
         if database is not None:
             session = database.Session()
 
-            memberId = member.id if member is not None else ctx.author.id
+            member = member if member is not None else ctx.author
             tags = session.query(tg.Tag) \
-                .filter(tg.Tag.UserId == memberId)
+                .filter(tg.Tag.UserId == member.id)
 
 
-            description = "<@" + str(memberId) + ">\n"
+            description = "\n"
             for tag in tags:
-                description += f"\n:bookmark: | [{tag.Name}]({tag.Link})"
+                description += f"\n:label: [{tag.Name}]({tag.Link})"
                 tag.Count += 1
                               
             embed = discord.Embed(
-                title = "Tags",
-                description = description,
+                title = "Users tags",
                 colour = discord.Colour.blurple().value
             ) 
 
-            embed.set_author
+            embed.add_field(
+                name = "Owner",
+                value = "<@" + str(member.id) + ">",
+                inline = False
+            )
+
+            embed.add_field(
+                name = "Tags",
+                value = description,
+                inline = False
+            )
+
+
+
+            
+            embed.set_thumbnail(url = member.avatar_url)
+
             
             await ctx.send(embed = embed)
             
