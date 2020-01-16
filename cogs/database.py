@@ -14,7 +14,7 @@ from models.user import User
 from models.channel import Channel
 from models.youtube import Youtube
 
-
+import datetime
 
 from utils import misc
 
@@ -71,20 +71,36 @@ class Database(commands.Cog):
 
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
-    async def whois(self, ctx, member: discord.Member):
+    async def whois(self, ctx, user: discord.User):
         try:
-            user = self.session.query(User) \
-                    .filter(User.UserId == member.id) \
-                    .one()
+            member = misc.getMember(self.client, user.id)
 
-            await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'
-                    .format(
-                            user.Name,
-                            user.UserIndex,
-                            user.Username + "#" + user.Discriminator,
-                            user.StatusFakultet,
-                            user.StatusDiscord
-                        ))
+            embed = discord.Embed(
+                description = member.mention
+            )
+
+            embed.set_author(name = member.display_name, icon_url = member.avatar_url)
+            embed.set_thumbnail(url = member.avatar_url)
+            embed.add_field(
+                name = "Registered",
+                value = user.created_at.strftime("%a, %b %d, %Y,\n %H:%M %p")
+            )
+
+            embed.add_field(
+                name = "Joined",
+                value = member.joined_at.strftime("%a, %b %d, %Y,\n %H:%M %p")
+            )
+
+            roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
+            embed.add_field(
+                name = "Roles",
+                value = ', '.join(roles),
+                inline = False
+            )
+            
+            await ctx.send(embed = embed)
+
+            
         except SQLAlchemyError as err:
             print(str(err))
             
