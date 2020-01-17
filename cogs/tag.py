@@ -20,9 +20,8 @@ class Tag(commands.Cog):
         self.client = client
 
     @commands.command(aliases=["add-tag"])
-    async def add_tag(self, ctx, link: str, *name: str):
+    async def add_tag(self, ctx, link: str, *, name: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
-            tag_name = ' '.join(name)
             database = self.client.get_cog('Database')
             if database is not None:
                 try:
@@ -67,8 +66,7 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["rename-tag"])
     #@commands.has_any_role('Administrator', 'Moderator')
-    async def rename_tag(self, ctx, id: int, *name: str):
-        tag_name = ' '.join(name)
+    async def rename_tag(self, ctx, id: int, *, name: str):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
@@ -218,7 +216,7 @@ class Tag(commands.Cog):
                               
             embed = discord.Embed(
                 title = "Users tags",
-                colour = discord.Colour.blurple().value
+                colour = discord.Colour.blurple()
             ) 
 
             embed.add_field(
