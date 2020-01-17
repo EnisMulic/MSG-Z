@@ -21,7 +21,7 @@ class ModeratorMsg(commands.Cog):
         await ctx.channel.purge(limit = int(numberOfMessages + 1))
         action = discord.Embed(
             title = "Message(s) deleted",
-            colour = discord.Colour.red().value
+            colour = discord.Colour.red()
         )
 
         action.add_field(
@@ -92,7 +92,7 @@ class ModeratorMsg(commands.Cog):
         fromChannel = self.client.get_channel(int(oldChannel[2:len(oldChannel) - 1]))
         message = await fromChannel.fetch_message(id)
         messageEmbed = discord.Embed(
-            colour = discord.Colour.blue().value,
+            colour = discord.Colour.blue(),
             image = message.author.avatar_url
         )
 

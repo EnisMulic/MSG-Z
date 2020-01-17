@@ -19,7 +19,7 @@ class Events(commands.Cog):
             
             action = discord.Embed(
                 title = 'Member Joined',
-                colour = discord.Colour.green().value
+                colour = discord.Colour.green()
             )
          
             action.add_field(
@@ -52,7 +52,7 @@ class Events(commands.Cog):
         try:
             action = discord.Embed(
                 title = 'Member left',
-                colour = discord.Colour.red().value
+                colour = discord.Colour.red()
             )
          
             action.add_field(
@@ -107,7 +107,7 @@ class Events(commands.Cog):
         if before.roles < after.roles:
             action = discord.Embed(
                 title = 'Role removed',
-                colour = discord.Colour.green().value
+                colour = discord.Colour.green()
             )
 
             action.add_field(
@@ -151,7 +151,7 @@ class Events(commands.Cog):
         elif before.roles > after.roles:
             action = discord.Embed(
                 title = 'Role added',
-                colour = discord.Colour.green().value
+                colour = discord.Colour.green()
             )
 
             action.add_field(
@@ -194,7 +194,7 @@ class Events(commands.Cog):
         if before.nick != after.nick:
             action = discord.Embed(
                 title = "Name changed",
-                colour = discord.Colour.green().value
+                colour = discord.Colour.green()
             )
 
             action.add_field(
@@ -282,7 +282,7 @@ class Events(commands.Cog):
             title = "Message deleted",
             colour = discord.Colour.red().value
         )
-
+        action.set_thumbnail(url = self.client.user.avatar_url)
         action.add_field(
             name = "Author:",
             value = message.author.mention + ' ' + message.author.name + '#' + message.author.discriminator,

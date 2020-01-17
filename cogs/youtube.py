@@ -72,7 +72,7 @@ class Youtube(commands.Cog):
             embed = discord.Embed(
                 title = "Youtube",
                 description = description,
-                colour = discord.Colour.red().value
+                colour = discord.Colour.red()
             ) 
             
             await ctx.send(embed = embed)

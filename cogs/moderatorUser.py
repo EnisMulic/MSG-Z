@@ -123,7 +123,7 @@ class ModeratorUser(commands.Cog):
         await member.kick(reason = reason)
         action = discord.Embed(
             title = "User kicked",
-            colour = discord.Colour.red().value
+            colour = discord.Colour.red()
         )
 
         action.add_field(
@@ -171,7 +171,7 @@ class ModeratorUser(commands.Cog):
         
         action = discord.Embed(
             title = "Member banned",
-            colour = discord.Colour.red().value
+            colour = discord.Colour.red()
         )
 
         action.add_field(
