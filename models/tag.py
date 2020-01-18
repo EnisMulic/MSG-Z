@@ -13,7 +13,7 @@ class Tag(Base):
     Created = Column(DateTime)
     
     
-    UserId = Column(BigInteger, ForeignKey('Users.UserId'), nullable = False)
+    UserId = Column(BigInteger, ForeignKey('Users.UserId'), nullable = True)
     User = relationship('User')
 
     def __init__(self, Name, Link, Created, User, Count = 0):
