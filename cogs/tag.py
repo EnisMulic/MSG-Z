@@ -241,5 +241,63 @@ class Tag(commands.Cog):
             
             session.close()
 
+    @commands.command(aliases=["release-tags"])
+    async def release_tag(self, ctx, *, name: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            session = database.Session()
+
+            try:
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name)
+                    .one()
+                
+                tag.UserId = None
+                session.commit()
+            except SQLAlchemyError as err:
+                print(err)
+                #implement await ctx.send(embed = embed)
+            finally:
+                session.close()
+    
+    @commands.command(aliases=["claime-tags"])
+    async def claime_tag(self, ctx, *, name: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            session = database.Session()
+
+            try:
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == None and tg.Tag.Name == name)
+                    .one()
+                
+                tag.UserId = ctx.author.id
+                session.commit()
+            except SQLAlchemyError as err:
+                print(err)
+                #implement await ctx.send(embed = embed)
+            finally:
+                session.close()
+
+    @commands.command(aliases=["transfer-tags"])
+    async def transfer_tag(self, ctx, member: discord.Member, *, name: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            session = database.Session()
+
+            try:
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name)
+                    .one()
+                
+                tag.UserId = member.id
+                session.commit()
+            except SQLAlchemyError as err:
+                print(err)
+                #implement await ctx.send(embed = embed)
+            finally:
+                session.close()
+
+
 def setup(client):
     client.add_cog(Tag(client))
