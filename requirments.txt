@@ -1,0 +1,6 @@
+asyncio
+git+https://github.com/Rapptz/discord.py@master
+sqlalchemy
+alembic
+requests
+beautifulsoup4
