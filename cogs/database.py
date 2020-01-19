@@ -43,6 +43,8 @@ class Database(commands.Cog):
                                 .filter(User.UserId == member.id) \
                                 .one()
                     except SQLAlchemyError:
+                        f.write("-----------------------------------------------------\n")
+                        f.write(member.nick + ": \n")
                         f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
         f.close()
                 
