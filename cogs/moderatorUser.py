@@ -29,11 +29,12 @@ class ModeratorUser(commands.Cog):
                 )
                 session.add(newUser)
                 session.commit()
-                session.close()
-                # await database.insert_member(ctx, member, userIndex)
+                                
                 await ctx.send("Member added")
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
+            finally:
+                session.close()
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -47,10 +48,12 @@ class ModeratorUser(commands.Cog):
                             .one()
                 user.UserIndex = userIndex
                 session.commit()
-                session.close()
+                
                 await ctx.send("Index set")
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
+            finally:
+                session.close()
 
     @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
     @commands.has_any_role('Administrator', 'Moderator')
@@ -73,9 +76,11 @@ class ModeratorUser(commands.Cog):
                     session.commit()
                     await ctx.send("DiscordStatus set") 
                 
-                session.close()
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
+            finally:
+                session.close()
+
             
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -158,11 +163,11 @@ class ModeratorUser(commands.Cog):
                 
                 user.StatusDiscord = "Kicked"
                 session.commit()
-                session.close()
+                
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
-
-            await database.change_member_discord_status(ctx, member, "Kicked")
+            finally:
+                session.close()
 
     @commands.command()
     @commands.has_any_role('Administrator')
@@ -206,9 +211,11 @@ class ModeratorUser(commands.Cog):
                 
                 user.StatusDiscord = "Discord"
                 session.commit()
-                session.close()
+                
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
+            finally:
+                session.close()
 
         
 def setup(client):
