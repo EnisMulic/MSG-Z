@@ -249,7 +249,7 @@ class Tag(commands.Cog):
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name)
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
                     .one()
                 
                 tag.UserId = None
@@ -268,7 +268,7 @@ class Tag(commands.Cog):
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == None and tg.Tag.Name == name)
+                    .filter(tg.Tag.UserId == None and tg.Tag.Name == name) \
                     .one()
                 
                 tag.UserId = ctx.author.id
@@ -287,7 +287,7 @@ class Tag(commands.Cog):
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name)
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
                     .one()
                 
                 tag.UserId = member.id
