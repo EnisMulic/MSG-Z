@@ -5,6 +5,7 @@ from discord.ext import tasks
 import json
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
 
 import models.base as base
 from models.base import Base, Session, engine
@@ -96,15 +97,15 @@ class Database(commands.Cog):
             roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
             embed.add_field(
                 name = "Roles",
-                value = ', '.join(roles),
+                value = ' '.join(roles),
                 inline = False
             )
             
             await ctx.send(embed = embed)
 
             
-        except SQLAlchemyError as err:
-            print(str(err))
+        except NoResultFound as err:
+            await ctx.send(str(err))
             
 
     @commands.command()
@@ -114,17 +115,41 @@ class Database(commands.Cog):
             user = self.session.query(User) \
                     .filter(User.UserIndex == userIndex) \
                     .one()
-                    
-            await ctx.send('```\nIme i prezime: {}\nIndex: {}\nUsername: {}\nFakultet: {}\nDiscord: {}\n```'
-                    .format(
-                            user.Name,
-                            user.UserIndex,
-                            user.Username + "#" + user.Discriminator,
-                            user.StatusFakultet,
-                            user.StatusDiscord
-                        ))
-        except SQLAlchemyError as err:
-            print(str(err))
+            
+            member = misc.getMember(self.client, user.UserId)
+
+            embed = discord.Embed(
+                description = member.mention
+            )
+
+            embed.set_author(name = member.display_name, icon_url = member.avatar_url)
+            embed.set_thumbnail(url = member.avatar_url)
+            embed.add_field(
+                name = "Index",
+                value = user.UserIndex
+            )
+
+            embed.add_field(
+                name = "Fakultet status",
+                value = user.StatusFakultet
+            )
+
+            embed.add_field(
+                name = "Discord status",
+                value = user.StatusDiscord
+            )
+
+            roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
+            embed.add_field(
+                name = "Roles",
+                value = ' '.join(roles),
+                inline = False
+            )
+            
+            await ctx.send(embed = embed)
+
+        except NoResultFound as err:
+            await ctx.send(str(err))
 
 
     @tasks.loop(hours = 7 * 24)
