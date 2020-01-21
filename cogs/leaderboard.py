@@ -34,6 +34,28 @@ class Leaderboard(commands.Cog):
                + "\n---------------------------------------\n")
         f.close()
 
+    @commands.command(aliases = ["Top10"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def get_top_10(self, ctx):
+        database = self.client.get_cog("Database")
+        if database is not None:
+            print("Here")
+            try:
+                session = database.Session()
+
+                users = session.query(User) \
+                    .order_by(User.Points.desc()) \
+                    .limit(10) \
+                    .all()
+
+                for user in users:
+                    await ctx.send(user.Name + " " + str(user.Points))
+            except SQLAlchemyError as err:
+                print(str(err))
+            finally:
+                session.close()
+
+
 
 def setup(client):
     client.add_cog(Leaderboard(client))
