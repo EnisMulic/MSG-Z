@@ -50,6 +50,10 @@ class ModeratorMsg(commands.Cog):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
         await messageChannel.send(message)
         
+        files = []
+        for attachment in ctx.message.attachments:
+            files += await attachment.to_file()
+        await messageChannel.send(files = files)
         
         database = self.client.get_cog('Database')
         if database is not None:
