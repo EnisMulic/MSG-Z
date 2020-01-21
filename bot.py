@@ -21,7 +21,7 @@ cogsDir = ".\\cogs"
 if __name__ == '__main__':
     @client.event
     async def on_ready():
-        print("3, 4, SAD!")
+        print("Running on: " + discord.__version__)
         await client.change_presence(activity = discord.Activity(name = "FIT DLWMS & Youtube", type = 3))
 
 
