@@ -21,7 +21,7 @@ class User(Base):
     __tablename__ = 'Users'
 
     UserId = Column(BigInteger, primary_key = True)
-    UserIndex = Column(String(8), nullable = False)
+    UserIndex = Column(String(8), nullable = False, unique = True)
     Name = Column(String(32), nullable = False)
     Username = Column(String(32), nullable = False)
     Discriminator = Column(String(4), nullable = False)
