@@ -45,7 +45,8 @@ class Database(commands.Cog):
                                 .one()
                     except SQLAlchemyError:
                         f.write("-----------------------------------------------------\n")
-                        f.write(member.nick + ": \n")
+                        name = member.nick if member.nick is not None else member.name
+                        f.write(name + ": \n")
                         f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
         f.close()
                 
