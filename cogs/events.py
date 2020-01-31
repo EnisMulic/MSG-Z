@@ -282,7 +282,7 @@ class Events(commands.Cog):
             title = "Message deleted",
             colour = discord.Colour.red().value
         )
-        action.set_thumbnail(url = self.client.user.avatar_url)
+        action.set_thumbnail(url = message.author.avatar_url)
         action.add_field(
             name = "Author:",
             value = message.author.mention + ' ' + message.author.name + '#' + message.author.discriminator,
