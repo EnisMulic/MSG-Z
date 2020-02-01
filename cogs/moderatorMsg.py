@@ -46,14 +46,14 @@ class ModeratorMsg(commands.Cog):
 
     @commands.command(aliases=["msg-echo"], description = "Send message to a channel as the bot")
     @commands.has_any_role('Administrator', 'Moderator')
-    async def echo(self, ctx, channel, *, message):
+    async def echo(self, ctx, channel, *, message = None):
         messageChannel = self.client.get_channel(int(channel[2:len(channel) - 1]))
-        await messageChannel.send(message)
+        
         
         files = []
         for attachment in ctx.message.attachments:
-            files += await attachment.to_file()
-        await messageChannel.send(files = files)
+            files.append(await attachment.to_file())
+        await messageChannel.send(content = message, files = files)
         
         database = self.client.get_cog('Database')
         if database is not None:
