@@ -85,7 +85,7 @@ class ModeratorUser(commands.Cog):
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
-        database = self.client.get_cog('Database')
+        # database = self.client.get_cog('Database')
 
         newRolesList = []
         for role in roles:

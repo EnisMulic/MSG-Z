@@ -2,12 +2,14 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
+
 import requests
 import json
 from bs4 import BeautifulSoup
 
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
+
 
 from models.user import User
 
@@ -20,7 +22,7 @@ class Scraper(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-        with open(".\\config.json") as json_for_url:
+        with open('.\\config.json', "r", encoding="utf-8") as json_for_url:
             data = json.load(json_for_url)
         self.loginUrl = data["DLWMS"]["url"]
 
@@ -57,7 +59,7 @@ class Scraper(commands.Cog):
         for hiddenInput in hiddenInputArray:
             loginData[hiddenInput] = self.get_value_for_input(site, hiddenInput)
 
-        with open(".\\config.json") as json_data_file:
+        with open(".\\config.json", "r", encoding="utf-8") as json_data_file:
             data = json.load(json_data_file)
             
         #Login info
@@ -101,7 +103,7 @@ class Scraper(commands.Cog):
             
             lastNotificationJson = {}
         
-            with open(".\\lastNotification.json", "r") as jsonDataFile:
+            with open(".\\lastNotification.json", "r", encoding="utf-8") as jsonDataFile:
                 lastNotificationJson = json.load(jsonDataFile)
 
             lastNotification = notifications.DLWMS_Notification(
@@ -116,7 +118,7 @@ class Scraper(commands.Cog):
             notificationsList.reverse()
             for notification in notificationsList or []:
                 if notification > lastNotification and notification.link != lastNotification.link:
-                    with open(".\\config.json") as jsonSubjectChannel:
+                    with open(".\\config.json", "r", encoding="utf-8") as jsonSubjectChannel:
                         data = json.load(jsonSubjectChannel)
 
                     if "Neum" in notification.title:
@@ -149,7 +151,7 @@ class Scraper(commands.Cog):
 
 
             if lastSent != lastNotification:
-                with open(".\\lastNotification.json", "w") as jsonDataFile:
+                with open(".\\lastNotification.json", "w", encoding="utf-8") as jsonDataFile:
                     json.dump(lastSent.__dict__, jsonDataFile, indent = 4)
             
         except Exception as err:
@@ -174,6 +176,7 @@ class Scraper(commands.Cog):
 
     def cog_unload(self):
         self.send_notifications.cancel()
+        
 
     @send_notifications.before_loop
     async def before_send_notifications(self):

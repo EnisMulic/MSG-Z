@@ -7,13 +7,14 @@ import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 
-import models.base as base
+
 from models.base import Base, Session, engine
 from models.post import Post
 from models.role import Role
 from models.user import User
 from models.channel import Channel
 from models.youtube import Youtube
+import models.base as base
 
 import datetime
 
@@ -29,7 +30,7 @@ class Database(commands.Cog):
         self.session = Session()
 
     def Session(self):
-        return base.Session();
+        return base.Session()
 
     @commands.command()
     @commands.has_any_role('Administrator') 
