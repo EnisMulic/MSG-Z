@@ -1,6 +1,4 @@
-# coding=utf-8
-
-from sqlalchemy import Column, String, Integer, Date, Table, ForeignKey, BigInteger
+from sqlalchemy import Column, String, Integer, Date, Table, ForeignKey, BigInteger, Float
 from sqlalchemy.orm import relationship
 
 from models.base import Base
@@ -10,11 +8,13 @@ users_roles_association = Table('UsersRoles', Base.metadata,
     Column('RoleId', BigInteger, ForeignKey('Roles.RoleId'))
 )
 
-users_channels_association = Table('UsersChannelsMessages', Base.metadata,
-    Column('UserId', BigInteger, ForeignKey('Users.UserId')),
-    Column('ChannelId', BigInteger, ForeignKey('Channels.Id')),
-    Column('NumberOfMessages', Integer, default = 0)
-)
+# users_channels_association = Table('UsersChannelsMessages', Base.metadata,
+#     Column('UserId', BigInteger, ForeignKey('Users.UserId')),
+#     Column('ChannelId', BigInteger, ForeignKey('Channels.Id')),
+#     Column('NumberOfMessages', Integer, default = 0),
+#     Column('LengthOfMessages', Integer, default = 0),
+#     Column('Points', Integer, default = 0)
+# )
 
 
 class User(Base):
@@ -30,12 +30,12 @@ class User(Base):
     Points = Column(Integer, default = 0)
 
     Roles = relationship('Role', secondary = users_roles_association)
-    ChannelActivity = relationship('Channel', secondary = users_channels_association)
+    Channels = relationship('UsersChannelsActivity', back_populates = "User")
 
     def __init__(self, 
         UserId, UserIndex, Name, Username, Discriminator, 
         StatusFakultet = "Aktivan", StatusDiscord = "Aktivan",
-        Points = 0, Roles = [], ChannelActivity = []
+        Points = 0, Roles = []
     ):
         self.UserId = UserId
         self.UserIndex = UserIndex
@@ -46,4 +46,4 @@ class User(Base):
         self.StatusDiscord = StatusDiscord
         self.Points = Points
         self.Roles = Roles
-        self.ChannelActivity = ChannelActivity
+        

@@ -10,6 +10,7 @@ class Channel(Base):
     Id = Column(BigInteger, primary_key = True)
     Name = Column(String(32), nullable = False)
     
+    Users = relationship('UsersChannelsActivity', back_populates = "Channel")
 
     def __init__(self, Id, Name):
         self.Id = Id
