@@ -285,7 +285,7 @@ class Events(commands.Cog):
         action.set_thumbnail(url = message.author.avatar_url)
         action.add_field(
             name = "Author:",
-            value = message.author.mention + ' ' + message.author.name + '#' + message.author.discriminator,
+            value = message.author.mention,
             inline = False
         )
 
