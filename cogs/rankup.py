@@ -28,5 +28,40 @@ class Rankup(commands.Cog):
 
             session.close()
 
+    @commands.command()
+    @commands.has_any_role('Administrator') 
+    async def imatrikulant(self, ctx):
+        pass
+
+    @commands.command()
+    @commands.has_any_role('Administrator') 
+    async def apsolvent(self, ctx):
+        pass
+
+    @commands.command(aliases=["diplomirao", "diplomirala"])
+    @commands.has_any_role('Administrator') 
+    async def diploma(self, ctx):
+        pass
+
+    @commands.command(aliases=["alumni", "alumna"])
+    @commands.has_any_role('Administrator') 
+    async def alum(self, ctx):
+        pass
+
+    @commands.command()
+    @commands.has_any_role('Administrator') 
+    async def uslov(self, ctx):
+        pass
+
+    @commands.command(aliases=["obnovio", "obnovila"])
+    @commands.has_any_role('Administrator') 
+    async def obnova(self, ctx):
+        pass
+
+    @commands.command()
+    @commands.has_any_role('Administrator') 
+    async def ispis(self, ctx):
+        pass
+
 def setup(client):
     client.add_cog(Rankup(client))
