@@ -28,6 +28,7 @@ class Database(commands.Cog):
 
         Base.metadata.create_all(engine)
         self.session = Session()
+        
 
     def Session(self):
         return base.Session()
@@ -108,11 +109,12 @@ class Database(commands.Cog):
             
         except NoResultFound as err:
             await ctx.send(str(err))
+        
             
 
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
-    async def student(self, ctx, userIndex: str):
+    async def student(self, ctx, userIndex):
         try:
             user = self.session.query(User) \
                     .filter(User.UserIndex == userIndex) \
@@ -152,6 +154,8 @@ class Database(commands.Cog):
 
         except NoResultFound as err:
             await ctx.send(str(err))
+
+        self.session.rollback()
 
 
     @tasks.loop(hours = 7 * 24)
@@ -209,6 +213,7 @@ class Database(commands.Cog):
                         print(err)
                         print(member.name)
                         f.write("$add-member @" + member.name + "#" + member.discriminator + "\n")
+                        self.session.rollback()
         f.close()
                 
 
