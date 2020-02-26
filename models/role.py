@@ -14,7 +14,7 @@ class Role(Base):
 
     RoleId = Column(BigInteger, primary_key = True)
     Name = Column(String(32), nullable = False)
-    HigherRole = Column(BigInteger, nullable = True)
+    ParentRole = Column(BigInteger, nullable = True)
 
     #Users = relationship('User')
 
