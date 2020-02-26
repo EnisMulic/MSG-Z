@@ -3,6 +3,8 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from models.role import Role
+from models.user import users_roles_association
+from models.user import User
 
 from utils import misc
 
@@ -13,24 +15,24 @@ class Rankup(commands.Cog):
         self.role = self.SetRole(self.roleName)
 
     def SetRole(self, roleName):
-        return self.client.get_role(misc.getRoleId(self.client, roleName))
+        return misc.getRoleByName(self.client, roleName)
 
     @commands.command()
     @commands.has_any_role('Administrator') 
-    async def connect(self, ctx, lowRole: discord.Role, highRole: discord.Role):
+    async def connect(self, ctx, parentRole: discord.Role, childRole: discord.Role):
         database = self.client.get_cog("Database")
         if database is not None:
             session = database.Session()
-            role = session.query(Role) \
-                .filter(Role.RoleId == lowRole.id) \
+            parent = session.query(Role) \
+                .filter(Role.RoleId == parentRole.id) \
                 .one_or_none()
 
-            higherRole = session.query(Role) \
-                .filter(Role.RoleId == highRole.id) \
+            child = session.query(Role) \
+                .filter(Role.RoleId == childRole.id) \
                 .one_or_none()
 
-            if role is not None and higherRole is not None:
-                role.HigherRole = higherRole.RoleId
+            if parent is not None and child is not None:
+                child.ParentRole = parent.RoleId
                 session.commit()
 
             session.close()
@@ -57,7 +59,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["alumni", "alumna"])
     @commands.has_any_role('Administrator') 
     async def alum(self, ctx):
-        alumRole = self.client.get_role(misc.getRoleId(self.client, "Alumni"))
+        alumRole = misc.getRoleByName(self.client, "Alumni")
         pass
 
     @commands.command(aliases=["ocistio", "ocistila"])
@@ -79,11 +81,24 @@ class Rankup(commands.Cog):
 
             roles = ctx.author.roles
             rankedRoles = session.query(Role) \
-                .filter(Role.HigherRole != None) \
+                .join(users_roles_association) \
+                .filter(Role.ParentRole != None) \
+                .filter(users_roles_association.c.UserId == ctx.author.id) \
                 .all()
+                
+            # for role in roles not in rankedRoles:
+            #     roles.remove(role)
+            # for role in rankedRoles:
+            #     print(role.Name)
 
-            for role in roles not in rankedRoles:
-                roles.remove(role)
+            # rankedRolesIDs = [role.RoleId for role in rankedRoles]
+            # usersRankedRoles = [role for role in roles if role.id in rankedRolesIDs]
+
+            # for role in usersRankedRoles:
+            #     print(role.name)
+
+            for role in rankedRoles:
+                print(role.Name)
         # see current role
         # get higher role
         # add the higher role
@@ -104,5 +119,6 @@ class Rankup(commands.Cog):
 
     def findHighestRole(self, roles: []):
         pass
+
 def setup(client):
     client.add_cog(Rankup(client))
