@@ -24,7 +24,7 @@ from utils import misc
 class Database(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.detect_anomalies.start()
+        # self.detect_anomalies.start()
 
         Base.metadata.create_all(engine)
         self.session = Session()
@@ -190,25 +190,29 @@ class Database(commands.Cog):
                             if user.Discriminator != member.discriminator:
                                 user.Discriminator = member.discriminator
 
-
-                            memberRoles = []
-                            for role in member.roles:
-                                memberRoles.append(Role(role.id, role.name))
+                            # Users roles in database
+                            userRolesIDs = [role.id for role in user.Roles]
+                            # Users actual roles in discord
+                            memberRolesIDs = [role.id for role in member.roles]
                             
-
-                            for memberRole in memberRoles:
-                                if memberRole in allRoles:
-                                    if memberRole not in user.Roles:
+                            
+                            for dbRole in allRoles:
+                                if dbRole.RoleId in memberRolesIDs:
+                                    if dbRole.RoleId not in userRolesIDs:
                                         try:
-                                            user.Roles.append(memberRole)
+                                            user.Roles.append(dbRole)
+                                            
+                                        except Exception as err:
+                                            print(err)
+                                elif dbRole.RoleId in userRolesIDs:
+                                    if dbRole.RoleId not in memberRolesIDs:
+                                        try:
+                                            user.Roles.remove(dbRole)
+                                            
                                         except Exception as err:
                                             print(err)
 
-                            for dbRole in user.Roles:
-                                if dbRole not in memberRoles:
-                                    user.Roles.remove(dbRole)
-                                    
-                    
+                        self.session.commit()
                     except SQLAlchemyError as err:
                         print(err)
                         print(member.name)
