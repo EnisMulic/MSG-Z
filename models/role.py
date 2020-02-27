@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BigInteger, Table, ForeignKey
+from sqlalchemy import Column, Integer, String, BigInteger, Table, ForeignKey, Float
 from sqlalchemy.orm import relationship, backref
 
 from models.base import Base
@@ -15,10 +15,12 @@ class Role(Base):
     RoleId = Column(BigInteger, primary_key = True)
     Name = Column(String(32), nullable = False)
     ParentRole = Column(BigInteger, nullable = True)
+    Value = Column(Float, nullable = False, default = 0)
 
     #Users = relationship('User')
 
-    def __init__(self, RoleId, Name):
+    def __init__(self, RoleId, Name, Value = 0):
         self.RoleId = RoleId
         self.Name = Name
+        self.Value = Value
         
