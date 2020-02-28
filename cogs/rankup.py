@@ -65,7 +65,22 @@ class Rankup(commands.Cog):
         return misc.getRoleByName(self.client, roleName)
 
     def SetValue(self, role: Role):
-        pass
+        database = self.client.get_cog("Database")
+        if database is not None:
+            session = database.Session()
+
+            if role.ParentRole is not None:
+                parent = session.query(Role) \
+                    .filter(Role.RoleId == role.ParentRole) \
+                    .one()
+                
+                children = session.query(Role) \
+                    .filter(Role.ParentRole == role.ParentRole) \
+                    .count()
+
+                role.Value = parent.Value + 1 + children * 0.1
+            else:
+                role.Value = 0
     
     @commands.command()
     @commands.has_any_role('Administrator') 
@@ -83,6 +98,7 @@ class Rankup(commands.Cog):
 
             if parent is not None and child is not None:
                 child.ParentRole = parent.RoleId
+                self.SetValue(child)
                 session.commit()
 
             session.close()
