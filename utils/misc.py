@@ -14,12 +14,19 @@ def getMember(client, member_id):
 
 def getRoleByName(client, roleName):
     for guild in client.guilds:
-        for role in guild.rolse:
+        print(guild.roles)
+        for role in guild.roles:
             if role.name == roleName:
                 return role
 
 def getRoleById(client, roleId):
     for guild in client.guilds:
-        for role in guild.rolse:
+        for role in guild.roles:
             if role.id == roleId:
                 return role
+
+def getDefaultRole(client):
+    print(client.guilds)
+    for guild in client.guilds:
+        print(guild.default_role)
+    return None
