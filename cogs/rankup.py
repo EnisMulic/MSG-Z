@@ -17,6 +17,10 @@ class Node:
 class Tree:
     def __init__(self):
         self.root = None
+        self.cmp = lambda value, node: value < node.value
+
+    def setCmpFunction(self, function):
+        self.cmp = function
 
     def GetRoot(self):
         return self.root
@@ -28,7 +32,7 @@ class Tree:
             self._add(val, self.root)
     
     def _add(self, value, node):
-        if value < node.value:
+        if self.cmp(value, node):
             if node.left is not None:
                 self._add(value, node.left)
             else:
@@ -48,9 +52,9 @@ class Tree:
     def _find(self, value, node):
         if value == node.value:
             return node
-        elif value < node.value and node.left is not None:
+        elif self.cmp(value, node) and node.left is not None:
             return self._find(value, node.left)
-        elif value > node.value and node.right is not None:
+        elif !self.cmp(value, node) and node.right is not None:
             return self._find(value, node.right)
         else:
             return None
@@ -60,6 +64,7 @@ class Rankup(commands.Cog):
         self.client = client
         self.roleName = "Registrovan";
         self.role = self.SetRole(self.roleName)
+        self.roleTree = self.CreateTree(misc.getRoleByName(self.client, "@everyone"))
 
     def SetRole(self, roleName):
         return misc.getRoleByName(self.client, roleName)
@@ -81,6 +86,29 @@ class Rankup(commands.Cog):
                 role.Value = parent.Value + 1 + children * 0.1
             else:
                 role.Value = 0
+    
+    def CreateTree(self, role):
+        database = self.client.get_cog("Database")
+        if database is not None:
+            session = database.Session()
+            rankedRoles = session.query(Role) \
+                    .filter(Role.ParentRole != None) \
+                    .all()
+
+            rootRole = session.query(Role) \
+                    .filter(Role.RoleId == role.id) \
+                    .one()
+
+            RoleTree = Tree()
+            RoleTree.add(rootRole)
+            for rankedRole in rankedRoles:
+                RoleTree.add(rankedRole)
+
+            return RoleTree
+        
+        return None
+        
+        
     
     @commands.command()
     @commands.has_any_role('Administrator') 
