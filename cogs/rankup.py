@@ -17,7 +17,7 @@ class Node:
 class Tree:
     def __init__(self):
         self.root = None
-        self.cmp = lambda value, node: value < node.value
+        # self.cmp = lambda value, node: value < node.value
 
     def setCmpFunction(self, function):
         self.cmp = function
@@ -25,8 +25,8 @@ class Tree:
     def GetRoot(self):
         return self.root
 
-    # def GetLeftChild(self, node):
-    #     return node.left if node is not None else None
+    def GetLeftChild(self, node):
+        return node.left if node is not None else None
 
     # def GetRightChild(self, node):
     #     return node.right if node is not None else None
@@ -38,15 +38,18 @@ class Tree:
             self._add(val, self.root)
     
     def _add(self, value, node):
-        if self.cmp(value, node) == True:
+        
+        if value.Value < node.value.Value == True:
             if node.left is not None:
                 self._add(value, node.left)
             else:
+                print(value.Name + " added left " + node.value.Name)
                 node.left = Node(value)
         else:
             if node.right is not None:
                 self._add(value, node.right)
             else:
+                print(value.Name + " added right " + node.value.Name)
                 node.right = Node(value)
     
     def find(self, value):
@@ -56,24 +59,27 @@ class Tree:
             return None
 
     def _find(self, value, node):
-        if value == node.value:
+        if value.Value == node.value.Value:
             return node
-        elif self.cmp(value, node) == True and node.left is not None:
+        elif value.Value < node.value.Value and node.left is not None:
             return self._find(value, node.left)
-        elif self.cmp(value, node) == False and node.right is not None:
+        elif value.Value > node.value.Value and node.right is not None:
             return self._find(value, node.right)
         else:
             return None
+
+    
 
 class Rankup(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.roleName = "Registrovan";
-        self.role = self.SetRole(self.roleName)
-        self.roleTree = self.CreateTree()
+        self.role = None
+        self.roleTree = None
 
-    def SetRole(self, roleName):
-        return misc.getRoleByName(self.client, roleName)
+    def SetRole(self):
+        if self.role is None:
+            self.role = misc.getRoleByName(self.client, self.roleName)
 
     def SetValue(self, role: Role):
         database = self.client.get_cog("Database")
@@ -94,24 +100,26 @@ class Rankup(commands.Cog):
                 role.Value = 0
     
     def CreateTree(self):
-        database = self.client.get_cog("Database")
-        if database is not None:
-            session = database.Session()
-            rankedRoles = session.query(Role) \
-                    .filter(Role.ParentRole != None) \
-                    .all()
+        if self.roleTree is None:
+            database = self.client.get_cog("Database")
+            if database is not None:
+                session = database.Session()
+                rankedRoles = session.query(Role) \
+                        .filter(Role.ParentRole != None) \
+                        .all()
 
-            rootRole = session.query(Role) \
-                    .filter(Role.RoleId == 440055845552914433) \
-                    .one()
+                rootRole = session.query(Role) \
+                        .filter(Role.RoleId == 440055845552914433) \
+                        .one()
 
-            RoleTree = Tree()
-            RoleTree.setCmpFunction(lambda rankedRole, node: rankedRole.Value < node.value.Value)
-            #RoleTree.add(rootRole)
-            for rankedRole in rankedRoles:
-                RoleTree.add(rankedRole)
+                RoleTree = Tree()
+                #RoleTree.setCmpFunction(lambda rankedRole, node: rankedRole.Value < node.value.Value)
+                RoleTree.add(rootRole)
+                for rankedRole in rankedRoles:
+                    print(rankedRole)
+                    RoleTree.add(rankedRole)
 
-            return RoleTree
+                return RoleTree
         
         return None
         
@@ -138,44 +146,56 @@ class Rankup(commands.Cog):
 
             session.close()
 
+    
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def imatrikulant(self, ctx):
+        self.SetRole()
         await ctx.author.add_roles(self.role)
         # embed
 
+    
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def apsolvent(self, ctx):
+        self.SetRole()
         await ctx.author.add_roles(self.role)
         # embed
 
+    
     @commands.command(aliases=["diplomirao", "diplomirala"])
     @commands.has_any_role('Administrator') 
     async def diploma(self, ctx):
+        self.SetRole()
         await ctx.autor.kick(reason = "Diplomirao/Diplomirala")
         # update fakultet status
         # embed
 
+    
     @commands.command(aliases=["alumni", "alumna"])
     @commands.has_any_role('Administrator') 
     async def alum(self, ctx):
+        self.SetRole()
         alumRole = misc.getRoleByName(self.client, "Alumni")
         pass
-
+    
+    
     @commands.command(aliases=["ocistio", "ocistila"])
     @commands.has_any_role('Administrator') 
     async def cista(self, ctx):
+        self.SetRole()
         # see current role
         # get higher role
         # add higher role
         # remove lower role
         pass
 
-
+    
+    
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def uslov(self, ctx):
+        self.SetRole()
         database = self.client.get_cog("Database")
         if database is not None:
             session = database.Session()
@@ -207,15 +227,19 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["obnovio", "obnovila"])
     @commands.has_any_role('Administrator') 
     async def obnova(self, ctx):
+        self.SetRole()
         await ctx.author.add_roles(self.role)
         # embed
 
+    
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def kolizija(self, ctx):
-        pass
+        self.SetRole()
+        await ctx.send(self.role)
         # embed
 
+    
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def ispis(self, ctx):
@@ -224,14 +248,20 @@ class Rankup(commands.Cog):
         # embed
 
     def findHighestRole(self, roles: []):
+        if self.roleTree is None:
+            self.roleTree = self.CreateTree()
+            print(self.roleTree.root.left.value.Name)
         roles.sort(key = lambda x: x.Value, reverse = True)
         for role in roles:
             node = self.roleTree.find(role)
+            print(node)
             if node is not None:
+                print(node)
                 leftChild = self.roleTree.GetLeftChild(node.left)
                 if leftChild is not None:
                     return leftChild
         return None
+
 
 def setup(client):
     client.add_cog(Rankup(client))
