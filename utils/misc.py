@@ -14,7 +14,6 @@ def getMember(client, member_id):
 
 def getRoleByName(client, roleName):
     for guild in client.guilds:
-        print(guild.roles)
         for role in guild.roles:
             if role.name == roleName:
                 return role
