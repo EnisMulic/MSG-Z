@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
+import datetime
+
 from models.role import Role
 from models.user import users_roles_association
 from models.user import User
@@ -150,45 +152,91 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def imatrikulant(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
-        # embed
+        # self.SetRole()
+        # await ctx.author.add_roles(self.role)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je imatrikulant :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
+        
 
     
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def apsolvent(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
-        # embed
+        # self.SetRole()
+        # await ctx.author.add_roles(self.role)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je apsolvent :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+        
+
+        await ctx.send(embed = embed)
 
     
     @commands.command(aliases=["diplomirao", "diplomirala"])
     @commands.has_any_role('Administrator') 
     async def diploma(self, ctx):
-        self.SetRole()
-        await ctx.autor.kick(reason = "Diplomirao/Diplomirala")
+        # self.SetRole()
+        # await ctx.autor.kick(reason = "Diplomirao/Diplomirala")
         # update fakultet status
-        # embed
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je diplomirao/diplomirala :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
 
     
     @commands.command(aliases=["alumni", "alumna"])
     @commands.has_any_role('Administrator') 
     async def alum(self, ctx):
-        self.SetRole()
+        # self.SetRole()
         alumRole = misc.getRoleByName(self.client, "Alumni")
-        pass
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je diplomirao/diplomirala :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
     
     
     @commands.command(aliases=["ocistio", "ocistila"])
     @commands.has_any_role('Administrator') 
     async def cista(self, ctx):
-        self.SetRole()
+        # self.SetRole()
         # see current role
         # get higher role
         # add higher role
         # remove lower role
-        pass
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je ocistio/ocistila :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
 
     
     
@@ -217,35 +265,71 @@ class Rankup(commands.Cog):
 
             # for role in usersRankedRoles:
             #     print(role.name)
-            xRole = self.findHighestRole(rankedRoles)
-            await ctx.send(xRole.Name)
+            # xRole = self.findHighestRole(rankedRoles)
+            # await ctx.send(xRole.Name)
         # see current role
         # get higher role
         # add the higher role
-        pass
+
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je ispunio/ispunila uslov :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
+        
 
     @commands.command(aliases=["obnovio", "obnovila"])
     @commands.has_any_role('Administrator') 
     async def obnova(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
-        # embed
+        # self.SetRole()
+        # await ctx.author.add_roles(self.role)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je obnovio/obnovila :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
 
     
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def kolizija(self, ctx):
-        self.SetRole()
-        await ctx.send(self.role)
-        # embed
+        # self.SetRole()
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je upisao/upisala koliziju :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
 
     
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def ispis(self, ctx):
-        await ctx.autor.kick(reason = "Ispis")
+        # await ctx.autor.kick(reason = "Ispis")
         # update fakultet status
-        # embed
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " se ispisao/ispisala :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
 
     def findHighestRole(self, roles: []):
         if self.roleTree is None:
