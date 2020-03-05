@@ -323,11 +323,15 @@ class Tag(commands.Cog):
     
     @commands.command(aliases=["claime-tag"])
     async def claime_text_tag(self, ctx, *, name: str):
-        pass
+        await self._claime_tag(ctx, name, "tag")
 
 
     @commands.command(aliases=["claime-link"])
     async def claime_link_tag(self, ctx, *, name: str):
+        await self._claime_tag(ctx, name, "link")
+
+    async def _claime_tag(self, ctx, name: str, tag_type: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -339,6 +343,7 @@ class Tag(commands.Cog):
                 
                 tag.UserId = ctx.author.id
                 session.commit()
+                await ctx.send(tag_type + " " + name + " claimed by " + ctx.author.mention)
             except SQLAlchemyError as err:
                 print(err)
                 #implement await ctx.send(embed = embed)
