@@ -17,9 +17,10 @@ class Tag(Base):
     UserId = Column(BigInteger, ForeignKey('Users.UserId'), nullable = True)
     User = relationship('User')
 
-    def __init__(self, Name, Link, Created, User, Count = 0):
+    def __init__(self, Name, Type, Content, Created, User, Count = 0):
         self.Name = Name
-        self.Link = Link
+        self.Type = Type
+        self.Content = Content
         self.Created = Created
         self.User = User
         self.Count = Count
