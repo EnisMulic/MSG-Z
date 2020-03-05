@@ -352,11 +352,15 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["transfer-tag"])
     async def transfer_text_tag(self, ctx, member: discord.Member, *, name: str):
-        pass
+        await self._transfer_tag(ctx, member, name, "tag")
     
 
     @commands.command(aliases=["transfer-link"])
     async def transfer_link_tag(self, ctx, member: discord.Member, *, name: str):
+        await self._transfer_tag(ctx, member, name, "link")
+
+    async def _transfer_tag(self, ctx, member: discord.Member, name: str, tag_type: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -368,6 +372,7 @@ class Tag(commands.Cog):
                 
                 tag.UserId = member.id
                 session.commit()
+                await ctx.send(tag_type + " " + name + " transferred")
             except SQLAlchemyError as err:
                 print(err)
                 #implement await ctx.send(embed = embed)
