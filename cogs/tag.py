@@ -52,11 +52,17 @@ class Tag(commands.Cog):
     @commands.command(aliases=["remove-tag"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_text_tag(self, ctx, name: str):
-        pass
+        await self._remove_tag(ctx, name)
+        await ctx.send("Tag removed")
 
     @commands.command(aliases=["remove-link"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def remove_link_tag(self, ctx, id: int):
+    async def remove_link_tag(self, ctx, name: str):
+        self._remove_tag(ctx, name)
+        await ctx.send("Link removed")
+
+    def _remove_tag(self, ctx, name: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             try:
@@ -67,7 +73,6 @@ class Tag(commands.Cog):
                 session.delete(tag)
                 session.commit()
 
-                await ctx.send("Tag removed")
             except SQLAlchemyError as err:
                 print(str(err))
                 session.rollback()
