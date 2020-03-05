@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
-import models.link as lnk
+import models.tag as tg
 from models.user import User
 
 import string
@@ -15,7 +15,7 @@ import re
 
 from utils import misc
 
-class Link(commands.Cog):
+class Tag(commands.Cog):
     def __init__(self, client):
         self.client = client
 
@@ -32,7 +32,7 @@ class Link(commands.Cog):
                             .one()
 
 
-                    newLink = lnk.Link(tag_name, link, datetime.datetime.now(), user)
+                    newTag = tg.Tag(name, link, datetime.datetime.now(), user)
                     session.add(newTag)
                     session.commit()
 
@@ -50,8 +50,8 @@ class Link(commands.Cog):
         if database is not None:
             try:
                 session = database.Session()
-                tag = session.query(lnk.Link) \
-                    .filter(lnk.Link.Id == id) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.Id == id) \
                     .one()
                 session.delete(tag)
                 session.commit()
@@ -71,12 +71,12 @@ class Link(commands.Cog):
         if database is not None:
             try:
                 session = database.Session()
-                link = session.query(lnk.Link) \
-                    .filter(lnk.Link.Id == id) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.Id == id) \
                     .one()
 
-                if link.UserId == ctx.author.id:
-                    link.Name = name
+                if tag.UserId == ctx.author.id:
+                    tag.Name = name
                     session.commit()
 
                     await ctx.send("Tag renamed")
@@ -95,14 +95,14 @@ class Link(commands.Cog):
             if database is not None:
                 try:
                     session = database.Session()
-                    link = session.query(lnk.Link) \
-                        .filter(lnk.Link.Id == id) \
+                    tag = session.query(tg.Tag) \
+                        .filter(tg.Tag.Id == id) \
                         .one()
                     
 
-                    if link.UserId == ctx.author.id:
-                        link.Link = link
-                        link.Count = 0
+                    if tag.UserId == ctx.author.id:
+                        tag.Link = link
+                        tag.Count = 0
                         session.commit()
                     else:
                         await ctx.send("Only the owner can edit the tag")
@@ -113,18 +113,18 @@ class Link(commands.Cog):
                 finally:
                     session.close()
 
-    @commands.command(aliases=["link"])
+    @commands.command(aliases=["tag"])
     async def get_link(self, ctx, *, search: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
-            links = session.query(lnk.Link) \
-                .filter(lnk.Link.Name.ilike(f"%{search}%"))
+            tags = session.query(tg.Tag) \
+                .filter(tg.Tag.Name.ilike(f"%{search}%"))
 
 
             description = '\n'
-            for link in links:
-                description += f"\n:label: [{link.Name}]({link.Link})"
+            for tag in tags:
+                description += f"\n:label: [{tag.Name}]({tag.Link})"
                 tag.Count += 1
                               
             embed = discord.Embed(
@@ -139,17 +139,17 @@ class Link(commands.Cog):
             session.commit()
             session.close()
 
-    @commands.command(aliases=["link-info"])
-    async def link_info(self, ctx, *, search: str):
+    @commands.command(aliases=["tag-info"])
+    async def tag_info(self, ctx, *, search: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
             try:
-                link = session.query(lnk.Link) \
-                    .filter(lnk.Link.Name.ilike(f"%{search}%")) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.Name.ilike(f"%{search}%")) \
                     .one()
 
-                member = misc.getMember(self.client, link.User.UserId)
+                member = misc.getMember(self.client, tag.User.UserId)
 
                 embed = discord.Embed(
                     title = ":label: Tag info",
@@ -158,19 +158,19 @@ class Link(commands.Cog):
 
                 embed.add_field(
                     name = "Id",
-                    value = str(link.Id),
+                    value = str(tag.Id),
                     inline = True
                 )
 
                 embed.add_field(
                     name = "Count",
-                    value = str(link.Count),
+                    value = str(tag.Count),
                     inline = True
                 )
 
                 embed.add_field(
                     name = "Name",
-                    value = f"[{link.Name}]({link.Link})",
+                    value = f"[{tag.Name}]({tag.Link})",
                     inline = True
                 )
 
@@ -181,8 +181,8 @@ class Link(commands.Cog):
                 )
 
                 embed.add_field(
-                    name = "Link created at",
-                    value = link.Created.strftime("%d.%m.%Y %H:%M:%S"),
+                    name = "Tag created at",
+                    value = tag.Created.strftime("%d.%m.%Y %H:%M:%S"),
                     inline = True
                 )
 
@@ -198,24 +198,24 @@ class Link(commands.Cog):
             finally:
                 session.close()
 
-    @commands.command(aliases=["links"])
+    @commands.command(aliases=["tags"])
     async def get_links(self, ctx, member: discord.Member = None):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
 
             member = member if member is not None else ctx.author
-            links = session.query(lnk.Link) \
-                .filter(lnk.Link.UserId == member.id)
+            tags = session.query(tg.Tag) \
+                .filter(tg.Tag.UserId == member.id)
 
 
             description = "\n"
-            for link in links:
-                description += f"\n:label: [{link.Name}]({link.Link})"
-                link.Count += 1
+            for tag in tags:
+                description += f"\n:label: [{tag.Name}]({tag.Link})"
+                tag.Count += 1
                               
             embed = discord.Embed(
-                title = "Users links",
+                title = "Users tags",
                 colour = discord.Colour.blurple()
             ) 
 
@@ -226,7 +226,7 @@ class Link(commands.Cog):
             )
 
             embed.add_field(
-                name = "Links",
+                name = "Tags",
                 value = description,
                 inline = False
             )
@@ -248,11 +248,11 @@ class Link(commands.Cog):
             session = database.Session()
 
             try:
-                link = session.query(lnk.Link) \
-                    .filter(lnk.Link.UserId == ctx.author.id and lnk.Link.Name == name) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
                     .one()
                 
-                link.UserId = None
+                tag.UserId = None
                 session.commit()
             except SQLAlchemyError as err:
                 print(err)
@@ -267,11 +267,11 @@ class Link(commands.Cog):
             session = database.Session()
 
             try:
-                link = session.query(lnk.Link) \
-                    .filter(lnk.Link.UserId == None and lnk.Link.Name == name) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == None and tg.Tag.Name == name) \
                     .one()
                 
-                link.UserId = ctx.author.id
+                tag.UserId = ctx.author.id
                 session.commit()
             except SQLAlchemyError as err:
                 print(err)
@@ -286,11 +286,11 @@ class Link(commands.Cog):
             session = database.Session()
 
             try:
-                link = session.query(lnk.Link) \
-                    .filter(lnk.Link.UserId == ctx.author.id and lnk.Link.Name == name) \
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
                     .one()
                 
-                link.UserId = member.id
+                tag.UserId = member.id
                 session.commit()
             except SQLAlchemyError as err:
                 print(err)
@@ -300,4 +300,4 @@ class Link(commands.Cog):
 
 
 def setup(client):
-    client.add_cog(Link(client))
+    client.add_cog(Tag(client))

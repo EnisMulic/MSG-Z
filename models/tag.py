@@ -8,7 +8,7 @@ class Tag(Base):
 
     Id = Column(Integer, primary_key = True)
     Name = Column(String(100), nullable = False, unique = True)
-    Content = Column(String(2000), nullable = False, unique = True)
+    Content = Column(String(2000))
     Type = Column(String(20)) # LinkTag or TextTag
     Count = Column(Integer, default = 0)
     Created = Column(DateTime)
