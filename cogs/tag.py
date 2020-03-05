@@ -106,34 +106,36 @@ class Tag(commands.Cog):
                 session.close()
 
     @commands.command(aliases=["edit-tag"])
-    async def edit_text_tag(self, ctx, id: int, link: str):
-        pass
+    async def edit_text_tag(self, ctx, name: str, *, content: str):
+        await self._edit_tag(ctx, name, content)
 
     @commands.command(aliases=["edit-link"])
-    async def edit_link_tag(self, ctx, id: int, link: str):
+    async def edit_link_tag(self, ctx, name: str, link: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
-            database = self.client.get_cog('Database')
-            if database is not None:
-                try:
-                    session = database.Session()
-                    tag = session.query(tg.Tag) \
-                        .filter(tg.Tag.Id == id) \
-                        .one()
-                    
+            await self._edit_tag(ctx, name, link)
 
-                    if tag.UserId == ctx.author.id:
-                        tag.Link = link
-                        tag.Count = 0
-                        session.commit()
-                    else:
-                        await ctx.send("Only the owner can edit the tag")
+    async def _edit_tag(self, ctx, name: str, content: str):
+        name = name.strip('\"')
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                tag = session.query(tg.Tag) \
+                    .filter(tg.Tag.Name == name) \
+                    .one()
                 
-
-                except SQLAlchemyError as err:
-                    print(str(err))
-                finally:
-                    session.close()
-
+                if tag.UserId == ctx.author.id:
+                    tag.Content = content
+                    tag.Count = 0
+                    session.commit()
+                else:
+                    await ctx.send("Only the owner can edit the tag")
+            
+            except SQLAlchemyError as err:
+                print(str(err))
+            finally:
+                session.close()
+    
     @commands.command(aliases=["tag"])
     async def get_text_tag(self, ctx, *, search: str):
         pass
