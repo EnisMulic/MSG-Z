@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands, tasks
 
-
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -19,33 +18,45 @@ class Tag(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.command(aliases=["add-tag"])
+    async def add_text_tag(self, ctx, name: str, *, content):
+        await self._add_tag(ctx, "Text", name, content)
+
     @commands.command(aliases=["add-link"])
-    async def add_link(self, ctx, link: str, *, name: str):
+    async def add_link_tag_tag(self, ctx, name: str, link: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
-            database = self.client.get_cog('Database')
-            if database is not None:
-                try:
-                    session = database.Session()
+            await self._add_tag(ctx, "Link", name, link)
+    
 
-                    user = session.query(User) \
-                            .filter(User.UserId == ctx.author.id) \
-                            .one()
+    async def _add_tag(self, ctx, tag_type, name, content):
+        name = name.strip('\"')
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                user = session.query(User) \
+                        .filter(User.UserId == ctx.author.id) \
+                        .one()
+        
+                newTag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
+                session.add(newTag)
+                session.commit()
+                await ctx.send("Tag added")
+            except SQLAlchemyError as err:
+                print(str(err))
+                session.rollback()
+            finally:
+                session.close()
 
 
-                    newTag = tg.Tag(name, link, datetime.datetime.now(), user)
-                    session.add(newTag)
-                    session.commit()
-
-                    await ctx.send("Tag added")
-                except SQLAlchemyError as err:
-                    print(str(err))
-                    session.rollback()
-                finally:
-                    session.close()
+    @commands.command(aliases=["remove-tag"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def remove_text_tag(self, ctx, name: str):
+        pass
 
     @commands.command(aliases=["remove-link"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def remove_link(self, ctx, id: int):
+    async def remove_link_tag(self, ctx, id: int):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
@@ -63,20 +74,27 @@ class Tag(commands.Cog):
             finally:
                 session.close()
 
+    @commands.command(aliases=["rename-tag"])
+    async def rename_text_tag(self, ctx, old_name: str, new_name: str):
+        await self._rename_tag(ctx, old_name, new_name)
 
     @commands.command(aliases=["rename-link"])
-    #@commands.has_any_role('Administrator', 'Moderator')
-    async def rename_link(self, ctx, id: int, *, name: str):
+    async def rename_link_tag(self, ctx, old_name: str, new_name: str):
+        await self._rename_tag(self, old_name, new_name)
+    
+    async def _rename_tag(self, ctx, old_name: str, new_name: str):
+        old_name = old_name.strip('\"')
+        new_name = new_name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             try:
                 session = database.Session()
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Id == id) \
+                    .filter(tg.Tag.Name == old_name) \
                     .one()
 
                 if tag.UserId == ctx.author.id:
-                    tag.Name = name
+                    tag.Name = new_name
                     session.commit()
 
                     await ctx.send("Tag renamed")
@@ -86,10 +104,13 @@ class Tag(commands.Cog):
                 print(str(err))
             finally:
                 session.close()
-    
+
+    @commands.command(aliases=["edit-tag"])
+    async def edit_text_tag(self, ctx, id: int, link: str):
+        pass
+
     @commands.command(aliases=["edit-link"])
-    #@commands.has_any_role('Administrator', 'Moderator')
-    async def edit_link(self, ctx, id: int, link: str):
+    async def edit_link_tag(self, ctx, id: int, link: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
             database = self.client.get_cog('Database')
             if database is not None:
@@ -114,7 +135,11 @@ class Tag(commands.Cog):
                     session.close()
 
     @commands.command(aliases=["tag"])
-    async def get_link(self, ctx, *, search: str):
+    async def get_text_tag(self, ctx, *, search: str):
+        pass
+
+    @commands.command(aliases=["link"])
+    async def get_link_tag(self, ctx, *, search: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -139,8 +164,13 @@ class Tag(commands.Cog):
             session.commit()
             session.close()
 
+
     @commands.command(aliases=["tag-info"])
-    async def tag_info(self, ctx, *, search: str):
+    async def text_tag_info(self, ctx, *, search: str):
+        pass
+
+    @commands.command(aliases=["link-info"])
+    async def link_tag_info(self, ctx, *, search: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -199,7 +229,7 @@ class Tag(commands.Cog):
                 session.close()
 
     @commands.command(aliases=["tags"])
-    async def get_links(self, ctx, member: discord.Member = None):
+    async def get_link_tags(self, ctx, member: discord.Member = None):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -241,8 +271,13 @@ class Tag(commands.Cog):
             
             session.close()
 
+    @commands.command(aliases=["release-tag"])
+    async def release_text_tag(self, ctx, *, name: str):
+        pass
+
+
     @commands.command(aliases=["release-link"])
-    async def release_link(self, ctx, *, name: str):
+    async def release_link_tag(self, ctx, *, name: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -260,8 +295,13 @@ class Tag(commands.Cog):
             finally:
                 session.close()
     
+    @commands.command(aliases=["claime-tag"])
+    async def claime_text_tag(self, ctx, *, name: str):
+        pass
+
+
     @commands.command(aliases=["claime-link"])
-    async def claime_link(self, ctx, *, name: str):
+    async def claime_link_tag(self, ctx, *, name: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -279,8 +319,13 @@ class Tag(commands.Cog):
             finally:
                 session.close()
 
+    @commands.command(aliases=["transfer-tag"])
+    async def transfer_text_tag(self, ctx, member: discord.Member, *, name: str):
+        pass
+    
+
     @commands.command(aliases=["transfer-link"])
-    async def transfer_link(self, ctx, member: discord.Member, *, name: str):
+    async def transfer_link_tag(self, ctx, member: discord.Member, *, name: str):
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
