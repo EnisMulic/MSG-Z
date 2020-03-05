@@ -20,15 +20,17 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["add-tag"])
     async def add_text_tag(self, ctx, name: str, *, content):
-        await self._add_tag(ctx, "Text", name, content)
+        self._add_tag(ctx, "Text", name, content)
+        await ctx.send("Tag added")
 
     @commands.command(aliases=["add-link"])
     async def add_link_tag_tag(self, ctx, name: str, link: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
-            await self._add_tag(ctx, "Link", name, link)
+            self._add_tag(ctx, "Link", name, link)
+            await ctx.send("Link added")
     
 
-    async def _add_tag(self, ctx, tag_type, name, content):
+    def _add_tag(self, ctx, tag_type, name, content):
         name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
@@ -41,7 +43,6 @@ class Tag(commands.Cog):
                 newTag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
                 session.add(newTag)
                 session.commit()
-                await ctx.send("Tag added")
             except SQLAlchemyError as err:
                 print(str(err))
                 session.rollback()
@@ -81,13 +82,13 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["rename-tag"])
     async def rename_text_tag(self, ctx, old_name: str, new_name: str):
-        await self._rename_tag(ctx, old_name, new_name)
+        await self._rename_tag(ctx, old_name, new_name, "tag")
 
     @commands.command(aliases=["rename-link"])
     async def rename_link_tag(self, ctx, old_name: str, new_name: str):
-        await self._rename_tag(self, old_name, new_name)
+        await self._rename_tag(self, old_name, new_name, "link")
     
-    async def _rename_tag(self, ctx, old_name: str, new_name: str):
+    async def _rename_tag(self, ctx, old_name: str, new_name: str, tag_type: str):
         old_name = old_name.strip('\"')
         new_name = new_name.strip('\"')
         database = self.client.get_cog('Database')
@@ -102,9 +103,9 @@ class Tag(commands.Cog):
                     tag.Name = new_name
                     session.commit()
 
-                    await ctx.send("Tag renamed")
+                    await ctx.send(tag_type + " renamed")
                 else:
-                    await ctx.send("Only the owner can rename the tag")
+                    await ctx.send("Only the owner can rename the " + tag_type)
             except SQLAlchemyError as err:
                 print(str(err))
             finally:
@@ -112,14 +113,14 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["edit-tag"])
     async def edit_text_tag(self, ctx, name: str, *, content: str):
-        await self._edit_tag(ctx, name, content)
+        await self._edit_tag(ctx, name, content, "tag")
 
     @commands.command(aliases=["edit-link"])
     async def edit_link_tag(self, ctx, name: str, link: str):
         if re.match("^https:[a-zA-Z0-9_.+-/#~]+$", link) is not None:
-            await self._edit_tag(ctx, name, link)
+            await self._edit_tag(ctx, name, link, "link")
 
-    async def _edit_tag(self, ctx, name: str, content: str):
+    async def _edit_tag(self, ctx, name: str, content: str, tag_type: str):
         name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
@@ -134,7 +135,7 @@ class Tag(commands.Cog):
                     tag.Count = 0
                     session.commit()
                 else:
-                    await ctx.send("Only the owner can edit the tag")
+                    await ctx.send("Only the owner can edit the " + tag_type)
             
             except SQLAlchemyError as err:
                 print(str(err))
