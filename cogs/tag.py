@@ -143,8 +143,20 @@ class Tag(commands.Cog):
                 session.close()
     
     @commands.command(aliases=["tag"])
-    async def get_text_tag(self, ctx, *, search: str):
-        pass
+    async def get_text_tag(self, ctx, *, name: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            session = database.Session()
+            tag = session.query(tg.Tag) \
+                .filter(tg.Tag.Name == name) \
+                .one()
+
+            if tag is not None:
+                await ctx.send(tag)
+                tag.Count += 1
+                session.commit()
+                
+            session.close()
 
     @commands.command(aliases=["link"])
     async def get_link_tag(self, ctx, *, search: str):
