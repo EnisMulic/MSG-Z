@@ -155,7 +155,7 @@ class Tag(commands.Cog):
                 await ctx.send(tag)
                 tag.Count += 1
                 session.commit()
-                
+
             session.close()
 
     @commands.command(aliases=["link"])
@@ -186,23 +186,27 @@ class Tag(commands.Cog):
 
 
     @commands.command(aliases=["tag-info"])
-    async def text_tag_info(self, ctx, *, search: str):
-        pass
+    async def text_tag_info(self, ctx, *, name: str):
+        await self._tag_info(ctx, name, "tag")
 
     @commands.command(aliases=["link-info"])
-    async def link_tag_info(self, ctx, *, search: str):
+    async def link_tag_info(self, ctx, *, name: str):
+        await self._tag_info(ctx, name, "link")
+
+    async def _tag_info(self, ctx, name: str, tag_type: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name.ilike(f"%{search}%")) \
+                    .filter(tg.Tag.Name.ilike(f"%{name}%")) \
                     .one()
 
                 member = misc.getMember(self.client, tag.User.UserId)
 
                 embed = discord.Embed(
-                    title = ":label: Tag info",
+                    title = ":label:" + tag_type + "info",
                     colour = discord.Colour.blurple()
                 ) 
 
@@ -220,7 +224,7 @@ class Tag(commands.Cog):
 
                 embed.add_field(
                     name = "Name",
-                    value = f"[{tag.Name}]({tag.Link})",
+                    value = f"[{tag.Name}]",
                     inline = True
                 )
 
@@ -236,9 +240,6 @@ class Tag(commands.Cog):
                     inline = True
                 )
 
-                
-
-                
                 embed.set_thumbnail(url = member.avatar_url)
 
                 
@@ -248,48 +249,48 @@ class Tag(commands.Cog):
             finally:
                 session.close()
 
-    @commands.command(aliases=["tags"])
-    async def get_link_tags(self, ctx, member: discord.Member = None):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
+    # @commands.command(aliases=["tags"])
+    # async def get_link_tags(self, ctx, member: discord.Member = None):
+    #     database = self.client.get_cog('Database')
+    #     if database is not None:
+    #         session = database.Session()
 
-            member = member if member is not None else ctx.author
-            tags = session.query(tg.Tag) \
-                .filter(tg.Tag.UserId == member.id)
+    #         member = member if member is not None else ctx.author
+    #         tags = session.query(tg.Tag) \
+    #             .filter(tg.Tag.UserId == member.id)
 
 
-            description = "\n"
-            for tag in tags:
-                description += f"\n:label: [{tag.Name}]({tag.Link})"
-                tag.Count += 1
+    #         description = "\n"
+    #         for tag in tags:
+    #             description += f"\n:label: [{tag.Name}]"
+    #             tag.Count += 1
                               
-            embed = discord.Embed(
-                title = "Users tags",
-                colour = discord.Colour.blurple()
-            ) 
+    #         embed = discord.Embed(
+    #             title = "Users tags",
+    #             colour = discord.Colour.blurple()
+    #         ) 
 
-            embed.add_field(
-                name = "Owner",
-                value = "<@" + str(member.id) + ">",
-                inline = False
-            )
+    #         embed.add_field(
+    #             name = "Owner",
+    #             value = "<@" + str(member.id) + ">",
+    #             inline = False
+    #         )
 
-            embed.add_field(
-                name = "Tags",
-                value = description,
-                inline = False
-            )
+    #         embed.add_field(
+    #             name = "Tags",
+    #             value = description,
+    #             inline = False
+    #         )
 
 
-
-            
-            embed.set_thumbnail(url = member.avatar_url)
 
             
-            await ctx.send(embed = embed)
+    #         embed.set_thumbnail(url = member.avatar_url)
+
             
-            session.close()
+    #         await ctx.send(embed = embed)
+            
+    #         session.close()
 
     @commands.command(aliases=["release-tag"])
     async def release_text_tag(self, ctx, *, name: str):
