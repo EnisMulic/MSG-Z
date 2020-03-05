@@ -53,27 +53,27 @@ class Tag(commands.Cog):
     @commands.command(aliases=["remove-tag"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_text_tag(self, ctx, name: str):
-        await self._remove_tag(ctx, name)
-        await ctx.send("Tag removed")
+        await self._remove_tag(ctx, name, "Tag")
 
     @commands.command(aliases=["remove-link"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_link_tag(self, ctx, name: str):
-        self._remove_tag(ctx, name)
-        await ctx.send("Link removed")
+        await self._remove_tag(ctx, name, "Link")
 
-    def _remove_tag(self, ctx, name: str):
+    async def _remove_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             try:
                 session = database.Session()
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Id == id) \
+                    .filter(tg.Tag.Name == name) \
+                    .filter(tg.Tag.Type == tag_type) \
                     .one()
+                
                 session.delete(tag)
                 session.commit()
-
+                await ctx.send(tag_type + " removed")
             except SQLAlchemyError as err:
                 print(str(err))
                 session.rollback()
@@ -86,7 +86,7 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["rename-link"])
     async def rename_link_tag(self, ctx, old_name: str, new_name: str):
-        await self._rename_tag(self, old_name, new_name, "link")
+        await self._rename_tag(ctx, old_name, new_name, "link")
     
     async def _rename_tag(self, ctx, old_name: str, new_name: str, tag_type: str):
         old_name = old_name.strip('\"')
@@ -143,33 +143,36 @@ class Tag(commands.Cog):
                 session.close()
     
     @commands.command(aliases=["tag"])
-    async def get_text_tag(self, ctx, *, name: str):
+    async def get_text_tag(self, ctx, name: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
             tag = session.query(tg.Tag) \
-                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Name == name and tg.Tag.Type == "Text") \
                 .one()
 
             if tag is not None:
-                await ctx.send(tag)
+                await ctx.send(tag.Content)
                 tag.Count += 1
                 session.commit()
 
             session.close()
 
     @commands.command(aliases=["link"])
-    async def get_link_tag(self, ctx, *, search: str):
+    async def get_link_tag(self, ctx, name: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
             tags = session.query(tg.Tag) \
-                .filter(tg.Tag.Name.ilike(f"%{search}%"))
+                .filter(tg.Tag.Name.ilike(f"%{name}%")) \
+                .filter(tg.Tag.Type == "Link")
 
 
             description = '\n'
             for tag in tags:
-                description += f"\n:label: [{tag.Name}]({tag.Link})"
+                description += f"\n:label: [{tag.Name}]({tag.Content})"
                 tag.Count += 1
                               
             embed = discord.Embed(
@@ -200,7 +203,7 @@ class Tag(commands.Cog):
             session = database.Session()
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name.ilike(f"%{name}%")) \
+                    .filter(tg.Tag.Name == name) \
                     .one()
 
                 member = misc.getMember(self.client, tag.User.UserId)
@@ -303,15 +306,19 @@ class Tag(commands.Cog):
 
     async def _release_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
+        await ctx.send(name)
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
-                    .one()
+                    .filter(tg.Tag.UserId == ctx.author.id) \
+                    .filter(tg.Tag.Name == name) \
+                    .one() 
+
                 
+
                 tag.UserId = None
                 session.commit()
                 await ctx.send(tag_type + " released")
@@ -338,7 +345,8 @@ class Tag(commands.Cog):
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == None and tg.Tag.Name == name) \
+                    .filter(tg.Tag.UserId == None) \
+                    .filter(tg.Tag.Name == name) \
                     .one()
                 
                 tag.UserId = ctx.author.id
@@ -351,12 +359,12 @@ class Tag(commands.Cog):
                 session.close()
 
     @commands.command(aliases=["transfer-tag"])
-    async def transfer_text_tag(self, ctx, member: discord.Member, *, name: str):
+    async def transfer_text_tag(self, ctx, member: discord.Member, name: str):
         await self._transfer_tag(ctx, member, name, "tag")
     
 
     @commands.command(aliases=["transfer-link"])
-    async def transfer_link_tag(self, ctx, member: discord.Member, *, name: str):
+    async def transfer_link_tag(self, ctx, member: discord.Member, name: str):
         await self._transfer_tag(ctx, member, name, "link")
 
     async def _transfer_tag(self, ctx, member: discord.Member, name: str, tag_type: str):
@@ -367,7 +375,8 @@ class Tag(commands.Cog):
 
             try:
                 tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id and tg.Tag.Name == name) \
+                    .filter(tg.Tag.UserId == ctx.author.id) \
+                    .filter(tg.Tag.Name == name) \
                     .one()
                 
                 tag.UserId = member.id
