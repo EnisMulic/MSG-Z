@@ -294,11 +294,15 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["release-tag"])
     async def release_text_tag(self, ctx, *, name: str):
-        pass
+        await self._release_tag(ctx, name, "tag")
 
 
     @commands.command(aliases=["release-link"])
     async def release_link_tag(self, ctx, *, name: str):
+        await self._release_tag(ctx, name, "link")
+
+    async def _release_tag(self, ctx, name: str, tag_type: str):
+        name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
             session = database.Session()
@@ -310,6 +314,7 @@ class Tag(commands.Cog):
                 
                 tag.UserId = None
                 session.commit()
+                await ctx.send(tag_type + " released")
             except SQLAlchemyError as err:
                 print(err)
                 #implement await ctx.send(embed = embed)
