@@ -172,16 +172,14 @@ class Tag(commands.Cog):
 
             description = '\n'
             for tag in tags:
-                description += f"\n:label: [{tag.Name}]({tag.Content})"
+                description += f"\n[`{tag.Name}`]({tag.Content})"
                 tag.Count += 1
                               
             embed = discord.Embed(
-                title = "Tags",
-                description = description,
+                description = "\n" + description,
                 colour = discord.Colour.blurple()
             ) 
             
-            embed.set_thumbnail(url = self.client.user.avatar_url)
             
             await ctx.send(embed = embed)
             session.commit()
