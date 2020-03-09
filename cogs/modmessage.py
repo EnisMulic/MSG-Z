@@ -20,28 +20,15 @@ class ModeratorMsg(commands.Cog):
 
         await ctx.channel.purge(limit = int(numberOfMessages + 1))
         action = discord.Embed(
-            title = "Message(s) deleted",
-            colour = discord.Colour.red()
+            colour = discord.Colour.red(),
+            description = str(numberOfMessages) + " messages deleted in " + ctx.message.channel.mention,
         )
-
-        action.add_field(
-            name = "Action performed by: ",
-            value = ctx.author.mention,
-            inline = False
+        action.set_author(
+            name = ctx.author.nick,
+            icon_url = ctx.author.avatar_url
         )
-
-        action.add_field(
-            name = "Channel:",
-            value = ctx.message.channel.mention,
-            inline = False
-        )
-
-        action.add_field(
-            name = "Number of messages:",
-            value = numberOfMessages,
-            inline = False
-        )
-
+        
+        
         await logger.LogAction(self.client, action)
 
     @commands.command(aliases=["msg-echo"], description = "Send message to a channel as the bot")
