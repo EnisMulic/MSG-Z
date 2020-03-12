@@ -214,16 +214,24 @@ class Tag(commands.Cog):
                     .filter(tg.Tag.Type == tag_type) \
                     .one()
 
-                member = misc.getMember(self.client, tag.User.UserId)
 
+                owner = f"<@{tag.User.UserId}>" if tag.User is not None else '@everyone'
+                
                 embed = discord.Embed(
-                    title = ":label:" + tag_type + "info",
+                    title = ":label: " + tag_type + " info",
                     colour = discord.Colour.blurple()
                 ) 
 
+                
                 embed.add_field(
-                    name = "Id",
-                    value = str(tag.Id),
+                    name = "Owner",
+                    value = owner,
+                    inline = True
+                )
+
+                embed.add_field(
+                    name = "Name",
+                    value = f"{tag.Name}",
                     inline = True
                 )
 
@@ -233,25 +241,14 @@ class Tag(commands.Cog):
                     inline = True
                 )
 
-                embed.add_field(
-                    name = "Name",
-                    value = f"[{tag.Name}]",
-                    inline = True
-                )
-
-                embed.add_field(
-                    name = "Owner",
-                    value = member.mention,
-                    inline = False
-                )
-
+ 
                 embed.add_field(
                     name = "Tag created at",
                     value = tag.Created.strftime("%d.%m.%Y %H:%M:%S"),
                     inline = True
                 )
 
-                embed.set_thumbnail(url = member.avatar_url)
+                # embed.set_thumbnail(url = self.client.avatar_url)
 
                 
                 await ctx.send(embed = embed)
