@@ -337,16 +337,16 @@ class Tag(commands.Cog):
             finally:
                 session.close()
     
-    @commands.command(aliases=["claime-tag"])
-    async def claime_text_tag(self, ctx, *, name: str):
-        await self._claime_tag(ctx, name, TagType.TEXT.name)
+    @commands.command(aliases=["claim-tag"])
+    async def claim_text_tag(self, ctx, *, name: str):
+        await self._claim_tag(ctx, name, TagType.TEXT.name)
 
 
-    @commands.command(aliases=["claime-link"])
-    async def claime_link_tag(self, ctx, *, name: str):
-        await self._claime_tag(ctx, name, TagType.LINK.name)
+    @commands.command(aliases=["claim-link"])
+    async def claim_link_tag(self, ctx, *, name: str):
+        await self._claim_tag(ctx, name, TagType.LINK.name)
 
-    async def _claime_tag(self, ctx, name: str, tag_type: str):
+    async def _claim_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
