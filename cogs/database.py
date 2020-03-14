@@ -201,6 +201,7 @@ class Database(commands.Cog):
                                             self.session.commit()
                                         except Exception as err:
                                             print(err)
+                                            self.session.rollback()
                                 elif dbRole.RoleId in userRolesIDs:
                                     if dbRole.RoleId not in memberRolesIDs:
                                         try:
@@ -208,6 +209,7 @@ class Database(commands.Cog):
                                             self.session.commit()
                                         except Exception as err:
                                             print(err)
+                                            self.session.rollback()
 
                         self.session.commit()
                     except SQLAlchemyError as err:
