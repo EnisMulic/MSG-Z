@@ -196,14 +196,14 @@ class Tag(commands.Cog):
 
 
     @commands.command(aliases=["tag-info"])
-    async def text_tag_info(self, ctx, *, name: str):
-        await self._tag_info(ctx, name, TagType.TEXT.name)
+    async def info_text_tag(self, ctx, *, name: str):
+        await self._info_tag(ctx, name, TagType.TEXT.name)
 
     @commands.command(aliases=["link-info"])
-    async def link_tag_info(self, ctx, *, name: str):
-        await self._tag_info(ctx, name, TagType.LINK.name)
+    async def info_link_tag(self, ctx, *, name: str):
+        await self._info_tag(ctx, name, TagType.LINK.name)
 
-    async def _tag_info(self, ctx, name: str, tag_type: str):
+    async def _info_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
         database = self.client.get_cog('Database')
         if database is not None:
