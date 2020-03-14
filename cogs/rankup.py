@@ -10,6 +10,9 @@ from models.user import User
 
 from utils import misc
 
+def is_in_channel(ctx):
+    return ctx.channel.name == 'promocije' or ctx.channel.name == 'logger'
+
 class SortTree:
   def __init__(self, value):
 
@@ -117,10 +120,10 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def imatrikulant(self, ctx):
-        # self.SetRole()
-        # await ctx.author.add_roles(self.role)
+        self.SetRole()
+        await ctx.author.add_roles(self.role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -135,10 +138,10 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def apsolvent(self, ctx):
-        # self.SetRole()
-        # await ctx.author.add_roles(self.role)
+        self.SetRole()
+        await ctx.author.add_roles(self.role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -153,10 +156,10 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["diplomirao", "diplomirala"])
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel)
     async def diploma(self, ctx):
         # self.SetRole()
-        # await ctx.autor.kick(reason = "Diplomirao/Diplomirala")
+        await ctx.author.kick(reason = "Diplomirao/Diplomirala")
         # update fakultet status
         
         embed = discord.Embed(
@@ -171,11 +174,18 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["alumni", "alumna"])
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def alum(self, ctx):
         # self.SetRole()
         alumRole = misc.getRoleByName(self.client, "Alumni")
-        
+        await ctx.author.add_roles(alumRole)
+        rankedRoles = self.getUsersRankedRoles(ctx.author)
+
+        for role in ctx.author.roles:
+            for rankedRole in rankedRoles:
+                if role.id == rankedRole.RoleId:
+                    await ctx.author.remove_roles(role)
+
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
             description = "\n :tada: " + ctx.author.mention + " je diplomirao/diplomirala :tada:"
@@ -188,13 +198,21 @@ class Rankup(commands.Cog):
     
     
     @commands.command(aliases=["ocistio", "ocistila"])
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def cista(self, ctx):
         self.SetRole()
-        # see current role
-        # get higher role
-        # add higher role
-        # remove lower role
+        rankedRoles = self.getUsersRankedRoles(ctx.author)
+        highestRole, nextRole = self.findNextRole(rankedRoles)
+        
+        for role in ctx.author.roles:
+            for rankedRole in rankedRoles:
+                if role.id == rankedRole.RoleId:
+                    await ctx.author.remove_roles(role)
+
+        nextRole = misc.getRoleById(self.client, nextRole.RoleId)
+        await ctx.author.add_roles(nextRole)
+        await ctx.author.add_roles(self.role)
+
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
             description = "\n :tada: " + ctx.author.mention + " je ocistio/ocistila :tada:"
@@ -208,14 +226,19 @@ class Rankup(commands.Cog):
     
     
     @commands.command()
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def uslov(self, ctx):
         self.SetRole()
         rankedRoles = self.getUsersRankedRoles(ctx.author)
-        database = self.client.get_cog("Database")
         
         highestRole, nextRole = self.findNextRole(rankedRoles)
         nextRole = misc.getRoleById(self.client, nextRole.RoleId)
+
+
+        for role in ctx.author.roles:
+            for rankedRole in rankedRoles:
+                if role.id == rankedRole.RoleId and role.id != highestRole.RoleId:
+                    await ctx.author.remove_roles(role)
 
         await ctx.author.add_roles(nextRole)
         await ctx.author.add_roles(self.role)
@@ -232,10 +255,10 @@ class Rankup(commands.Cog):
         
 
     @commands.command(aliases=["obnovio", "obnovila"])
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def obnova(self, ctx):
-        # self.SetRole()
-        # await ctx.author.add_roles(self.role)
+        self.SetRole()
+        await ctx.author.add_roles(self.role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -249,43 +272,34 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def kolizija(self, ctx):
         self.SetRole()
-        database = self.client.get_cog("Database")
-        if database is not None:
-            session = database.Session()
 
-            roles = ctx.author.roles
-            rankedRoles = session.query(Role) \
-                .join(users_roles_association) \
-                .filter(Role.ParentRole != None) \
-                .filter(users_roles_association.c.UserId == ctx.author.id) \
-                .all()
-
-
-            # for role in usersRankedRoles:
-            #     print(role.name)
-            highestRole, nextRole = self.findNextRoleKolizija(rankedRoles)
-            if nextRole is not None:
-                print(nextRole.Name)
-                print(highestRole.Name)
         
-        # embed = discord.Embed(
-        #     colour = discord.Colour.gold().value,
-        #     description = "\n :tada: " + ctx.author.mention + " je upisao/upisala koliziju :tada:"
-        # )
-
-        # embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
-        # embed.set_thumbnail(url = ctx.author.avatar_url)
-
-        # await ctx.send(embed = embed)
+        rankedRoles = self.getUsersRankedRoles(ctx.author)
+        highestRole, nextRole = self.findNextRoleKolizija(rankedRoles)
+        
+        kozizijaRole = misc.getRoleById(self.client, nextRole.RoleId)
+        
+        await ctx.author.add_roles(kozizijaRole)
+        await ctx.author.add_roles(self.role)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je upisao/upisala koliziju :tada:"
+        )
+        
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+        
+        await ctx.send(embed = embed)
 
     
     @commands.command()
-    @commands.has_any_role('Administrator') 
+    @commands.check(is_in_channel) 
     async def ispis(self, ctx):
-        # await ctx.autor.kick(reason = "Ispis")
+        await ctx.author.kick(reason = "Ispis")
         # update fakultet status
         
         embed = discord.Embed(
