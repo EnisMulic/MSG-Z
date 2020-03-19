@@ -27,8 +27,8 @@ class Tag(commands.Cog):
 
     @commands.command(aliases=["add-tag"])
     async def add_text_tag(self, ctx, name: str, *, content):
-        self._add_tag(ctx, TagType.TEXT.name, name, content)
-        await ctx.send("Tag added")
+        await self._add_tag(ctx, TagType.TEXT.name, name, content)
+        
 
     @commands.command(aliases=["add-link"])
     async def add_link_tag(self, ctx, name: str, link: str):
