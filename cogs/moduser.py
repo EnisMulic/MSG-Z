@@ -54,6 +54,27 @@ class ModeratorUser(commands.Cog):
             finally:
                 session.close()
 
+    @commands.command(aliases=["change-account", "change-acc"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def change_account(self, ctx, old_account: discord.Member, new_account: discord.Member):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                account = session.query(User) \
+                            .filter(User.UserId == old_account.id) \
+                            .one()
+                
+                if account is not None:
+                    account.UserId = new_account.id
+                    await old_account.kick()
+                    
+                session.commit()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
+            finally:
+                session.close()
+
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_index(self, ctx, member: discord.Member, userIndex: str):
