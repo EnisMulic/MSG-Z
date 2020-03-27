@@ -144,7 +144,26 @@ class Youtube(commands.Cog):
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
             
+    @commands.command(aliases=["toggle-channel"])
+    @commands.has_any_role('Administrator', 'Moderator')
+    async def toggle_channel(self, ctx, *, channel_name: str):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                channel = session.query(yt.Youtube) \
+                            .filter(yt.Youtube.ChannelName == channel_name) \
+                            .one()
 
+                if channel is not None:
+                    channel.Output = not channel.Output
+                
+                session.commit()
+            except Exception as err:
+                await ctx.send(str(err))
+            finally:
+                session.close()
+    
     def get_videos(self):
         try:
             self.send_videos.start()
