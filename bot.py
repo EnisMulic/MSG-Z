@@ -10,6 +10,7 @@ import sys
 
 
 client = commands.Bot(command_prefix = '$')
+client.remove_command('help')
 
 def getToken():
     with open("config.json") as json_data_file:
