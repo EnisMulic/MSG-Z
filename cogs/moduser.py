@@ -8,8 +8,10 @@ import datetime
 
 from models.user import User
 from models.role import Role
+from models.user import users_roles_association
 
 from utils import logger
+from utils import misc
 
 class ModeratorUser(commands.Cog):
     def __init__(self, client):
@@ -256,6 +258,33 @@ class ModeratorUser(commands.Cog):
             finally:
                 session.close()
 
-        
+    @commands.command()
+    async def revoke(self, ctx):
+        database = self.client.get_cog('Database')
+        if database is not None:
+            try:
+                session = database.Session()
+                userRoles = session.query(users_roles_association) \
+                        .join(User, User.UserId == ctx.author.id) \
+                        .filter(users_roles_association.c.UserId == ctx.author.id)
+                
+                roles = []
+                for userRole in userRoles:
+                    roles.append(misc.getRoleById(self.client, userRole.RoleId))
+                ctx.author.add_roles(roles)
+
+                removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
+                ctx.author.remove_roles(removeRole)
+                session.commit()
+                
+                # Todo: update name
+                # ctx.author.edit(nick = userRoles[0].Name)
+                session.commit()
+            except SQLAlchemyError as err:
+                await ctx.send(str(err))
+            finally:
+                session.close()
+
+
 def setup(client):
     client.add_cog(ModeratorUser(client))
