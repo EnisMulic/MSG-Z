@@ -264,21 +264,22 @@ class ModeratorUser(commands.Cog):
         if database is not None:
             try:
                 session = database.Session()
-                userRoles = session.query(users_roles_association) \
-                        .join(User, User.UserId == ctx.author.id) \
+                userRoles = session.query(User, users_roles_association) \
+                        .filter(User.UserId == ctx.author.id) \
                         .filter(users_roles_association.c.UserId == ctx.author.id)
                 
-                roles = []
                 for userRole in userRoles:
-                    roles.append(misc.getRoleById(self.client, userRole.RoleId))
-                ctx.author.add_roles(roles)
+                    newRole = misc.getRoleById(self.client, userRole.RoleId)
+                    if newRole.id != 440055845552914433:
+                        await ctx.author.add_roles(newRole)
+
 
                 removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
-                ctx.author.remove_roles(removeRole)
+                await ctx.author.remove_roles(removeRole)
                 session.commit()
                 
-                # Todo: update name
-                # ctx.author.edit(nick = userRoles[0].Name)
+                
+                ctx.author.edit(nick = userRoles[0].User.Name)
                 session.commit()
             except SQLAlchemyError as err:
                 await ctx.send(str(err))
