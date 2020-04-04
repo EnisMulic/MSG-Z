@@ -40,14 +40,14 @@ class Scraper(commands.Cog):
         return ""
 
     def get_login(self):
-        loginData = {}
+        login_data = {}
 
         response = requests.get(self.loginUrl)
         response.raise_for_status()
 
         site = BeautifulSoup(response.text, "html.parser")
         
-        hiddenInputArray = [
+        hidden_input_array = [
             "__LASTFOCUS", 
             "__EVENTTARGET", 
             "__EVENTARGUMENT", 
@@ -56,33 +56,33 @@ class Scraper(commands.Cog):
             "__EVENTVALIDATION"
         ]
         
-        for hiddenInput in hiddenInputArray:
-            loginData[hiddenInput] = self.get_value_for_input(site, hiddenInput)
+        for hidden_input in hidden_input_array:
+            login_data[hidden_input] = self.get_value_for_input(site, hidden_input)
 
         with open(".\\config.json", "r", encoding="utf-8") as json_data_file:
             data = json.load(json_data_file)
             
         #Login info
-        loginData["txtBrojDosijea"] = data["DLWMS"]["userID"]
-        loginData["txtLozinka"] = data["DLWMS"]["password"]
-        loginData["listInstitucija"] = self.get_value_for_select(site, "Fakultet informacijskih tehnologija")
+        login_data["txtBrojDosijea"] = data["DLWMS"]["userID"]
+        login_data["txtLozinka"] = data["DLWMS"]["password"]
+        login_data["listInstitucija"] = self.get_value_for_select(site, "Fakultet informacijskih tehnologija")
 
             
         #Submit button
-        loginData["btnPrijava"] = self.get_value_for_input(site, "btnPrijava")
+        login_data["btnPrijava"] = self.get_value_for_input(site, "btnPrijava")
     
 
-        return loginData
+        return login_data
 
     @tasks.loop(minutes = 1)
-    async def send_notifications(self, session, loginResponse):
+    async def send_notifications(self, session, login_response):
         try:
             print("Scraping...")
             
-            contentResponse = session.get('https://fit.ba/student/', cookies = loginResponse.cookies)
-            response = BeautifulSoup(contentResponse.text, "html.parser")
+            content_response = session.get('https://fit.ba/student/', cookies = login_response.cookies)
+            response = BeautifulSoup(content_response.text, "html.parser")
 
-            notificationsList = []
+            notifications_list = []
             news = response.select("ul.newslist")
             for new in news:
                 link = 'https://fit.ba/student/' + new.find("a", {"class": "linkButton"}).get("href")
@@ -94,30 +94,30 @@ class Scraper(commands.Cog):
                 
                 if content.isspace(): content = "N/A"
                     
-                notificationsList.append(
+                notifications_list.append(
                     notifications.DLWMS_Notification(
                         link, title, date, subject, author, content
                     )
                 )
 
             
-            lastNotificationJson = {}
+            last_notification_json = {}
         
-            with open(".\\lastNotification.json", "r", encoding="utf-8") as jsonDataFile:
-                lastNotificationJson = json.load(jsonDataFile)
+            with open(".\\last_notification.json", "r", encoding="utf-8") as jsonDataFile:
+                last_notification_json = json.load(jsonDataFile)
 
-            lastNotification = notifications.DLWMS_Notification(
-                lastNotificationJson["link"],
-                lastNotificationJson["title"],
-                lastNotificationJson["date"],
-                lastNotificationJson["subject"],
-                lastNotificationJson["author"],
-                lastNotificationJson["content"]
+            last_notification = notifications.DLWMS_Notification(
+                last_notification_json["link"],
+                last_notification_json["title"],
+                last_notification_json["date"],
+                last_notification_json["subject"],
+                last_notification_json["author"],
+                last_notification_json["content"]
             )
-            lastSent = lastNotification
-            notificationsList.reverse()
-            for notification in notificationsList or []:
-                if notification > lastNotification and notification.link != lastNotification.link:
+            lastSent = last_notification
+            notifications_list.reverse()
+            for notification in notifications_list or []:
+                if notification > last_notification and notification.link != last_notification.link:
                     with open(".\\config.json", "r", encoding="utf-8") as jsonSubjectChannel:
                         data = json.load(jsonSubjectChannel)
 
@@ -134,8 +134,8 @@ class Scraper(commands.Cog):
                     lastSent = notification
 
 
-            if lastSent != lastNotification:
-                with open(".\\lastNotification.json", "w", encoding="utf-8") as jsonDataFile:
+            if lastSent != last_notification:
+                with open(".\\last_notification.json", "w", encoding="utf-8") as jsonDataFile:
                     json.dump(lastSent.__dict__, jsonDataFile, indent = 4)
             
         except Exception as err:
@@ -148,8 +148,8 @@ class Scraper(commands.Cog):
     def get_notifications(self):
         try:
             with requests.session() as session:
-                loginResponse = session.post(self.loginUrl, data = self.get_login())
-            self.send_notifications.start(session, loginResponse)
+                login_response = session.post(self.loginUrl, data = self.get_login())
+            self.send_notifications.start(session, login_response)
         
         except Exception as err:
             print(str(err))

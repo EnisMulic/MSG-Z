@@ -19,17 +19,17 @@ class ModeratorUser(commands.Cog):
 
     @commands.command(aliases=["add-member"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def add_member(self, ctx, member: discord.Member, userIndex):
+    async def add_member(self, ctx, member: discord.Member, user_index):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
-                memberNick = member.nick if member.nick is not None else member.name
+                member_nick = member.nick if member.nick is not None else member.name
                 session = database.Session()
-                newUser = User(
-                    member.id, userIndex, memberNick, 
+                new_user = User(
+                    member.id, user_index, member_nick, 
                     member.name, member.discriminator
                 )
-                session.add(newUser)
+                session.add(new_user)
                 session.commit()
                                 
                 await ctx.send("Member added")
@@ -40,13 +40,13 @@ class ModeratorUser(commands.Cog):
 
     @commands.command(aliases=["remove-account", "remove-acc"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def remove_account(self, ctx, userIndex):
+    async def remove_account(self, ctx, user_index):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
                 session = database.Session()
                 account = session.query(User) \
-                            .filter(User.UserIndex == userIndex) \
+                            .filter(User.UserIndex == user_index) \
                             .one()
                 
                 session.delete(account)
@@ -79,7 +79,7 @@ class ModeratorUser(commands.Cog):
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
-    async def set_index(self, ctx, member: discord.Member, userIndex: str):
+    async def set_index(self, ctx, member: discord.Member, user_index: str):
         database = self.client.get_cog('Database')
         if database is not None:
             try:
@@ -87,7 +87,7 @@ class ModeratorUser(commands.Cog):
                 user = session.query(User) \
                             .filter(User.UserId == member.id) \
                             .one()
-                user.UserIndex = userIndex
+                user.UserIndex = user_index
                 session.commit()
                 
                 await ctx.send("Index set")
@@ -128,15 +128,15 @@ class ModeratorUser(commands.Cog):
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
         # database = self.client.get_cog('Database')
 
-        newRolesList = []
+        new_roles = []
         for role in roles:
-            newRole = discord.utils.get(member.guild.roles, name=str(role))
-            if newRole not in member.roles:
-                newRolesList += [newRole.mention]
-                await member.add_roles(newRole)
+            new_role = discord.utils.get(member.guild.roles, name=str(role))
+            if new_role not in member.roles:
+                new_roles += [new_role.mention]
+                await member.add_roles(new_role)
                 # event.py triggered
             else:
-                await ctx.send(member.nick + ' vec ima ulogu ' + newRole.name)
+                await ctx.send(member.nick + ' vec ima ulogu ' + new_role.name)
         
         
         
@@ -146,19 +146,19 @@ class ModeratorUser(commands.Cog):
         database = self.client.get_cog('Database')
 
         for role in roles:
-            oldRole = discord.utils.get(member.guild.roles, name=str(role))
-            if oldRole in member.roles:
-                await member.remove_roles(oldRole) 
+            old_role = discord.utils.get(member.guild.roles, name=str(role))
+            if old_role in member.roles:
+                await member.remove_roles(old_role) 
                 # event.py triggered
             else:
-                await ctx.send(member.nick + ' nema ulogu ' + oldRole.name)
+                await ctx.send(member.nick + ' nema ulogu ' + old_role.name)
         
         
     @commands.command(aliases=["set-name"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_name(self, ctx, member: discord.Member, *name: str):
-        newName = ' '.join(name)
-        await member.edit(nick = newName)
+        new_name = ' '.join(name)
+        await member.edit(nick = new_name)
         # event.py triggered
         await ctx.send("Name set")
             
@@ -264,14 +264,14 @@ class ModeratorUser(commands.Cog):
         if database is not None:
             try:
                 session = database.Session()
-                userRoles = session.query(User, users_roles_association) \
+                user_roles = session.query(User, users_roles_association) \
                         .filter(User.UserId == ctx.author.id) \
                         .filter(users_roles_association.c.UserId == ctx.author.id)
                 
-                for userRole in userRoles:
-                    newRole = misc.getRoleById(self.client, userRole.RoleId)
-                    if newRole.id != 440055845552914433:
-                        await ctx.author.add_roles(newRole)
+                for user_role in user_roles:
+                    new_role = misc.getRoleById(self.client, user_role.RoleId)
+                    if new_role.id != 440055845552914433:
+                        await ctx.author.add_roles(new_role)
 
 
                 removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
@@ -279,7 +279,7 @@ class ModeratorUser(commands.Cog):
                 session.commit()
                 
                 
-                ctx.author.edit(nick = userRoles[0].User.Name)
+                ctx.author.edit(nick = user_roles[0].User.Name)
                 session.commit()
             except SQLAlchemyError as err:
                 await ctx.send(str(err))

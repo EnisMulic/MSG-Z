@@ -46,8 +46,8 @@ class Tag(commands.Cog):
                         .filter(User.UserId == ctx.author.id) \
                         .one()
         
-                newTag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
-                session.add(newTag)
+                new_tag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
+                session.add(new_tag)
                 session.commit()
                 await ctx.send(tag_type + " added")
             except SQLAlchemyError as err:

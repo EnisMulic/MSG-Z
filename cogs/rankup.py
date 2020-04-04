@@ -70,13 +70,13 @@ class Rankup(commands.Cog):
             database = self.client.get_cog("Database")
             if database is not None:
                 session = database.Session()
-                rankedRoles = session.query(Role) \
+                ranked_roles = session.query(Role) \
                         .filter(Role.ParentRole != None) \
                         .all()
 
-                RoleTree = SortTree(rankedRoles[0])
-                for rankedRole in rankedRoles[1:]:
-                    RoleTree.insert_val(rankedRole)
+                RoleTree = SortTree(ranked_roles[0])
+                for ranked_role in ranked_roles[1:]:
+                    RoleTree.insert_val(ranked_role)
 
                 
                 self.roles = display(RoleTree)
@@ -86,7 +86,7 @@ class Rankup(commands.Cog):
         if database is not None:
             session = database.Session()
 
-            rankedRoles = session.query(Role) \
+            ranked_roles = session.query(Role) \
                     .join(users_roles_association) \
                     .filter(Role.ParentRole != None) \
                     .filter(users_roles_association.c.UserId == user.id) \
@@ -94,7 +94,7 @@ class Rankup(commands.Cog):
 
             session.close()
 
-            return rankedRoles
+            return ranked_roles
 
     
     @commands.command()
@@ -177,13 +177,13 @@ class Rankup(commands.Cog):
     @commands.check(is_in_channel) 
     async def alum(self, ctx):
         # self.SetRole()
-        alumRole = misc.getRoleByName(self.client, "Alumni")
-        await ctx.author.add_roles(alumRole)
-        rankedRoles = self.getUsersRankedRoles(ctx.author)
+        alum_role = misc.getRoleByName(self.client, "Alumni")
+        await ctx.author.add_roles(alum_role)
+        ranked_roles = self.getUsersRankedRoles(ctx.author)
 
         for role in ctx.author.roles:
-            for rankedRole in rankedRoles:
-                if role.id == rankedRole.RoleId:
+            for ranked_role in ranked_roles:
+                if role.id == ranked_role.RoleId:
                     await ctx.author.remove_roles(role)
 
         embed = discord.Embed(
@@ -201,12 +201,12 @@ class Rankup(commands.Cog):
     @commands.check(is_in_channel) 
     async def cista(self, ctx):
         self.SetRole()
-        rankedRoles = self.getUsersRankedRoles(ctx.author)
-        highestRole, nextRole = self.findNextRole(rankedRoles)
+        ranked_roles = self.getUsersRankedRoles(ctx.author)
+        highestRole, nextRole = self.findNextRole(ranked_roles)
         
         for role in ctx.author.roles:
-            for rankedRole in rankedRoles:
-                if role.id == rankedRole.RoleId:
+            for ranked_role in ranked_roles:
+                if role.id == ranked_role.RoleId:
                     await ctx.author.remove_roles(role)
 
         nextRole = misc.getRoleById(self.client, nextRole.RoleId)
@@ -229,15 +229,15 @@ class Rankup(commands.Cog):
     @commands.check(is_in_channel) 
     async def uslov(self, ctx):
         self.SetRole()
-        rankedRoles = self.getUsersRankedRoles(ctx.author)
+        ranked_roles = self.getUsersRankedRoles(ctx.author)
         
-        highestRole, nextRole = self.findNextRole(rankedRoles)
+        highestRole, nextRole = self.findNextRole(ranked_roles)
         nextRole = misc.getRoleById(self.client, nextRole.RoleId)
 
 
         for role in ctx.author.roles:
-            for rankedRole in rankedRoles:
-                if role.id == rankedRole.RoleId and role.id != highestRole.RoleId:
+            for ranked_role in ranked_roles:
+                if role.id == ranked_role.RoleId and role.id != highestRole.RoleId:
                     await ctx.author.remove_roles(role)
 
         await ctx.author.add_roles(nextRole)
@@ -277,8 +277,8 @@ class Rankup(commands.Cog):
         self.SetRole()
 
         
-        rankedRoles = self.getUsersRankedRoles(ctx.author)
-        highestRole, nextRole = self.findNextRoleKolizija(rankedRoles)
+        ranked_roles = self.getUsersRankedRoles(ctx.author)
+        highestRole, nextRole = self.findNextRoleKolizija(ranked_roles)
         
         kozizijaRole = misc.getRoleById(self.client, nextRole.RoleId)
         

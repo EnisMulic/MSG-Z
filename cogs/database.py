@@ -67,8 +67,8 @@ class Database(commands.Cog):
     @commands.has_any_role('Administrator')   
     async def insert_role(self, ctx, role: discord.Role):
         try:
-            newRole = Role(role.id, role.name)
-            self.session.add(newRole)
+            new_role = Role(role.id, role.name)
+            self.session.add(new-role)
             self.session.commit()
         except SQLAlchemyError as err:
             await ctx.send(str(err))
@@ -114,10 +114,10 @@ class Database(commands.Cog):
 
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
-    async def student(self, ctx, userIndex):
+    async def student(self, ctx, user_index):
         try:
             user = self.session.query(User) \
-                    .filter(User.UserIndex == userIndex) \
+                    .filter(User.UserIndex == user_index) \
                     .one()
             
             member = misc.getMember(self.client, user.UserId)
@@ -164,7 +164,7 @@ class Database(commands.Cog):
 
         f = open("report-anomalys.txt", "w", encoding='utf-8')
 
-        allRoles = self.session.query(Role).all()
+        all_roles = self.session.query(Role).all()
         
         for guild in self.client.guilds:                                                        
             for member in guild.members:
@@ -194,18 +194,18 @@ class Database(commands.Cog):
                             memberRolesIDs = [role.id for role in member.roles]
                             
                             
-                            for dbRole in allRoles:
-                                if dbRole.RoleId in memberRolesIDs:
-                                    if dbRole.RoleId not in userRolesIDs:
+                            for db_role in all_roles:
+                                if db_role.RoleId in memberRolesIDs:
+                                    if db_role.RoleId not in userRolesIDs:
                                         try:
                                             self.session.commit()
                                         except Exception as err:
                                             print(err)
                                             self.session.rollback()
-                                elif dbRole.RoleId in userRolesIDs:
-                                    if dbRole.RoleId not in memberRolesIDs:
+                                elif db_role.RoleId in userRolesIDs:
+                                    if db_role.RoleId not in memberRolesIDs:
                                         try:
-                                            user.Roles.remove(dbRole)
+                                            user.Roles.remove(db_role)
                                             self.session.commit()
                                         except Exception as err:
                                             print(err)
