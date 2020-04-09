@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+import os
+
 from models import poll, poll_option
 
 class Poll(commands.Cog):
@@ -184,14 +186,15 @@ class Poll(commands.Cog):
                                 .filter(poll_option.PollOption.PollId == poll_search.PollId) \
                                 .all()
 
-                options = ""
-                for poll_build_option in poll_option_search:
-                    options += poll_build_option.Icon + " " + poll_build_option.Text + "\n\n"
+                embed = discord.Embed(title = poll_search.Name)
+                embed.set_thumbnail(url = "https://www.shorturl.at/uwAB1")
 
-                embed = discord.Embed(
-                    title = poll_search.Name,
-                    description = options
-                )
+                for poll_build_option in poll_option_search:
+                    embed.add_field(
+                        name = poll_build_option.Icon, 
+                        value = poll_build_option.Text
+                    )
+                
 
                 return embed
         except Exception as err:
