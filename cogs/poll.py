@@ -167,6 +167,8 @@ class Poll(commands.Cog):
             poll_search.MessageId = message.id
             session.commit()
             session.close()
+
+            await self.add_reactions(name, session, message)
             
 
     #build poll before posting or editing
@@ -203,6 +205,27 @@ class Poll(commands.Cog):
         message = await message_channel.fetch_message(message_id)
         
         await message.edit(embed = embed)
+        await self.add_reactions(name, session, message)
+
+    async def add_reactions(self, name, session, message):
+        poll_search = session.query(poll.Poll) \
+                        .filter(poll.Poll.Name == name) \
+                        .one()    
+
+
+        reactions = session.query(poll_option.PollOption) \
+                        .filter(poll_option.PollOption.PollId == poll_search.PollId) \
+                        .all()
+
+        reactions = [reaction.Icon for reaction in reactions]
+        
+        if reactions is not None:
+            for reaction in reactions:
+                await message.add_reaction(reaction)
+
+            for reaction in message.reactions:
+                if reaction.emoji not in reactions:
+                    await message.clear_reaction(reaction)
 
 def setup(client):
     client.add_cog(Poll(client))
