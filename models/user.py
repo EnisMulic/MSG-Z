@@ -21,7 +21,6 @@ class User(Base):
     StatusDiscord = Column(String(20), nullable = False)
 
     Roles = relationship('Role', secondary = users_roles_association)
-    Channels = relationship('UsersChannelsActivity', back_populates = "User")
 
     def __init__(self, 
         UserId, UserIndex, Name, Username, Discriminator, 
