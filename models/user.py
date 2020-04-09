@@ -8,14 +8,6 @@ users_roles_association = Table('UsersRoles', Base.metadata,
     Column('RoleId', BigInteger, ForeignKey('Roles.RoleId'))
 )
 
-# users_channels_association = Table('UsersChannelsMessages', Base.metadata,
-#     Column('UserId', BigInteger, ForeignKey('Users.UserId')),
-#     Column('ChannelId', BigInteger, ForeignKey('Channels.Id')),
-#     Column('NumberOfMessages', Integer, default = 0),
-#     Column('LengthOfMessages', Integer, default = 0),
-#     Column('Points', Integer, default = 0)
-# )
-
 
 class User(Base):
     __tablename__ = 'Users'
@@ -27,15 +19,13 @@ class User(Base):
     Discriminator = Column(String(4), nullable = False)
     StatusFakultet = Column(String(20))
     StatusDiscord = Column(String(20), nullable = False)
-    Points = Column(Integer, default = 0)
 
     Roles = relationship('Role', secondary = users_roles_association)
     Channels = relationship('UsersChannelsActivity', back_populates = "User")
 
     def __init__(self, 
         UserId, UserIndex, Name, Username, Discriminator, 
-        StatusFakultet = "Aktivan", StatusDiscord = "Aktivan",
-        Points = 0, Roles = []
+        StatusFakultet = "Aktivan", StatusDiscord = "Aktivan", Roles = []
     ):
         self.UserId = UserId
         self.UserIndex = UserIndex
@@ -44,6 +34,5 @@ class User(Base):
         self.Discriminator = Discriminator
         self.StatusFakultet = StatusFakultet
         self.StatusDiscord = StatusDiscord
-        self.Points = Points
         self.Roles = Roles
         
