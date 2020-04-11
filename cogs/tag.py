@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 import models.tag as tg
 from models.user import User
+import models.base as base
 
 import string
 import random
@@ -24,9 +25,11 @@ class Tag(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.linkRegex = "^https:[a-zA-Z0-9_.+-/:?=#~]+$"
+        self.session = base.Session()
 
     @commands.command(aliases=["add-tag"])
     async def add_text_tag(self, ctx, name: str, *, content):
+        content = content.strip('\"')
         await self._add_tag(ctx, TagType.TEXT.name, name, content)
         
 
@@ -38,23 +41,21 @@ class Tag(commands.Cog):
 
     async def _add_tag(self, ctx, tag_type, name, content):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user = session.query(User) \
-                        .filter(User.UserId == ctx.author.id) \
-                        .one()
         
-                new_tag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
-                session.add(new_tag)
-                session.commit()
-                await ctx.send(tag_type + " added")
-            except SQLAlchemyError as err:
-                print(str(err))
-                session.rollback()
-            finally:
-                session.close()
+        try:
+            user = self.session.query(User) \
+                    .filter(User.UserId == ctx.author.id) \
+                    .one()
+    
+            new_tag = tg.Tag(name, tag_type, content, datetime.datetime.now(), user)
+
+            self.session.add(new_tag)
+            self.session.commit()
+
+            await ctx.send(tag_type + " added")
+        except SQLAlchemyError as err:
+            print(str(err))
+            self.session.rollback()
 
 
     @commands.command(aliases=["remove-tag"])
@@ -69,23 +70,19 @@ class Tag(commands.Cog):
 
     async def _remove_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
-                
-                session.delete(tag)
-                session.commit()
-                await ctx.send(tag_type + " removed")
-            except SQLAlchemyError as err:
-                print(str(err))
-                session.rollback()
-            finally:
-                session.close()
+        
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
+            
+            self.session.delete(tag)
+            self.session.commit()
+            await ctx.send(tag_type + " removed")
+        except SQLAlchemyError as err:
+            print(str(err))
+            self.session.rollback()
 
     @commands.command(aliases=["rename-tag"])
     async def rename_text_tag(self, ctx, old_name: str, new_name: str):
@@ -98,29 +95,26 @@ class Tag(commands.Cog):
     async def _rename_tag(self, ctx, old_name: str, new_name: str, tag_type: str):
         old_name = old_name.strip('\"')
         new_name = new_name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name == old_name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
-
-                if tag.UserId == ctx.author.id:
-                    tag.Name = new_name
-                    session.commit()
-
-                    await ctx.send(tag_type + " renamed")
-                else:
-                    await ctx.send("Only the owner can rename the " + tag_type)
-            except SQLAlchemyError as err:
-                print(str(err))
-            finally:
-                session.close()
+        
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.Name == old_name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
+        
+            if tag.UserId == ctx.author.id:
+                tag.Name = new_name
+                self.session.commit()
+                await ctx.send(tag_type + " renamed")
+            else:
+                await ctx.send("Only the owner can rename the " + tag_type)
+        
+        except SQLAlchemyError as err:
+            print(str(err))
 
     @commands.command(aliases=["edit-tag"])
     async def edit_text_tag(self, ctx, name: str, *, content: str):
+        content = content.strip('\"')
         await self._edit_tag(ctx, name, content, TagType.TEXT.name)
 
     @commands.command(aliases=["edit-link"])
@@ -130,51 +124,44 @@ class Tag(commands.Cog):
 
     async def _edit_tag(self, ctx, name: str, content: str, tag_type: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
-                
-                if tag.UserId == ctx.author.id:
-                    tag.Content = content
-                    tag.Count = 0
-                    session.commit()
-                else:
-                    await ctx.send("Only the owner can edit the " + tag_type)
+        
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
             
-            except SQLAlchemyError as err:
-                print(str(err))
-            finally:
-                session.close()
+            if tag.UserId == ctx.author.id:
+                tag.Content = content
+                tag.Count = 0
+                self.session.commit()
+            else:
+                await ctx.send("Only the owner can edit the " + tag_type)
+        
+        except SQLAlchemyError as err:
+            print(str(err))
     
     @commands.command(aliases=["tag"])
     async def get_text_tag(self, ctx, name: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            tag = session.query(tg.Tag) \
+        try:
+            tag = self.session.query(tg.Tag) \
                 .filter(tg.Tag.Name == name and tg.Tag.Type == TagType.TEXT.name) \
                 .one()
 
             if tag is not None:
                 await ctx.send(tag.Content)
                 tag.Count += 1
-                session.commit()
-
-            session.close()
+                self.session.commit()
+        except SQLAlchemyError as err:
+            print(str(err))
 
     @commands.command(aliases=["link"])
     async def get_link_tag(self, ctx, name: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            tags = session.query(tg.Tag) \
+        
+        try:
+            tags = self.session.query(tg.Tag) \
                 .filter(tg.Tag.Name.ilike(f"%{name}%")) \
                 .filter(tg.Tag.Type == TagType.LINK.name)
 
@@ -188,12 +175,14 @@ class Tag(commands.Cog):
                 description = "\n" + description,
                 colour = discord.Colour.blurple()
             ) 
-            
-            
-            await ctx.send(embed = embed)
-            session.commit()
-            session.close()
 
+            await ctx.send(embed = embed)
+
+            self.session.commit()
+            self.session.close()
+        except SQLAlchemyError as err:
+            print(str(err))
+        
 
     @commands.command(aliases=["tag-info"])
     async def info_text_tag(self, ctx, *, name: str):
@@ -205,100 +194,46 @@ class Tag(commands.Cog):
 
     async def _info_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            try:
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
 
-
-                owner = f"<@{tag.User.UserId}>" if tag.User is not None else '@everyone'
-                
-                embed = discord.Embed(
-                    title = ":label: " + tag_type + " info",
-                    colour = discord.Colour.blurple()
-                ) 
-
-                
-                embed.add_field(
-                    name = "Owner",
-                    value = owner,
-                    inline = True
-                )
-
-                embed.add_field(
-                    name = "Name",
-                    value = f"{tag.Name}",
-                    inline = True
-                )
-
-                embed.add_field(
-                    name = "Count",
-                    value = str(tag.Count),
-                    inline = True
-                )
-
- 
-                embed.add_field(
-                    name = "Tag created at",
-                    value = tag.Created.strftime("%d.%m.%Y %H:%M:%S"),
-                    inline = True
-                )
-
-                # embed.set_thumbnail(url = self.client.avatar_url)
-
-                
-                await ctx.send(embed = embed)
-            except SQLAlchemyError as err:
-                print(str(err))
-            finally:
-                session.close()
-
-    # @commands.command(aliases=["tags"])
-    # async def get_link_tags(self, ctx, member: discord.Member = None):
-    #     database = self.client.get_cog('Database')
-    #     if database is not None:
-    #         session = database.Session()
-
-    #         member = member if member is not None else ctx.author
-    #         tags = session.query(tg.Tag) \
-    #             .filter(tg.Tag.UserId == member.id)
-
-
-    #         description = "\n"
-    #         for tag in tags:
-    #             description += f"\n:label: [{tag.Name}]"
-    #             tag.Count += 1
-                              
-    #         embed = discord.Embed(
-    #             title = "Users tags",
-    #             colour = discord.Colour.blurple()
-    #         ) 
-
-    #         embed.add_field(
-    #             name = "Owner",
-    #             value = "<@" + str(member.id) + ">",
-    #             inline = False
-    #         )
-
-    #         embed.add_field(
-    #             name = "Tags",
-    #             value = description,
-    #             inline = False
-    #         )
-
-
-
+            owner = f"<@{tag.User.UserId}>" if tag.User is not None else '@everyone'
             
-    #         embed.set_thumbnail(url = member.avatar_url)
+            embed = discord.Embed(
+                title = ":label: " + tag_type + " info",
+                colour = discord.Colour.blurple()
+            ) 
+            
+            embed.add_field(
+                name = "Owner",
+                value = owner,
+                inline = True
+            )
+            embed.add_field(
+                name = "Name",
+                value = f"{tag.Name}",
+                inline = True
+            )
+            embed.add_field(
+                name = "Count",
+                value = str(tag.Count),
+                inline = True
+            )
 
+            embed.add_field(
+                name = "Tag created at",
+                value = tag.Created.strftime("%d.%m.%Y %H:%M:%S"),
+                inline = True
+            )
+            # embed.set_thumbnail(url = self.client.avatar_url)
             
-    #         await ctx.send(embed = embed)
-            
-    #         session.close()
+            await ctx.send(embed = embed)
+        except SQLAlchemyError as err:
+            print(str(err))
+
 
     @commands.command(aliases=["release-tag"])
     async def release_text_tag(self, ctx, *, name: str):
@@ -311,28 +246,20 @@ class Tag(commands.Cog):
 
     async def _release_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
-        await ctx.send(name)
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-
-            try:
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one() 
-
-                
-
-                tag.UserId = None
-                session.commit()
-                await ctx.send(tag_type + " released")
-            except SQLAlchemyError as err:
-                print(err)
-                #implement await ctx.send(embed = embed)
-            finally:
-                session.close()
+        
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.UserId == ctx.author.id) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one() 
+            
+            tag.UserId = None
+            self.session.commit()
+            await ctx.send(tag_type + " released")
+        except SQLAlchemyError as err:
+            print(err)
+            #implement await ctx.send(embed = embed)
     
     @commands.command(aliases=["claim-tag"])
     async def claim_text_tag(self, ctx, *, name: str):
@@ -345,25 +272,20 @@ class Tag(commands.Cog):
 
     async def _claim_tag(self, ctx, name: str, tag_type: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.UserId == None) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
+            
+            tag.UserId = ctx.author.id
+            self.session.commit()
 
-            try:
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == None) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
-                
-                tag.UserId = ctx.author.id
-                session.commit()
-                await ctx.send(tag_type + " " + name + " claimed by " + ctx.author.mention)
-            except SQLAlchemyError as err:
-                print(err)
-                #implement await ctx.send(embed = embed)
-            finally:
-                session.close()
+            await ctx.send(tag_type + " " + name + " claimed by " + ctx.author.mention)
+        except SQLAlchemyError as err:
+            print(err)
+            #implement await ctx.send(embed = embed)
 
     @commands.command(aliases=["transfer-tag"])
     async def transfer_text_tag(self, ctx, member: discord.Member, name: str):
@@ -376,25 +298,19 @@ class Tag(commands.Cog):
 
     async def _transfer_tag(self, ctx, member: discord.Member, name: str, tag_type: str):
         name = name.strip('\"')
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-
-            try:
-                tag = session.query(tg.Tag) \
-                    .filter(tg.Tag.UserId == ctx.author.id) \
-                    .filter(tg.Tag.Name == name) \
-                    .filter(tg.Tag.Type == tag_type) \
-                    .one()
-                
-                tag.UserId = member.id
-                session.commit()
-                await ctx.send(tag_type + " " + name + " transferred")
-            except SQLAlchemyError as err:
-                print(err)
-                #implement await ctx.send(embed = embed)
-            finally:
-                session.close()
+        try:
+            tag = self.session.query(tg.Tag) \
+                .filter(tg.Tag.UserId == ctx.author.id) \
+                .filter(tg.Tag.Name == name) \
+                .filter(tg.Tag.Type == tag_type) \
+                .one()
+            
+            tag.UserId = member.id
+            self.session.commit()
+            await ctx.send(tag_type + " " + name + " transferred")
+        except SQLAlchemyError as err:
+            print(err)
+            #implement await ctx.send(embed = embed)
 
 
 def setup(client):

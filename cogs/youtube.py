@@ -12,6 +12,7 @@ import json
 
 import models.youtube as yt
 from models.user import User
+import models.base as base
 
 from utils import misc
 
@@ -20,17 +21,21 @@ class Youtube(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+        self.session = base.Session()
+        
         self.youtube_url = 'https://www.youtube.com/watch?v='
         self.youtube_rss = "https://www.youtube.com/feeds/videos.xml?channel_id="
 
         self.get_videos()
     
     def _get_channels(self, session):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            return session.query(yt.Youtube) \
+        try:
+            return self.session.query(yt.Youtube) \
                 .filter(yt.Youtube.Output == True) \
                 .all()
+        except SQLAlchemyError as err:
+            print(str(err))
+            
 
 
     def get_videos_for_channel(self, channel_id):
@@ -57,17 +62,14 @@ class Youtube(commands.Cog):
 
     @commands.command(aliases=["youtube"])
     async def get_channels(self, ctx, *, search: str = ''):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            channels = session.query(yt.Youtube) \
+        try:
+            channels = self.session.query(yt.Youtube) \
                         .filter(yt.Youtube.ChannelName.ilike(f"%{search}%"))
-
 
             description = '\n'
             for channel in channels:
                 mark = ":white_check_mark:" if channel.Output else ":negative_squared_cross_mark:"
-                description += f"\n{mark} | [{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId})"
+                description += f"{mark} | [{channel.ChannelName}](https://www.youtube.com/channel/{channel.ChannelId})\n\n"
                               
             embed = discord.Embed(
                 title = "Youtube",
@@ -76,93 +78,79 @@ class Youtube(commands.Cog):
             ) 
             
             await ctx.send(embed = embed)
-            session.close()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
     @commands.command(aliases=["remove-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_channel(self, ctx, channel_id: str):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            try:
-                channel = session.query(yt.Youtube) \
-                            .filter(yt.Youtube.ChannelId == channel_id) \
-                            .one()
-                session.delete(channel)
-                session.commit()
-            except:
-                print("Procedure Remove Channel: Something went wrong:")
-            finally:
-                session.close()
+        try:
+            channel = self.session.query(yt.Youtube) \
+                        .filter(yt.Youtube.ChannelId == channel_id) \
+                        .one()
+        
+            self.session.delete(channel)
+            self.session.commit()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
     
     @commands.command(aliases=["add-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_channel(self, ctx, channel_id: str, *channel_name: str, member: discord.Member = None):
         videos = self.get_videos_for_channel(channel_id)
         channel_name = ' '.join(channel_name)
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            try:
-                if videos: 
-                    video_id = videos[0][0]
-                    video_title = videos[0][1]
-                    video_timestamp = datetime.datetime.strptime(videos[0][2], "%Y-%m-%d %H:%M:%S")
-                else:
-                    video_id = ""
-                    video_title = ""
-                    video_timestamp = datetime.datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
-                    
-
-                newChannel = yt.Youtube(channel_id, channel_name, video_id, video_title, video_timestamp, member)
-                session.add(newChannel)
-                session.commit()
-            except SQLAlchemyError as err:
-                print(str(err))
-            finally:
-                session.close()
+        
+        try:
+            if videos: 
+                video_id = videos[0][0]
+                video_title = videos[0][1]
+                video_timestamp = datetime.datetime.strptime(videos[0][2], "%Y-%m-%d %H:%M:%S")
+            else:
+                video_id = ""
+                video_title = ""
+                video_timestamp = datetime.datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+                
+            newChannel = yt.Youtube(channel_id, channel_name, video_id, video_title, video_timestamp, member)
+            self.session.add(newChannel)
+            self.session.commit()
+        
+        except SQLAlchemyError as err:
+            print(str(err))
 
     @commands.command(aliases=["link-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def link_channel(self, ctx, member: discord.Member, channel_id: str):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-
-                user = session.query(User) \
-                        .filter(User.UserId == member.id) \
+        try:
+            user = self.session.query(User) \
+                    .filter(User.UserId == member.id) \
+                    .one()
+            
+            channel = self.session.query(yt.Youtube) \
+                        .filter(yt.Youtube.ChannelId == channel_id) \
                         .one()
-                
-                channel = session.query(yt.Youtube) \
-                            .filter(yt.Youtube.ChannelId == channel_id) \
-                            .one()
-
-                channel.UserId = user.UserId
-                session.commit()
-                session.close()
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
+        
+            channel.UserId = user.UserId
+        
+            self.session.commit()
+            self.session.close()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
+            
             
     @commands.command(aliases=["toggle-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def toggle_channel(self, ctx, *, channel_name: str):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                channel = session.query(yt.Youtube) \
-                            .filter(yt.Youtube.ChannelName == channel_name) \
-                            .one()
-
-                if channel is not None:
-                    channel.Output = not channel.Output
-                
-                session.commit()
-            except Exception as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            channel = self.session.query(yt.Youtube) \
+                        .filter(yt.Youtube.ChannelName == channel_name) \
+                        .one()
+        
+            if channel is not None:
+                channel.Output = not channel.Output
+            
+            self.session.commit()
+        except Exception as err:
+            await ctx.send(str(err))
     
     def get_videos(self):
         try:
@@ -175,8 +163,7 @@ class Youtube(commands.Cog):
     @tasks.loop(minutes = 15)
     async def send_videos(self):
         print("Scraping Youtube...")
-        database = self.client.get_cog("Database")
-        session = database.Session()
+
 
         youtube_channels = self._get_channels(session)
         discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
@@ -192,16 +179,13 @@ class Youtube(commands.Cog):
                 if str(youtube_channel.Published) < video[2] and video[0] != youtube_channel.VideoId:
                     await discord_channel.send(self.youtube_url + video[0])
 
-                    if database is not None:
+                    youtube_channel.VideoId = video[0]
+                    youtube_channel.VideoTitle = video[1]
+                    youtube_channel.Published = datetime.datetime.strptime(video[2], "%Y-%m-%d %H:%M:%S")
+                    
+                    self.session.commit()
 
-                        youtube_channel.VideoId = video[0]
-                        youtube_channel.VideoTitle = video[1]
-                        youtube_channel.Published = datetime.datetime.strptime(video[2], "%Y-%m-%d %H:%M:%S")
-
-                        session.commit()
-
-        session.close()
-    
+                            
     def cog_unload(self):
         self.send_videos.cancel()
 

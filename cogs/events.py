@@ -4,13 +4,17 @@ from discord.ext import commands
 import datetime
 
 from utils import logger
-from models.user import User
+
 from sqlalchemy.exc import SQLAlchemyError
+
+from models.user import User
 from models.role import Role
+import models.base as base
 
 class Events(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.session = base.Session()
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

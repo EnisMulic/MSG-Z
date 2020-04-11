@@ -7,6 +7,7 @@ import datetime
 from models.role import Role
 from models.user import users_roles_association
 from models.user import User
+import models.base as base
 
 from utils import misc
 
@@ -39,38 +40,40 @@ def display(_node):
 class Rankup(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.roleName = "Registrovan";
+        self.roleName = "Registrovan"
         self.role = None
         self.roles = None
+
+        self.session = base.Session()
 
     def SetRole(self):
         if self.role is None:
             self.role = misc.getRoleByName(self.client, self.roleName)
 
     def SetValue(self, role: Role):
-        database = self.client.get_cog("Database")
-        if database is not None:
-            session = database.Session()
-
+        try:
             if role.ParentRole is not None:
-                parent = session.query(Role) \
+                parent = self.session.query(Role) \
                     .filter(Role.RoleId == role.ParentRole) \
                     .one()
                 
-                children = session.query(Role) \
+                children = self.session.query(Role) \
                     .filter(Role.ParentRole == role.ParentRole) \
                     .count()
 
                 role.Value = parent.Value + 1 + children * 0.1
             else:
                 role.Value = 0
+        except SQLAlchemyError as err:
+            print(str(err))
+        
+
+            
     
     def formRoles(self):
         if self.roles is None:
-            database = self.client.get_cog("Database")
-            if database is not None:
-                session = database.Session()
-                ranked_roles = session.query(Role) \
+            try:
+                ranked_roles = self.session.query(Role) \
                         .filter(Role.ParentRole != None) \
                         .all()
 
@@ -78,15 +81,15 @@ class Rankup(commands.Cog):
                 for ranked_role in ranked_roles[1:]:
                     RoleTree.insert_val(ranked_role)
 
-                
+
                 self.roles = display(RoleTree)
+            except SQLAlchemyError as err:
+                print(str(err))
+
 
     def getUsersRankedRoles(self, user):
-        database = self.client.get_cog("Database")
-        if database is not None:
-            session = database.Session()
-
-            ranked_roles = session.query(Role) \
+        try:
+            ranked_roles = self.session.query(Role) \
                     .join(users_roles_association) \
                     .filter(Role.ParentRole != None) \
                     .filter(users_roles_association.c.UserId == user.id) \
@@ -95,28 +98,33 @@ class Rankup(commands.Cog):
             session.close()
 
             return ranked_roles
+        except SQLAlchemyError as err:
+            print(str(err))
+        
+
+            
 
     
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def connect(self, ctx, parentRole: discord.Role, childRole: discord.Role):
-        database = self.client.get_cog("Database")
-        if database is not None:
-            session = database.Session()
-            parent = session.query(Role) \
+        try:
+            parent = self.session.query(Role) \
                 .filter(Role.RoleId == parentRole.id) \
                 .one_or_none()
 
-            child = session.query(Role) \
+            child = self.session.query(Role) \
                 .filter(Role.RoleId == childRole.id) \
                 .one_or_none()
 
             if parent is not None and child is not None:
                 child.ParentRole = parent.RoleId
                 self.SetValue(child)
-                session.commit()
+                self.session.commit()
 
-            session.close()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
+
 
     
     @commands.command()

@@ -5,6 +5,7 @@ import datetime
 
 from models.post import Post
 from models.user import User
+import models.base as base
 
 from utils import logger
 
@@ -13,6 +14,7 @@ from utils import logger
 class ModeratorMsg(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.session = base.Session()
 
     @commands.command(description = "Delete N last messages")
     @commands.has_any_role('Administrator', 'Moderator')

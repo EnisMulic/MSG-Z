@@ -9,6 +9,7 @@ import datetime
 from models.user import User
 from models.role import Role
 from models.user import users_roles_association
+import models.base as base
 
 from utils import logger
 from utils import misc
@@ -16,118 +17,93 @@ from utils import misc
 class ModeratorUser(commands.Cog):
     def __init__(self, client):
         self.client = client
+        self.session = base.Session()
 
     @commands.command(aliases=["add-member"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_member(self, ctx, member: discord.Member, user_index):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                member_nick = member.nick if member.nick is not None else member.name
-                session = database.Session()
-                new_user = User(
-                    member.id, user_index, member_nick, 
-                    member.name, member.discriminator
-                )
-                session.add(new_user)
-                session.commit()
-                                
-                await ctx.send("Member added")
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            member_nick = member.nick if member.nick is not None else member.name
+
+            new_user = User(
+                member.id, user_index, member_nick, 
+                member.name, member.discriminator
+            )
+            self.session.add(new_user)
+            self.session.commit()
+                            
+            await ctx.send("Member added")
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
     @commands.command(aliases=["remove-account", "remove-acc"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_account(self, ctx, user_index):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                account = session.query(User) \
-                            .filter(User.UserIndex == user_index) \
-                            .one()
-                
-                session.delete(account)
-                session.commit()
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            account = self.session.query(User) \
+                .filter(User.UserIndex == user_index) \
+                .one()
+            
+            self.session.delete(account)
+            self.session.commit()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
     @commands.command(aliases=["change-account", "change-acc"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def change_account(self, ctx, old_account: discord.Member, new_account: discord.Member):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                account = session.query(User) \
-                            .filter(User.UserId == old_account.id) \
-                            .one()
+        try:
+            account = self.session.query(User) \
+                .filter(User.UserId == old_account.id) \
+                .one()
+            
+            if account is not None:
+                account.UserId = new_account.id
+                await old_account.kick()
                 
-                if account is not None:
-                    account.UserId = new_account.id
-                    await old_account.kick()
-                    
-                session.commit()
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+            self.session.commit()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_index(self, ctx, member: discord.Member, user_index: str):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user = session.query(User) \
-                            .filter(User.UserId == member.id) \
-                            .one()
-                user.UserIndex = user_index
-                session.commit()
-                
-                await ctx.send("Index set")
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            user = self.session.query(User) \
+                .filter(User.UserId == member.id) \
+                .one()
+            
+            user.UserIndex = user_index
+            self.session.commit()
+            
+            await ctx.send("Index set")
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
     @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
     @commands.has_any_role('Administrator', 'Moderator')
     async def set_status(self, ctx, member: discord.Member, status, option):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user = session.query(User) \
-                        .filter(User.UserId == member.id) \
-                        .one()
-                
-        
-                if option == '-f':
-                    user.StatusFakultet = status
-                    session.commit()
-                    await ctx.send("FakultetStatus set")    
-                elif option == '-d':
-                    user.StatusDiscord = status
-                    session.commit()
-                    await ctx.send("DiscordStatus set") 
-                
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            user = self.session.query(User) \
+                .filter(User.UserId == member.id) \
+                .one()
+            
+            if option == '-f':
+                user.StatusFakultet = status
+                self.session.commit()
+                await ctx.send("FakultetStatus set")    
+            elif option == '-d':
+                user.StatusDiscord = status
+                self.session.commit()
+                await ctx.send("DiscordStatus set") 
+            
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
             
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
-        # database = self.client.get_cog('Database')
-
         new_roles = []
         for role in roles:
             new_role = discord.utils.get(member.guild.roles, name=str(role))
@@ -143,8 +119,6 @@ class ModeratorUser(commands.Cog):
     @commands.command(aliases=["remove-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_role(self, ctx, member: discord.Member, *roles: discord.Role):
-        database = self.client.get_cog('Database')
-
         for role in roles:
             old_role = discord.utils.get(member.guild.roles, name=str(role))
             if old_role in member.roles:
@@ -260,31 +234,26 @@ class ModeratorUser(commands.Cog):
 
     @commands.command()
     async def revoke(self, ctx):
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user_roles = session.query(User, users_roles_association) \
-                        .filter(User.UserId == ctx.author.id) \
-                        .filter(users_roles_association.c.UserId == ctx.author.id)
-                
-                for user_role in user_roles:
-                    new_role = misc.getRoleById(self.client, user_role.RoleId)
-                    if new_role.id != 440055845552914433:
-                        await ctx.author.add_roles(new_role)
-
-
-                removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
-                await ctx.author.remove_roles(removeRole)
-                session.commit()
-                
-                
-                ctx.author.edit(nick = user_roles[0].User.Name)
-                session.commit()
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        try:
+            user_roles = self.session.query(User, users_roles_association) \
+                .filter(User.UserId == ctx.author.id) \
+                .filter(users_roles_association.c.UserId == ctx.author.id)
+            
+            for user_role in user_roles:
+                new_role = misc.getRoleById(self.client, user_role.RoleId)
+                if new_role.id != 440055845552914433:
+                    await ctx.author.add_roles(new_role)
+        
+            removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
+            await ctx.author.remove_roles(removeRole)
+            self.session.commit()
+            
+            
+            ctx.author.edit(nick = user_roles[0].User.Name)
+            self.session.commit()
+        
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
 
 
 def setup(client):
