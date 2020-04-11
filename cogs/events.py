@@ -86,26 +86,24 @@ class Events(commands.Cog):
             action.set_thumbnail(url = member.avatar_url)
         
             await logger.LogAction(self.client, action)
-            database = self.client.get_cog('Database')
-            if database is not None:
-                try:
-                    session = database.Session()
-                    user = session.query(User) \
-                            .filter(User.UserId == member.id) \
-                            .one()
-                    
-                    user.DiscordStatus = "Kicked"
-                    session.commit()
-                    session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
+
+            try:
+                user = self.session.query(User) \
+                    .filter(User.UserId == member.id) \
+                    .one()
+                
+                user.DiscordStatus = "Kicked"
+                self.session.commit()
+                self.session.close()
+            except SQLAlchemyError as err:
+                print(str(err))
+                
                 
         except:
             print("Error")
    
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
-        database = self.client.get_cog('Database')
 
         # Roles removed
         if before.roles < after.roles:
@@ -137,19 +135,21 @@ class Events(commands.Cog):
                 action.set_thumbnail(url = before.avatar_url)
                 await logger.LogAction(self.client, action)
 
-                if database is not None:
-                    session = database.Session()
-                    removedRole = session.query(Role) \
-                                    .filter(Role.RoleId == role.id) \
-                                    .one()
+                try:
+                    removedRole = self.session.query(Role) \
+                        .filter(Role.RoleId == role.id) \
+                        .one()
 
-                    user = session.query(User) \
-                                .filter(User.UserId == before.id) \
-                                .one()
+                    user = self.session.query(User) \
+                        .filter(User.UserId == before.id) \
+                        .one()
                     
                     user.Roles.remove(removedRole)
-                    session.commit()
-                    session.close()
+                    self.session.commit()
+                    self.session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
+                    
 
         # Role added           
         elif before.roles > after.roles:
@@ -181,19 +181,22 @@ class Events(commands.Cog):
                 action.set_thumbnail(url = before.avatar_url)
 
                 await logger.LogAction(self.client, action)
-                if database is not None:
-                    session = database.Session()
-                    addedRole = session.query(Role) \
-                                    .filter(Role.RoleId == role.id) \
-                                    .one()
+                
+                try:
+                    ddedRole = self.session.query(Role) \
+                        .filter(Role.RoleId == role.id) \
+                        .one()
                     
-                    user = session.query(User) \
-                                .filter(User.UserId == before.id) \
-                                .one()
+                    user = self.session.query(User) \
+                        .filter(User.UserId == before.id) \
+                        .one()
 
                     user.Roles.append(addedRole)
-                    session.commit()
-                    session.close()
+                    self.session.commit()
+                    self.session.close()
+                except SQLAlchemyError as err:
+                    print(str(err))
+
                 
         if before.nick != after.nick:
             action = discord.Embed(
@@ -228,54 +231,47 @@ class Events(commands.Cog):
             action.set_thumbnail(url = before.avatar_url)
 
             await logger.LogAction(self.client, action)
-            if database is not None:
-                # await database.change_member_name(after, after.nick)
-                try:
-                    session = database.Session()
-                    user = session.query(User) \
-                            .filter(User.UserId == after.id) \
-                            .one()
-                    
-                    user.Name = after.nick
-                    session.commit()
-                    session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
+            
+            try:
+                user = self.session.query(User) \
+                    .filter(User.UserId == after.id) \
+                    .one()
+                
+                user.Name = after.nick
+                self.session.commit()
+                self.session.close()
+            except SQLAlchemyError as err:
+                print(str(err))
+                
 
 
     @commands.Cog.listener()
     async def on_user_update(self, before, after):
         if before.name != after.name:
-            database = self.client.get_cog('Database')
-            if database is not None:
-                # await database.change_member_username(after)
-                try:
-                    session = database.Session()
-                    user = session.query(User) \
-                            .filter(User.UserId == after.id) \
-                            .one()
-                    
-                    user.Username = after.name
-                    session.commit()
-                    session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
+            try:
+                user = self.session.query(User) \
+                    .filter(User.UserId == after.id) \
+                    .one()
+                
+                user.Username = after.name
+                self.session.commit()
+                self.session.close()
+            except SQLAlchemyError as err:
+                print(str(err))
+                
         
         if before.discriminator != after.discriminator:
-            database = self.client.get_cog('Database')
-            if database is not None:
-                # await database.change_member_discriminator(after)
-                try:
-                    session = database.Session()
-                    user = session.query(User) \
-                            .filter(User.UserId == after.id) \
-                            .one()
-                    
-                    user.Discriminator = after.discriminator
-                    session.commit()
-                    session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
+            try:
+                user = self.session.query(User) \
+                    .filter(User.UserId == after.id) \
+                    .one()
+                
+                user.Discriminator = after.discriminator
+                self.session.commit()
+                self.session.close()
+            except SQLAlchemyError as err:
+                print(str(err))
+                
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
