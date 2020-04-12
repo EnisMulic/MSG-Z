@@ -45,18 +45,16 @@ class ModeratorMsg(commands.Cog):
             files.append(await attachment.to_file())
         await message_channel.send(content = message, files = files)
         
-        database = self.client.get_cog('Database')
-        if database is not None:
-            session = database.Session()
-            user = session.query(User) \
-                    .filter(User.UserId == ctx.author.id) \
-                    .one()
+        try:
+            user = self.session.query(User) \
+                .filter(User.UserId == ctx.author.id) \
+                .one()
 
             newPost = Post(message_channel.last_message_id, message_channel.id, user)
-            session.add(newPost)
-            session.commit()
-            session.close()
-        
+            self.session.add(newPost)
+            self.session.commit()
+        except Exception as err:
+            await ctx.send(str(err))
 
 
     @commands.command(aliases=["msg-edit"], description = "Edit message sent as the bot")
@@ -66,13 +64,16 @@ class ModeratorMsg(commands.Cog):
         message = await message_channel.fetch_message(id)
         await message.edit(content = new_message)
 
-        database = self.client.get_cog('Database')
-        if database is not None:
-            post = database.session.query(Post) \
-                        .filter(Post.PostId == id) \
-                        .one()
+        try:
+            post = self.session.query(Post) \
+                .filter(Post.PostId == id) \
+                .one()
+            
             post.UserId = ctx.author.id
-            database.session.commit()
+            self.session.commit()
+        except Exception as err:
+            await ctx.send(str(err))
+            
 
     @commands.command(aliases=["msg-move"], 
                       description = "Move a message from one channel to another\
