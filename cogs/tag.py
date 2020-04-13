@@ -54,7 +54,7 @@ class Tag(commands.Cog):
 
             await ctx.send(tag_type + " added")
         except SQLAlchemyError as err:
-            print(str(err))
+            await ctx.send(str(err))
             self.session.rollback()
 
 
