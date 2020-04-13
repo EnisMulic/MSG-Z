@@ -108,6 +108,8 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def connect(self, ctx, parentRole: discord.Role, childRole: discord.Role):
+        """Connect two discord roles (child role and parent role)."""
+
         try:
             parent = self.session.query(Role) \
                 .filter(Role.RoleId == parentRole.id) \
@@ -166,7 +168,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["diplomirao", "diplomirala"])
     @commands.check(is_in_channel)
     async def diploma(self, ctx):
-        # self.SetRole()
+        
         await ctx.author.kick(reason = "Diplomirao/Diplomirala")
         # update fakultet status
         
@@ -184,7 +186,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["alumni", "alumna"])
     @commands.check(is_in_channel) 
     async def alum(self, ctx):
-        # self.SetRole()
+        
         alum_role = misc.getRoleByName(self.client, "Alumni")
         await ctx.author.add_roles(alum_role)
         ranked_roles = self.getUsersRankedRoles(ctx.author)

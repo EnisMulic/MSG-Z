@@ -6,8 +6,10 @@ class About(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.command(description = "Get source code for this bot")
+    @commands.command()
     async def source(self, ctx):
+        """Get source code for this bot."""
+
         link = 'https://github.com/PancakeAlchemist/MSG-Z'
         await ctx.send(link)
 

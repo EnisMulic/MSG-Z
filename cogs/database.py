@@ -36,6 +36,8 @@ class Database(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator') 
     async def report(self, ctx):
+        """Log users that are not in the database."""
+
         f = open("report.txt", "w", encoding='utf-8')
         for guild in self.client.guilds:                                                        
             for member in guild.members:
@@ -55,6 +57,8 @@ class Database(commands.Cog):
     @commands.command(aliases=["insert-channel"], description = "Add channel to the database")
     @commands.has_any_role('Administrator') 
     async def insert_channel(self, ctx, channel: discord.TextChannel):
+        """Insert channel into database."""
+
         try:
             newChannel = Channel(channel.id, channel.name)
             self.session.add(newChannel)
@@ -66,6 +70,8 @@ class Database(commands.Cog):
     @commands.command(aliases=["insert-role"], description = "Add role to the database")
     @commands.has_any_role('Administrator')   
     async def insert_role(self, ctx, role: discord.Role):
+        """Insert role into database."""
+
         try:
             new_role = Role(role.id, role.name)
             self.session.add(new-role)
@@ -78,6 +84,8 @@ class Database(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
     async def whois(self, ctx, user: discord.User):
+        """Get info of user by mention."""
+
         try:
             member = misc.getMember(self.client, user.id)
 
@@ -115,6 +123,8 @@ class Database(commands.Cog):
     @commands.command()
     @commands.has_any_role('Administrator', 'Moderator')
     async def student(self, ctx, user_index):
+        """Get info of user by student index."""
+
         try:
             user = self.session.query(User) \
                     .filter(User.UserIndex == user_index) \

@@ -62,9 +62,11 @@ class Youtube(commands.Cog):
 
     @commands.command(aliases=["youtube"])
     async def get_channels(self, ctx, *, search: str = ''):
+        """Gets all youtube channels that the bot watches."""
+
         try:
             channels = self.session.query(yt.Youtube) \
-                        .filter(yt.Youtube.ChannelName.ilike(f"%{search}%"))
+                .filter(yt.Youtube.ChannelName.ilike(f"%{search}%"))
 
             description = '\n'
             for channel in channels:
@@ -84,6 +86,8 @@ class Youtube(commands.Cog):
     @commands.command(aliases=["remove-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def remove_channel(self, ctx, channel_id: str):
+        """Remove youtube channel from database."""
+
         try:
             channel = self.session.query(yt.Youtube) \
                         .filter(yt.Youtube.ChannelId == channel_id) \
@@ -97,6 +101,8 @@ class Youtube(commands.Cog):
     @commands.command(aliases=["add-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_channel(self, ctx, channel_id: str, *channel_name: str, member: discord.Member = None):
+        """Add youtube channel to database."""
+
         videos = self.get_videos_for_channel(channel_id)
         channel_name = ' '.join(channel_name)
         
@@ -120,14 +126,16 @@ class Youtube(commands.Cog):
     @commands.command(aliases=["link-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def link_channel(self, ctx, member: discord.Member, channel_id: str):
+        """Link youtube channel to discord user."""
+
         try:
             user = self.session.query(User) \
-                    .filter(User.UserId == member.id) \
-                    .one()
+                .filter(User.UserId == member.id) \
+                .one()
             
             channel = self.session.query(yt.Youtube) \
-                        .filter(yt.Youtube.ChannelId == channel_id) \
-                        .one()
+                .filter(yt.Youtube.ChannelId == channel_id) \
+                .one()
         
             channel.UserId = user.UserId
         
@@ -140,6 +148,8 @@ class Youtube(commands.Cog):
     @commands.command(aliases=["toggle-channel"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def toggle_channel(self, ctx, *, channel_name: str):
+        """Toggle youtube channel output."""
+
         try:
             channel = self.session.query(yt.Youtube) \
                         .filter(yt.Youtube.ChannelName == channel_name) \
@@ -164,7 +174,6 @@ class Youtube(commands.Cog):
     async def send_videos(self):
         print("Scraping Youtube...")
 
-
         youtube_channels = self._get_channels(session)
         discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         
@@ -185,7 +194,7 @@ class Youtube(commands.Cog):
                     
                     self.session.commit()
 
-                            
+
     def cog_unload(self):
         self.send_videos.cancel()
 

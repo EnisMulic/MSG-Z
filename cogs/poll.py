@@ -125,6 +125,8 @@ class Poll(commands.Cog):
     @commands.command(description = "Edit option emoji in a poll")
     @commands.has_any_role('Administrator', 'Moderator')
     async def poll(self, ctx, channel, *, name):
+        """Post created poll to channel."""
+
         name = name.strip('\"')
         channel_id = int(channel[2:len(channel) - 1])
         message_channel = self.client.get_channel(channel_id)
