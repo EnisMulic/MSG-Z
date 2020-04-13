@@ -183,7 +183,7 @@ class Events(commands.Cog):
                 await logger.LogAction(self.client, action)
                 
                 try:
-                    ddedRole = self.session.query(Role) \
+                    addedRole = self.session.query(Role) \
                         .filter(Role.RoleId == role.id) \
                         .one()
                     
