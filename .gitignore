@@ -1,7 +1,9 @@
 # My sketchy files
-*.json
+config.json
+last_notification.json
 alembic.ini
-/.credentials/
+.credentials/
+client_secret.json
 
 # Database schema migrations
 alembic/versions/
