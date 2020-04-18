@@ -31,7 +31,7 @@ class DLWMS_Notification:
 
         embed.add_field(
             name = "Info",
-            value = "Datum: {}\nAutor: {}".format(self.date, self.author),
+            value = "Datum i vrijeme: {}\nAutor: {}".format(self.date, self.author),
             inline = False
         )
 
@@ -48,13 +48,3 @@ class DLWMS_Notification:
     def __gt__(self, other):
         if self.date == "" or other.date == "": return True
         return time.strptime(self.date, "%d.%m.%Y %H:%M") > time.strptime(other.date, "%d.%m.%Y %H:%M")
-
-    
-
-# class Discord_Bot_Notification:
-#     def __init__(self, author, title, desctiption, date, colour):
-#         self.author = author
-#         self.title = title,
-#         self.desctiption = desctiption,
-#         self.date = date,
-#         self.colour = colour

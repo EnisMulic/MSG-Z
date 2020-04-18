@@ -142,9 +142,6 @@ class Scraper(commands.Cog):
             print("Error: " + str(err))        
             
 
-    
-
-    
     def get_notifications(self):
         try:
             with requests.session() as session:
@@ -155,8 +152,6 @@ class Scraper(commands.Cog):
             print(str(err))
             self.get_notifications()
         
-            
-
 
     def cog_unload(self):
         self.send_notifications.cancel()
