@@ -35,10 +35,7 @@ class Backup(commands.Cog):
                     files.append(file)
                     filePath = "./payload/" + attachment.filename
                     await attachment.save(filePath)
-                    main.uploadFile(attachment.filename, filePath, self.folders[channel.name.upper()])
-                # await logger.LogActionRaw(self.client, content = message.content, files = files)
-
-        # await logger.LogActionRaw(self.client, "`" + reaction.emoji.name + "`")
+                    main.uploadFile(attachment.filename, filePath, self.folders[channel.name])
 
 def setup(client):
     client.add_cog(Backup(client))
