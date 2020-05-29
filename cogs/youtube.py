@@ -28,7 +28,7 @@ class Youtube(commands.Cog):
 
         self.get_videos()
     
-    def _get_channels(self, session):
+    def _get_channels(self):
         try:
             return self.session.query(yt.Youtube) \
                 .filter(yt.Youtube.Output == True) \
@@ -174,7 +174,7 @@ class Youtube(commands.Cog):
     async def send_videos(self):
         print("Scraping Youtube...")
 
-        youtube_channels = self._get_channels(session)
+        youtube_channels = self._get_channels()
         discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
         
         
