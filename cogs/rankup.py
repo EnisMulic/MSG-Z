@@ -2,6 +2,9 @@ import discord
 from discord.ext import commands
 from discord.ext import tasks
 
+import sqlalchemy.orm.query
+from sqlalchemy.exc import SQLAlchemyError
+
 import datetime
 
 from models.role import Role
@@ -12,7 +15,7 @@ import models.base as base
 from utils import misc
 
 def is_in_channel(ctx):
-    return ctx.channel.name == 'promocije' or ctx.channel.name == 'logger'
+    return ctx.channel.name == 'bot-commands' or ctx.channel.name == 'logger'
 
 class SortTree:
   def __init__(self, value):
@@ -95,7 +98,7 @@ class Rankup(commands.Cog):
                     .filter(users_roles_association.c.UserId == user.id) \
                     .all()
 
-            session.close()
+            self.session.close()
 
             return ranked_roles
         except SQLAlchemyError as err:
