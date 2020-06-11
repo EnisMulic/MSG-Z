@@ -35,6 +35,7 @@ class ModeratorUser(commands.Cog):
             await ctx.send("Member added")
         except SQLAlchemyError as err:
             await ctx.send(str(err))
+            self.session.rollback()
 
     @commands.command(aliases=["remove-account", "remove-acc"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -46,8 +47,11 @@ class ModeratorUser(commands.Cog):
             
             self.session.delete(account)
             self.session.commit()
+
+            await ctx.send("Account removed")
         except SQLAlchemyError as err:
             await ctx.send(str(err))
+            self.session.rollback()
 
     @commands.command(aliases=["change-account", "change-acc"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -62,8 +66,11 @@ class ModeratorUser(commands.Cog):
                 await old_account.kick()
                 
             self.session.commit()
+
+            await ctx.send("Account changed")
         except SQLAlchemyError as err:
             await ctx.send(str(err))
+            self.session.rollback()
 
     @commands.command(aliases=["set-index"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -80,27 +87,7 @@ class ModeratorUser(commands.Cog):
         except SQLAlchemyError as err:
             await ctx.send(str(err))
 
-    @commands.command(aliases=["set-status"], description = "Option:\n\t -d = Discord \n\t -f = Fakultet")
-    @commands.has_any_role('Administrator', 'Moderator')
-    async def set_status(self, ctx, member: discord.Member, status, option):
-        try:
-            user = self.session.query(User) \
-                .filter(User.UserId == member.id) \
-                .one()
-            
-            if option == '-f':
-                user.StatusFakultet = status
-                self.session.commit()
-                await ctx.send("FakultetStatus set")    
-            elif option == '-d':
-                user.StatusDiscord = status
-                self.session.commit()
-                await ctx.send("DiscordStatus set") 
-            
-        except SQLAlchemyError as err:
-            await ctx.send(str(err))
-
-            
+         
     @commands.command(aliases=["add-role"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
@@ -224,7 +211,7 @@ class ModeratorUser(commands.Cog):
                         .filter(User.UserId == member.id) \
                         .one()
                 
-                user.StatusDiscord = "Discord"
+                user.StatusDiscord = "Banned"
                 session.commit()
                 
             except SQLAlchemyError as err:
