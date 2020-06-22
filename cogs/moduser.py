@@ -226,17 +226,20 @@ class ModeratorUser(commands.Cog):
                 .filter(User.UserId == ctx.author.id) \
                 .filter(users_roles_association.c.UserId == ctx.author.id)
             
+            guild = self.client.get_guild(440055845552914433)
+            user = guild.get_member(ctx.author.id)
+
             for user_role in user_roles:
                 new_role = misc.getRoleById(self.client, user_role.RoleId)
                 if new_role.id != 440055845552914433:
-                    await ctx.author.add_roles(new_role)
-        
+                    await user.add_roles(new_role)
+
             removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
-            await ctx.author.remove_roles(removeRole)
+            await user.remove_roles(removeRole)
             self.session.commit()
             
             
-            ctx.author.edit(nick = user_roles[0].User.Name)
+            await user.edit(nick = user_roles[0].User.Name)
             self.session.commit()
         
         except SQLAlchemyError as err:
