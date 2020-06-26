@@ -155,21 +155,16 @@ class ModeratorUser(commands.Cog):
 
         await logger.LogAction(self.client, action)
 
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user = session.query(User) \
-                        .filter(User.UserId == member.id) \
-                        .one()
+        try:    
+            user = self.session.query(User) \    
+                .filter(User.UserId == member.id) \    
+                .one()    
                 
-                user.StatusDiscord = "Kicked"
-                session.commit()
+            user.StatusDiscord = "Kicked"    
+            self.session.commit()    
                 
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        except SQLAlchemyError as err:    
+            await ctx.send(str(err))    
 
     @commands.command()
     @commands.has_any_role('Administrator')
@@ -203,21 +198,17 @@ class ModeratorUser(commands.Cog):
 
         await logger.LogAction(self.client, action)
 
-        database = self.client.get_cog('Database')
-        if database is not None:
-            try:
-                session = database.Session()
-                user = session.query(User) \
-                        .filter(User.UserId == member.id) \
-                        .one()
+        try:
+            user = self.session.query(User) \
+                .filter(User.UserId == member.id) \
+                .one()
+            
+            user.StatusDiscord = "Banned"
+            self.session.commit()
                 
-                user.StatusDiscord = "Banned"
-                session.commit()
-                
-            except SQLAlchemyError as err:
-                await ctx.send(str(err))
-            finally:
-                session.close()
+        except SQLAlchemyError as err:
+            await ctx.send(str(err))
+            
 
     @commands.command()
     async def revoke(self, ctx):

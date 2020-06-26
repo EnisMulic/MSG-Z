@@ -17,21 +17,18 @@ class User(Base):
     Name = Column(String(32), nullable = False)
     Username = Column(String(32), nullable = False)
     Discriminator = Column(String(4), nullable = False)
-    StatusFakultet = Column(String(20))
     StatusDiscord = Column(String(20), nullable = False)
 
     Roles = relationship('Role', secondary = users_roles_association)
 
     def __init__(self, 
-        UserId, UserIndex, Name, Username, Discriminator, 
-        StatusFakultet = "Aktivan", StatusDiscord = "Aktivan", Roles = []
+        UserId, UserIndex, Name, Username, Discriminator, StatusDiscord = "Aktivan", Roles = []
     ):
         self.UserId = UserId
         self.UserIndex = UserIndex
         self.Name = Name,
         self.Username = Username
         self.Discriminator = Discriminator
-        self.StatusFakultet = StatusFakultet
         self.StatusDiscord = StatusDiscord
         self.Roles = Roles
         
