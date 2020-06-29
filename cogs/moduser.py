@@ -155,10 +155,10 @@ class ModeratorUser(commands.Cog):
 
         await logger.LogAction(self.client, action)
 
-        try:    
-            user = self.session.query(User) \    
-                .filter(User.UserId == member.id) \    
-                .one()    
+        try: 
+            user = self.session.query(User)\
+                .filter(User.UserId == member.id)\
+                .one()
                 
             user.StatusDiscord = "Kicked"    
             self.session.commit()    
