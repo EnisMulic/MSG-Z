@@ -134,7 +134,7 @@ class Rankup(commands.Cog):
     
     @commands.command()
     @commands.check(is_in_channel) 
-    @commands.has_any_role('Treća Godina') 
+    @commands.has_any_role('Treća godina') 
     async def imatrikulant(self, ctx):
         self.SetRole()
         await ctx.author.add_roles(self.role)
@@ -152,7 +152,7 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
-    @commands.has_any_role('Treća Godina')
+    @commands.has_any_role('Treća godina')
     @commands.check(is_in_channel) 
     async def apsolvent(self, ctx):
         self.SetRole()
@@ -169,9 +169,30 @@ class Rankup(commands.Cog):
 
         await ctx.send(embed = embed)
 
+    @commands.command(aliases=["apsolvent+"])
+    @commands.has_any_role('Treća godina')
+    @commands.check(is_in_channel) 
+    async def apsolvent_(self, ctx):
+        self.SetRole()
+        await ctx.author.add_roles(self.role)
+
+        druga_godina_role = misc.getRoleByName(self.client, "Druga godina*")
+        await ctx.author.remove_roles(druga_godina_role)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " je apsolvent :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+        
+
+        await ctx.send(embed = embed)
+
     
     @commands.command(aliases=["diplomirao", "diplomirala"])
-    @commands.has_any_role('Treća Godina')
+    @commands.has_any_role('Treća godina')
     @commands.check(is_in_channel)
     async def diploma(self, ctx):
         
@@ -190,7 +211,7 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["alumni", "alumna"])
-    @commands.has_any_role('Treća Godina') 
+    @commands.has_any_role('Treća godina') 
     @commands.check(is_in_channel) 
     async def alum(self, ctx):
         
