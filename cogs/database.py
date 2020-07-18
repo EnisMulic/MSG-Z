@@ -144,11 +144,6 @@ class Database(commands.Cog):
             )
 
             embed.add_field(
-                name = "Fakultet status",
-                value = user.StatusFakultet
-            )
-
-            embed.add_field(
                 name = "Discord status",
                 value = user.StatusDiscord
             )
