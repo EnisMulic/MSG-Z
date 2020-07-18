@@ -33,7 +33,7 @@ class FitNews(commands.Cog):
             
             notifications_list = []
             for new in news:
-                link = 'https://fit.ba/' + new.find("a", {"class": "cover"}).get("href")
+                link = 'https://fit.ba' + new.find("a", {"class": "cover"}).get("href")
                 meta = new.find("small").text
                 date = re.search(r'\d{2}.\d{2}.\d{4}', meta)
                 time = re.search(r'\d{2}:\d{2}', meta)
@@ -64,7 +64,7 @@ class FitNews(commands.Cog):
 
             for notification in notifications_list or []:
                 if notification > last_notification and notification.link != last_notification.link:
-                    channel = self.client.get_channel(misc.getChannelID(self.client, "logger"))
+                    channel = self.client.get_channel(misc.getChannelID(self.client, "obavijesti"))
                     if channel is not None:
                         await channel.send(notification.link)
                     lastSent = notification
