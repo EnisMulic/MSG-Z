@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 import datetime
+import os
 
 from utils import misc
 from utils import logger
@@ -36,6 +37,7 @@ class Backup(commands.Cog):
                     filePath = "./payload/" + attachment.filename
                     await attachment.save(filePath)
                     main.uploadFile(attachment.filename, filePath, self.folders[channel.name])
+                    os.remove(filePath)
 
 def setup(client):
     client.add_cog(Backup(client))
