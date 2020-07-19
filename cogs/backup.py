@@ -29,7 +29,6 @@ class Backup(commands.Cog):
                 channel = self.client.get_channel(reaction.channel_id)
                 message = await channel.fetch_message(reaction.message_id)
                 
-
                 files = []
                 for attachment in message.attachments:
                     file = await attachment.to_file()
@@ -38,6 +37,38 @@ class Backup(commands.Cog):
                     await attachment.save(filePath)
                     main.uploadFile(attachment.filename, filePath, self.folders[channel.name])
                     os.remove(filePath)
+
+                await self.LogBackup(user, channel)
+
+    async def LogBackup(self, member, channel):
+        
+
+        action = discord.Embed(
+            title = 'File(s) backed up to google drive',
+            colour = discord.Colour.green()
+        )
+        
+        action.add_field(
+            name = "By Admin/Mod", 
+            value = member.mention + ' ' + member.name + '#' + member.discriminator,
+            inline = False
+        )
+
+        action.add_field(
+            name = "In channel:", 
+            value = channel.mention,
+            inline = False
+        )
+    
+        action.set_footer(
+            text = str(datetime.datetime.now().strftime("%d %B %Y %H:%M:%S"))
+        )
+    
+        
+    
+        action.set_thumbnail(url = member.avatar_url)
+
+        await logger.LogAction(self.client, action)
 
 def setup(client):
     client.add_cog(Backup(client))
