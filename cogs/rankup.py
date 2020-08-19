@@ -350,6 +350,26 @@ class Rankup(commands.Cog):
 
         await ctx.send(embed = embed)
 
+    @commands.command()
+    @commands.check(is_in_channel) 
+    async def mahalusa(self, ctx):
+        ranked_roles = self.getUsersRankedRoles(ctx.author)
+        
+        highestRole, nextRole = self.findNextRole(ranked_roles)
+	lowerRole = misc.getRoleById(self.client, highestRole.ParentRole)
+        
+        await ctx.author.remove_roles(lowerRole)
+        
+        embed = discord.Embed(
+            colour = discord.Colour.gold().value,
+            description = "\n :tada: " + ctx.author.mention + " mahala :tada:"
+        )
+
+        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
+        embed.set_thumbnail(url = ctx.author.avatar_url)
+
+        await ctx.send(embed = embed)
+
     def findNextRole(self, roles: []):
         if self.roles is None:
             self.formRoles()
