@@ -356,7 +356,8 @@ class Rankup(commands.Cog):
         ranked_roles = self.getUsersRankedRoles(ctx.author)
         
         highestRole, nextRole = self.findNextRole(ranked_roles)
-	lowerRole = misc.getRoleById(self.client, highestRole.ParentRole)
+        lowerRole = misc.getRoleById(self.client, highestRole.ParentRole)
+	    
         
         await ctx.author.remove_roles(lowerRole)
         
