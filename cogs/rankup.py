@@ -13,6 +13,7 @@ from models.user import User
 import models.base as base
 
 from utils import misc
+from utils import randemoji
 
 def is_in_channel(ctx):
     return ctx.channel.name == 'bot-commands' or ctx.channel.name == 'logger'
@@ -298,9 +299,10 @@ class Rankup(commands.Cog):
         self.SetRole()
         await ctx.author.add_roles(self.role)
         
+        emoji = randemoji.Get()
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
-            description = "\n :tada: " + ctx.author.mention + " je obnovio/obnovila :tada:"
+            description = f"\n {emoji} {ctx.author.mention} se je obnovio/obnovila {emoji}"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
@@ -338,11 +340,10 @@ class Rankup(commands.Cog):
     @commands.check(is_in_channel) 
     async def ispis(self, ctx):
         await ctx.author.kick(reason = "Ispis")
-        # update fakultet status
-        
+        emoji = randemoji.Get()
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
-            description = "\n :tada: " + ctx.author.mention + " se ispisao/ispisala :tada:"
+            description = f"\n {emoji} {ctx.author.mention} se ispisao/ispisala {emoji}"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
