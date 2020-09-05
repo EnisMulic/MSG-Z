@@ -30,6 +30,16 @@ class Administrator(commands.Cog):
     async def unload_error(self, ctx, error):
         await ctx.send(f"The following error occured:```\n{error}\n```")
 
+    @commands.command()
+    @commands.has_any_role('Administrator')
+    async def lock(self, ctx):
+        everyone = misc.getRoleByName(self.client, "@everyone")
+
+        await ctx.channel.set_permissions(
+            everyone, read_messages=True, 
+                      send_messages=False
+        )
+
 
 def setup(client):
     client.add_cog(Administrator(client))
