@@ -31,7 +31,7 @@ class Help(commands.Cog):
 
         await ctx.send(embed = helpEmbed)
 
-        @commands.command(aliases=["man"])
+    @commands.command(aliases=["man"])
     async def manual(self, ctx, cmd):
         """Get manual for command."""
 
