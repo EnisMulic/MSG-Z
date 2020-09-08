@@ -198,11 +198,10 @@ class Rankup(commands.Cog):
     async def diploma(self, ctx):
         
         await ctx.author.kick(reason = "Diplomirao/Diplomirala")
-        # update fakultet status
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
-            description = "\n :tada: " + ctx.author.mention + " je diplomirao/diplomirala :tada:"
+            description = "\n :mortar_board: " + ctx.author.mention + " je diplomirao/diplomirala :mortar_board:"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
@@ -227,7 +226,7 @@ class Rankup(commands.Cog):
 
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
-            description = "\n :tada: " + ctx.author.mention + " je diplomirao/diplomirala :tada:"
+            description = "\n :mortar_board: " + ctx.author.mention + " je diplomirao/diplomirala :mortar_board:"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
@@ -364,7 +363,7 @@ class Rankup(commands.Cog):
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
-            description = "\n :tada: " + ctx.author.mention + " mahala :tada:"
+            description = "\n :spy: " + ctx.author.mention + " mahala :spy:"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
