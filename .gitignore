@@ -132,3 +132,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Exclude examples
+!config.example.json
+!alembic.example.ini
