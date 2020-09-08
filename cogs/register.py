@@ -15,6 +15,15 @@ class Register(commands.Cog):
     async def name(self, ctx, *, name):
         await ctx.send(f'Your name is {name}')
 
+    @register.command()
+    async def index(self, ctx, index):
+        await ctx.send(f'Your name is {index}')
+
+    @register.command()
+    async def roles(self, ctx, *, roles):
+        user_roles = roles.split()
+        await ctx.send(f'Your roles are {[role for role in user_roles]}')
+
       
 
 def setup(client):
