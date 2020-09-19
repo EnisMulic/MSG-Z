@@ -99,8 +99,6 @@ class Rankup(commands.Cog):
                     .filter(users_roles_association.c.UserId == user.id) \
                     .all()
 
-            self.session.close()
-
             return ranked_roles
         except SQLAlchemyError as err:
             print(str(err))
