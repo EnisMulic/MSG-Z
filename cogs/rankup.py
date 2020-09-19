@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from discord.utils import get
 
 import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
@@ -73,24 +72,8 @@ class Rankup(commands.Cog):
             print(str(err))
         
 
-    def AsignMissingRolesToUser(self, user):
-        roles = user.roles
-        for role in user.roles:
-            try:
-                addedRole = self.session.query(Role) \
-                        .filter(Role.RoleId == role.id) \
-                        .one()
-                    
-                dbUser = self.session.query(User) \
-                    .filter(User.UserId == user.id) \
-                    .one()
-
-                dbUser.Roles.append(addedRole)
-                self.session.commit()
-            except Exception as err:
-                print(err)
-
-
+            
+    
     def formRoles(self):
         if self.roles is None:
             try:
@@ -107,23 +90,16 @@ class Rankup(commands.Cog):
             except SQLAlchemyError as err:
                 print(str(err))
 
-    def fetchUsersRankedRoles(self, user):
-        return self.session.query(Role) \
-            .join(users_roles_association) \
-            .filter(Role.ParentRole != None) \
-            .filter(users_roles_association.c.UserId == user.id) \
-            .all()
-
 
     def getUsersRankedRoles(self, user):
         try:
-            ranked_roles = self.fetchUsersRankedRoles(user)
+            ranked_roles = self.session.query(Role) \
+                    .join(users_roles_association) \
+                    .filter(Role.ParentRole != None) \
+                    .filter(users_roles_association.c.UserId == user.id) \
+                    .all()
 
             self.session.close()
-            
-            if ranked_roles is None:
-                self.AsignMissingRolesToUser(user)
-                ranked_roles = self.fetchUsersRankedRoles(user)
 
             return ranked_roles
         except SQLAlchemyError as err:
