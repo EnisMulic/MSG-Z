@@ -19,7 +19,7 @@ class ModeratorUser(commands.Cog):
         self.client = client
         self.session = base.Session()
 
-    @commands.command(aliases=["add-member"])
+    @commands.command(aliases=["add-member", "am"])
     @commands.has_any_role('Administrator', 'Moderator')
     async def add_member(self, ctx, member: discord.Member, user_index):
         try:
@@ -235,6 +235,15 @@ class ModeratorUser(commands.Cog):
         
         except SQLAlchemyError as err:
             await ctx.send(str(err))
+
+    @commands.command()
+    async def mute(self, ctx, member: discord.Member = None):
+        muteRole = misc.getRoleByName(self.client, "Muted")
+
+        if member is None:
+            member = ctx.author
+
+        await member.add_roles(muteRole)
 
 
 def setup(client):
