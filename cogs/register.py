@@ -24,6 +24,13 @@ class Register(commands.Cog):
         user_roles = roles.split()
         await ctx.send(f'Your roles are {[role for role in user_roles]}')
 
+    @register.command()
+    async def image(self, ctx, *, image):
+        await ctx.send(f'Image: {image}')
+
+    @register.command()
+    async def done(self, ctx):
+        await ctx.send(f'DONE!!')
       
 
 def setup(client):
