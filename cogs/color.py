@@ -5,9 +5,6 @@ from discord.ext import tasks
 import asyncio
 import aiohttp
 
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
-
 class Color(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -24,11 +21,7 @@ class Color(commands.Cog):
                 )   
 
                 data = await response.json()
-                
-                
-                drawing = svg2rlg(data["image"]["named"])
-                renderPM.drawToFile(drawing, "image.png", fmt="PNG")
-                embed.set_thumbnail(url = "./image.png")
+                embed.set_thumbnail(url = "http://www.thecolorapi.com/id?format=svg&hex=HEX%7D")
                 await ctx.send(embed = embed)
       
 
