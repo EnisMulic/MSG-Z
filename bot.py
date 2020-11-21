@@ -6,8 +6,9 @@ import json
 import os
 import sys
 
+intents = discord.Intents.all()
 
-client = commands.Bot(command_prefix = '$')
+client = commands.Bot(command_prefix = '$', intents = intents)
 client.remove_command('help')
 
 def getToken():
