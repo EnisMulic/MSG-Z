@@ -74,7 +74,7 @@ class Database(commands.Cog):
 
         try:
             new_role = Role(role.id, role.name)
-            self.session.add(new-role)
+            self.session.add(new_role)
             self.session.commit()
         except SQLAlchemyError as err:
             await ctx.send(str(err))
@@ -88,7 +88,6 @@ class Database(commands.Cog):
 
         try:
             member = misc.getMember(self.client, user.id)
-
             embed = discord.Embed(
                 description = member.mention
             )
@@ -131,7 +130,7 @@ class Database(commands.Cog):
                     .one()
             
             member = misc.getMember(self.client, user.UserId)
-
+            
             embed = discord.Embed(
                 description = member.mention
             )

@@ -10,7 +10,6 @@ import models.base as base
 from utils import logger
 
 
-
 class ModeratorMsg(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -48,17 +47,6 @@ class ModeratorMsg(commands.Cog):
             files.append(await attachment.to_file())
         await message_channel.send(content = message, files = files)
         
-        try:
-            user = self.session.query(User) \
-                .filter(User.UserId == ctx.author.id) \
-                .one()
-
-            newPost = Post(message_channel.last_message_id, message_channel.id, user)
-            self.session.add(newPost)
-            self.session.commit()
-        except Exception as err:
-            await ctx.send(str(err))
-
 
     @commands.command(aliases=["msg-edit"])
     @commands.has_any_role('Administrator', 'Moderator')
@@ -69,16 +57,6 @@ class ModeratorMsg(commands.Cog):
         message = await message_channel.fetch_message(id)
         await message.edit(content = new_message)
 
-        try:
-            post = self.session.query(Post) \
-                .filter(Post.PostId == id) \
-                .one()
-            
-            post.UserId = ctx.author.id
-            self.session.commit()
-        except Exception as err:
-            await ctx.send(str(err))
-            
 
     @commands.command(aliases=["msg-move"], 
                       description = "Move a message from one channel to another\
