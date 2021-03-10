@@ -9,7 +9,6 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 from models.base import Base, Session, engine
-from models.post import Post
 from models.role import Role
 from models.user import User
 from models.channel import Channel

@@ -3,7 +3,6 @@ from discord.ext import commands
 
 import datetime
 
-from models.post import Post
 from models.user import User
 import models.base as base
 
