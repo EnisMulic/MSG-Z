@@ -36,8 +36,6 @@ if __name__ == '__main__':
                 client.load_extension(file)  
             except Exception as error:
                 print(file + ": Error - " + str(error))
-                
-    
-    
+
     client.run(getToken())
     

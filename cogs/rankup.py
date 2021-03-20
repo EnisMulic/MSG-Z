@@ -6,6 +6,7 @@ import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
 import datetime
+import json
 
 from models.role import Role
 from models.user import users_roles_association
@@ -17,127 +18,65 @@ from utils import randemoji
 
 def is_in_channel(ctx):
     return ctx.channel.name == 'bot-commands' or ctx.channel.name == 'logger'
-
-class SortTree:
-  def __init__(self, value):
-
-    self.left = None
-    self.value = value
-    self.right = None
-
-  def insert_val(self, value):
-    if value.Value < self.value.Value:
-       if self.left is None:
-         self.left = SortTree(value)
-       else:
-         self.left.insert_val(value)
-    else:
-       if self.right is None:
-         self.right = SortTree(value)
-       else:
-         self.right.insert_val(value)
-
-def display(_node):
-   return list(filter(None, [i for b in [display(_node.left) if isinstance(_node.left, SortTree) else [getattr(_node.left, 'value', None)], [_node.value], display(_node.right) if isinstance(_node.right, SortTree) else [getattr(_node.right, 'value', None)]] for i in b]))
     
 
 class Rankup(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.roleName = "Registrovan"
-        self.role = None
-        self.roles = None
+        self.role_name = "Registrovan"
+        self.role = misc.getRoleByName(self.client, self.role_name)
 
+        with open(".\\config\\rankup.json", "r", encoding="utf-8") as jsonConfigFile:
+            self.rankup_rules = json.load(jsonConfigFile)
+
+        self.ranked_roles = list(self.rankup_rules.keys())
         self.session = base.Session()
 
-    def SetRole(self):
-        if self.role is None:
-            self.role = misc.getRoleByName(self.client, self.roleName)
+    def get_role(self, role_name):
+        return misc.getRoleByName(self.client, role_name)
 
-    def SetValue(self, role: Role):
-        try:
-            if role.ParentRole is not None:
-                parent = self.session.query(Role) \
-                    .filter(Role.RoleId == role.ParentRole) \
-                    .one()
-                
-                children = self.session.query(Role) \
-                    .filter(Role.ParentRole == role.ParentRole) \
-                    .count()
+    def get_user_roles(self, user):
+        return [role.name for role in user.roles]
 
-                role.Value = parent.Value + 1 + children * 0.1
-            else:
-                role.Value = 0
-        except SQLAlchemyError as err:
-            print(str(err))
+    def get_user_ranked_roles(self, user):
+        roles = []
+        user_roles = self.get_user_roles(user)
+        for role in user_roles:
+            if role in self.ranked_roles:
+                roles.append(self.get_role(role))
+        return roles
+
+    def get_highest_ranked_role(self, user, exclued_roles = []):
+        user_roles = self.get_user_roles(user)
+        for ranked_role in self.ranked_roles[::-1]:
+            if ranked_role in user_roles and ranked_role not in exclued_roles:
+                return ranked_role
         
-
-            
-    
-    def formRoles(self):
-        if self.roles is None:
-            try:
-                ranked_roles = self.session.query(Role) \
-                        .filter(Role.ParentRole != None) \
-                        .all()
-
-                RoleTree = SortTree(ranked_roles[0])
-                for ranked_role in ranked_roles[1:]:
-                    RoleTree.insert_val(ranked_role)
-
-
-                self.roles = display(RoleTree)
-            except SQLAlchemyError as err:
-                print(str(err))
-
-
-    def getUsersRankedRoles(self, user):
-        try:
-            ranked_roles = self.session.query(Role) \
-                    .join(users_roles_association) \
-                    .filter(Role.ParentRole != None) \
-                    .filter(users_roles_association.c.UserId == user.id) \
-                    .all()
-
-            self.session.close()
-            return ranked_roles
-        except SQLAlchemyError as err:
-            print(str(err))
-        
-
-            
-
-    
     @commands.command()
     @commands.has_any_role('Administrator') 
-    async def connect(self, ctx, parentRole: discord.Role, childRole: discord.Role):
-        """Connect two discord roles (child role and parent role)."""
+    async def t(self, ctx):
+        user_roles = [role.name for role in ctx.author.roles]
+        print(user_roles)
+        ranked_roles = list(self.rankupRules.keys())
 
-        try:
-            parent = self.session.query(Role) \
-                .filter(Role.RoleId == parentRole.id) \
-                .one_or_none()
-
-            child = self.session.query(Role) \
-                .filter(Role.RoleId == childRole.id) \
-                .one_or_none()
-
-            if parent is not None and child is not None:
-                child.ParentRole = parent.RoleId
-                self.SetValue(child)
-                self.session.commit()
-
-        except SQLAlchemyError as err:
-            await ctx.send(str(err))
+        for ranked_role in ranked_roles[::-1]:
+            if ranked_role in user_roles:
+                print(ranked_role)
+                print(self.rankupRules[ranked_role])
+                break
 
 
-    
     @commands.command()
     @commands.check(is_in_channel) 
-    @commands.has_any_role('Treća godina') 
+    @commands.has_any_role("Apsolvent") 
     async def imatrikulant(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
+        registrovan_role = self.get_role("Registrovan")
+        imatrikulant_role = self.get_role("Imatrikulant")
+        apsolvet_role = self.get_role("Apsolvent")
+
+        await ctx.author.add_roles(imatrikulant_role)
+        await ctx.author.remove_roles(apsolvet_role)
+        await ctx.author.add_roles(registrovan_role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -150,14 +89,32 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
         
     @commands.command(aliases=["imatrikulant+"])
-    @commands.has_any_role('Treća godina')
+    @commands.has_any_role("Administrator", "Apsolvent")
     @commands.check(is_in_channel) 
     async def imatrikulant_(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
+        registrovan_role = self.get_role("Registrovan")
+        imatrikulant_role = self.get_role("Imatrikulant")
+        apsolvet_role = self.get_role("Apsolvent")
 
-        druga_godina_role = misc.getRoleByName(self.client, "Druga godina*")
-        await ctx.author.remove_roles(druga_godina_role)
+        lower_role_name = "" 
+        highest_role = self.get_highest_ranked_role(ctx.author, ["Apsolvent", "Imatrikulant"])
+        
+        if highest_role == "Četvrta godina":
+            lower_role_name = "Treća godina"
+        elif highest_role == "Treća godina":
+            lower_role_name = "Druga godina"
+
+        if lower_role_name != "":
+            lower_role = self.get_role(lower_role_name)
+            await ctx.author.remove_roles(lower_role)
+
+        try:
+            await ctx.author.add_roles(imatrikulant_role)
+            await ctx.author.remove_roles(apsolvet_role)
+        except:
+            pass
+
+        await ctx.author.add_roles(registrovan_role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -174,8 +131,12 @@ class Rankup(commands.Cog):
     @commands.has_any_role('Treća godina')
     @commands.check(is_in_channel) 
     async def apsolvent(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
+        registrovan_role = self.get_role("Registrovan")
+        apsolvet_role = self.get_role("Apsolvent")
+
+        await ctx.author.add_roles(apsolvet_role)
+        await ctx.author.add_roles(registrovan_role)
+        
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -189,15 +150,31 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
 
     @commands.command(aliases=["apsolvent+"])
-    @commands.has_any_role('Treća godina')
+    @commands.has_any_role('Treća godina', "Četvrta godina")
     @commands.check(is_in_channel) 
     async def apsolvent_(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
+        registrovan_role = self.get_role("Registrovan")
+        apsolvet_role = self.get_role("Apsolvent")
 
-        druga_godina_role = misc.getRoleByName(self.client, "Druga godina*")
-        await ctx.author.remove_roles(druga_godina_role)
+        lower_role_name = "" 
+        highest_role = self.get_highest_ranked_role(ctx.author, ["Apsolvent"])
         
+        if highest_role == "Četvrta godina":
+            lower_role_name = "Treća godina"
+        elif highest_role == "Treća godina":
+            lower_role_name = "Druga godina"
+
+        if lower_role_name != "":
+            lower_role = self.get_role(lower_role_name)
+            await ctx.author.remove_roles(lower_role)
+
+        try:
+            await ctx.author.add_roles(apsolvet_role)
+        except:
+            pass
+
+        await ctx.author.add_roles(registrovan_role)
+
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
             description = "\n :tada: " + ctx.author.mention + " je apsolvent :tada:"
@@ -229,18 +206,16 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["alumni", "alumna"])
-    @commands.has_any_role('Treća godina') 
+    @commands.has_any_role("Treća godina", "Četvrta godina") 
     @commands.check(is_in_channel) 
     async def alum(self, ctx):
         
-        alum_role = misc.getRoleByName(self.client, "Alumni")
+        alum_role = self.get_role("Alumni")
         await ctx.author.add_roles(alum_role)
-        ranked_roles = self.getUsersRankedRoles(ctx.author)
 
-        for role in ctx.author.roles:
-            for ranked_role in ranked_roles:
-                if role.id == ranked_role.RoleId:
-                    await ctx.author.remove_roles(role)
+        ranked_role = self.get_user_ranked_roles(ctx.author)
+        for role in ranked_role:
+            await ctx.author.remove_roles(role)
 
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -254,20 +229,19 @@ class Rankup(commands.Cog):
     
     
     @commands.command(aliases=["ocistio", "ocistila"])
+    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
     @commands.check(is_in_channel) 
     async def cista(self, ctx):
-        self.SetRole()
-        ranked_roles = self.getUsersRankedRoles(ctx.author)
-        highestRole, nextRole = self.findNextRole(ranked_roles)
-        
-        for role in ctx.author.roles:
-            for ranked_role in ranked_roles:
-                if role.id == ranked_role.RoleId:
-                    await ctx.author.remove_roles(role)
+        highest_role = self.get_highest_ranked_role(ctx.author)
 
-        nextRole = misc.getRoleById(self.client, nextRole.RoleId)
-        await ctx.author.add_roles(nextRole)
-        await ctx.author.add_roles(self.role)
+        ranked_role = self.get_user_ranked_roles(ctx.author)
+        for role in ranked_role:
+            await ctx.author.remove_roles(role)
+
+        next_role = self.get_role(self.rankup_rules[highest_role]["Next"])
+        registrovan_role = self.get_role("Registrovan")
+        await ctx.author.add_roles(next_role)
+        await ctx.author.add_roles(registrovan_role)
 
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -282,22 +256,22 @@ class Rankup(commands.Cog):
     
     
     @commands.command()
+    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
     @commands.check(is_in_channel) 
     async def uslov(self, ctx):
-        self.SetRole()
-        ranked_roles = self.getUsersRankedRoles(ctx.author)
-        
-        highestRole, nextRole = self.findNextRole(ranked_roles)
-        nextRole = misc.getRoleById(self.client, nextRole.RoleId)
+        highest_role = self.get_highest_ranked_role(ctx.author)
 
+        ranked_role = self.get_user_ranked_roles(ctx.author)
+        for role in ranked_role:
+            if role.name != highest_role:
+                await ctx.author.remove_roles(role)
 
-        for role in ctx.author.roles:
-            for ranked_role in ranked_roles:
-                if role.id == ranked_role.RoleId and role.id != highestRole.RoleId:
-                    await ctx.author.remove_roles(role)
+        next_role = self.get_role(self.rankup_rules[highest_role]["Next"])
+        registrovan_role = self.get_role("Registrovan")
 
-        await ctx.author.add_roles(nextRole)
-        await ctx.author.add_roles(self.role)
+        await ctx.author.add_roles(next_role)
+        await ctx.author.add_roles(registrovan_role)
+
 
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -311,10 +285,12 @@ class Rankup(commands.Cog):
         
 
     @commands.command(aliases=["obnovio", "obnovila"])
+    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
     @commands.check(is_in_channel) 
     async def obnova(self, ctx):
-        self.SetRole()
-        await ctx.author.add_roles(self.role)
+        
+        registrovan_role = self.get_role("Registrovan")
+        await ctx.author.add_roles(next_role)
         
         emoji = randemoji.Get()
         embed = discord.Embed(
@@ -329,18 +305,16 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
+    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
     @commands.check(is_in_channel) 
     async def kolizija(self, ctx):
-        self.SetRole()
+        highest_role = self.get_highest_ranked_role(ctx.author)
 
+        next_role = self.get_role(self.rankup_rules[highest_role]["Kolizija"])
+        registrovan_role = self.get_role("Registrovan")
         
-        ranked_roles = self.getUsersRankedRoles(ctx.author)
-        highestRole, nextRole = self.findNextRoleKolizija(ranked_roles)
-        
-        kozizijaRole = misc.getRoleById(self.client, nextRole.RoleId)
-        
-        await ctx.author.add_roles(kozizijaRole)
-        await ctx.author.add_roles(self.role)
+        await ctx.author.add_roles(next_role)
+        await ctx.author.add_roles(registrovan_role)
         
         embed = discord.Embed(
             colour = discord.Colour.gold().value,
@@ -352,7 +326,7 @@ class Rankup(commands.Cog):
         
         await ctx.send(embed = embed)
 
-    
+
     @commands.command()
     @commands.check(is_in_channel) 
     async def ispis(self, ctx):
@@ -367,62 +341,6 @@ class Rankup(commands.Cog):
         embed.set_thumbnail(url = ctx.author.avatar_url)
 
         await ctx.send(embed = embed)
-
-    @commands.command()
-    @commands.check(is_in_channel) 
-    async def mahalusa(self, ctx):
-        ranked_roles = self.getUsersRankedRoles(ctx.author)
-        
-        highestRole, nextRole = self.findNextRole(ranked_roles)
-        lowerRole = misc.getRoleById(self.client, highestRole.ParentRole)
-	    
-        
-        await ctx.author.remove_roles(lowerRole)
-        
-        embed = discord.Embed(
-            colour = discord.Colour.gold().value,
-            description = "\n :spy: " + ctx.author.mention + " mahala :spy:"
-        )
-
-        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
-        embed.set_thumbnail(url = ctx.author.avatar_url)
-
-        await ctx.send(embed = embed)
-
-    def findNextRole(self, roles: []):
-        if self.roles is None:
-            self.formRoles()
-        
-        tree = SortTree(roles[0])
-        for role in roles[1:]:
-            tree.insert_val(role)
-        
-        list = display(tree)
-        for item in list[::-1]:
-            for role in self.roles[::-1]:
-                if item.RoleId == role.ParentRole and role.Value.is_integer():
-                    return item, role
-        
-        return None
-
-    def findNextRoleKolizija(self, roles: []):
-        if self.roles is None:
-            self.formRoles()
-        
-        tree = SortTree(roles[0])
-        for role in roles[1:]:
-            tree.insert_val(role)
-        
-        list = display(tree)
-        for item in list[::-1]:
-            for role in self.roles[::-1]:
-                if item.RoleId == role.ParentRole and "Kolizija" in role.Name:
-                    return item, role
-        
-        return None
-
-    
-
 
 def setup(client):
     client.add_cog(Rankup(client))
