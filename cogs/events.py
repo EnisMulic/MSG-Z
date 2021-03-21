@@ -8,7 +8,6 @@ from utils import logger
 from sqlalchemy.exc import SQLAlchemyError
 
 from models.user import User
-from models.role import Role
 import models.base as base
 
 class Events(commands.Cog):
@@ -133,23 +132,7 @@ class Events(commands.Cog):
                 )
                 
                 action.set_thumbnail(url = before.avatar_url)
-                await logger.LogAction(self.client, action)
-
-                try:
-                    removedRole = self.session.query(Role) \
-                        .filter(Role.RoleId == role.id) \
-                        .one()
-
-                    user = self.session.query(User) \
-                        .filter(User.UserId == before.id) \
-                        .one()
-                    
-                    user.Roles.remove(removedRole)
-                    self.session.commit()
-                    self.session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
-                    
+                await logger.LogAction(self.client, action)     
 
         # Role added           
         elif before.roles > after.roles:
@@ -181,21 +164,6 @@ class Events(commands.Cog):
                 action.set_thumbnail(url = before.avatar_url)
 
                 await logger.LogAction(self.client, action)
-                
-                try:
-                    addedRole = self.session.query(Role) \
-                        .filter(Role.RoleId == role.id) \
-                        .one()
-                    
-                    user = self.session.query(User) \
-                        .filter(User.UserId == before.id) \
-                        .one()
-
-                    user.Roles.append(addedRole)
-                    self.session.commit()
-                    self.session.close()
-                except SQLAlchemyError as err:
-                    print(str(err))
 
                 
         if before.nick != after.nick:

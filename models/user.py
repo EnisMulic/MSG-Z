@@ -3,12 +3,6 @@ from sqlalchemy.orm import relationship
 
 from models.base import Base
 
-users_roles_association = Table('UsersRoles', Base.metadata,
-    Column('UserId', BigInteger, ForeignKey('Users.UserId')),
-    Column('RoleId', BigInteger, ForeignKey('Roles.RoleId'))
-)
-
-
 class User(Base):
     __tablename__ = 'Users'
 
@@ -19,16 +13,11 @@ class User(Base):
     Discriminator = Column(String(4), nullable = False)
     StatusDiscord = Column(String(20), nullable = False)
 
-    Roles = relationship('Role', secondary = users_roles_association)
-
-    def __init__(self, 
-        UserId, UserIndex, Name, Username, Discriminator, StatusDiscord = "Aktivan", Roles = []
-    ):
+    def __init__(self, UserId, UserIndex, Name, Username, Discriminator, StatusDiscord = "Aktivan"):
         self.UserId = UserId
         self.UserIndex = UserIndex
         self.Name = Name,
         self.Username = Username
         self.Discriminator = Discriminator
         self.StatusDiscord = StatusDiscord
-        self.Roles = Roles
         

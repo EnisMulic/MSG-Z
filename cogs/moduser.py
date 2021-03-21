@@ -7,8 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import datetime
 
 from models.user import User
-from models.role import Role
-from models.user import users_roles_association
 import models.base as base
 
 from utils import logger
@@ -209,33 +207,7 @@ class ModeratorUser(commands.Cog):
         except SQLAlchemyError as err:
             await ctx.send(str(err))
             
-
-    @commands.command()
-    async def revoke(self, ctx):
-        try:
-            user_roles = self.session.query(User, users_roles_association) \
-                .filter(User.UserId == ctx.author.id) \
-                .filter(users_roles_association.c.UserId == ctx.author.id)
-            
-            guild = self.client.get_guild(440055845552914433)
-            user = guild.get_member(ctx.author.id)
-
-            for user_role in user_roles:
-                new_role = misc.getRoleById(self.client, user_role.RoleId)
-                if new_role.id != 440055845552914433:
-                    await user.add_roles(new_role)
-
-            removeRole = misc.getRoleByName(self.client, "Neregistrovan(a)")
-            await user.remove_roles(removeRole)
-            self.session.commit()
-            
-            
-            await user.edit(nick = user_roles[0].User.Name)
-            self.session.commit()
-        
-        except SQLAlchemyError as err:
-            await ctx.send(str(err))
-
+    
     @commands.command()
     async def mute(self, ctx, member: discord.Member = None):
         muteRole = misc.getRoleByName(self.client, "Muted")

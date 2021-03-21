@@ -8,8 +8,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import datetime
 import json
 
-from models.role import Role
-from models.user import users_roles_association
 from models.user import User
 import models.base as base
 

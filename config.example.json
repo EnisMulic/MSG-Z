@@ -1,13 +1,13 @@
 {
-    "Discord":{
+    "Discord": {
         "Token": "{{ discord_token }}"
     },
     "Connection-String": "{{ connection_string }}",
-    "DLWMS":{
+    "DLWMS": {
         "url": "https://fit.ba/student/login.aspx",
         "userID": "{{ student_index }}",
         "password": "{{ password }}",
-        "subjects":{
+        "subjects": {
             "Programiranje I": "pr1",
             "Matematika I": "mat1",
             "Digitalna logika": "dl",
@@ -38,41 +38,5 @@
             "Digitalna forenzika": "df",
             "Kompjuterska grafika": "kgr"
         }
-    },
-    "_comment": "this should probably be in a database",
-    "Google-Drive":{
-        "pr1": "{{ folder_id }}",
-        "mat1": "{{ folder_id }}",
-        "dl": "{{ folder_id }}",
-        "ri": "{{ folder_id }}",
-        "eng1": "{{ folder_id }}",
-        "pr2": "{{ folder_id }}",
-        "wrd": "{{ folder_id }}",
-        "mat2": "{{ folder_id }}",
-        "os": "{{ folder_id }}",
-        "eng2": "{{ folder_id }}",
-        "mar": "{{ folder_id }}",
-        "pr3-npp14": "{{ folder_id }}",
-        "pr3-npp18": "{{ folder_id }}",
-        "baze1": "{{ folder_id }}",
-        "asp": "{{ folder_id }}",
-        "mat3": "{{ folder_id }}",
-        "rm": "{{ folder_id }}",
-        "ads": "{{ folder_id }}",
-        "baze2":"{{ folder_id }}",
-        "stat": "{{ folder_id }}",
-        "eng3": "{{ folder_id }}",
-        "rs1": "{{ folder_id }}",
-        "ris": "{{ folder_id }}",
-        "up": "{{ folder_id }}",
-        "bi": "{{ folder_id }}",
-        "sis": "{{ folder_id }}",
-        "psr": "{{ folder_id }}",
-        "rs2": "{{ folder_id }}",
-        "kgr": "{{ folder_id }}",
-        "df": "{{ folder_id }}",
-        "diplomski": "{{ folder_id }}",
-        "sma": "{{ folder_id }}"
     }
-
-} 
+}
