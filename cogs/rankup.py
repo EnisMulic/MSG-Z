@@ -52,7 +52,7 @@ class Rankup(commands.Cog):
 
     @commands.command()
     @commands.check(is_in_channel) 
-    @commands.has_any_role("Imatrikulant") 
+    @commands.has_any_role("Apsolvent", "Imatrikulant") 
     async def imatrikulant(self, ctx):
         registrovan_role = self.get_role("Registrovan")
         imatrikulant_role = self.get_role("Imatrikulant")
