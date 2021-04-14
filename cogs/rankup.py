@@ -49,24 +49,10 @@ class Rankup(commands.Cog):
         for ranked_role in self.ranked_roles[::-1]:
             if ranked_role in user_roles and ranked_role not in exclued_roles:
                 return ranked_role
-        
-    @commands.command()
-    @commands.has_any_role('Administrator') 
-    async def t(self, ctx):
-        user_roles = [role.name for role in ctx.author.roles]
-        print(user_roles)
-        ranked_roles = list(self.rankupRules.keys())
-
-        for ranked_role in ranked_roles[::-1]:
-            if ranked_role in user_roles:
-                print(ranked_role)
-                print(self.rankupRules[ranked_role])
-                break
-
 
     @commands.command()
     @commands.check(is_in_channel) 
-    @commands.has_any_role("Apsolvent") 
+    @commands.has_any_role("Imatrikulant") 
     async def imatrikulant(self, ctx):
         registrovan_role = self.get_role("Registrovan")
         imatrikulant_role = self.get_role("Imatrikulant")
@@ -87,7 +73,7 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
         
     @commands.command(aliases=["imatrikulant+"])
-    @commands.has_any_role("Administrator", "Apsolvent")
+    @commands.has_any_role("Apsolvent", "Imatrikulant")
     @commands.check(is_in_channel) 
     async def imatrikulant_(self, ctx):
         registrovan_role = self.get_role("Registrovan")
@@ -126,7 +112,7 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
     
     @commands.command()
-    @commands.has_any_role('Treća godina')
+    @commands.has_any_role("Treća godina")
     @commands.check(is_in_channel) 
     async def apsolvent(self, ctx):
         registrovan_role = self.get_role("Registrovan")
@@ -148,7 +134,7 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
 
     @commands.command(aliases=["apsolvent+"])
-    @commands.has_any_role('Treća godina', "Četvrta godina")
+    @commands.has_any_role("Treća godina", "Četvrta godina")
     @commands.check(is_in_channel) 
     async def apsolvent_(self, ctx):
         registrovan_role = self.get_role("Registrovan")
@@ -186,7 +172,7 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["diplomirao", "diplomirala"])
-    @commands.has_any_role('Treća godina')
+    @commands.has_any_role("Treća godina", "Četvrta godina")
     @commands.check(is_in_channel)
     async def diploma(self, ctx):
         
