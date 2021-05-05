@@ -1,0 +1,30 @@
+{
+    "Prva godina": {
+        "Next": "Druga godina",
+        "Kolizija": "Kolizija - 2"
+    },
+    "Druga godina": {
+        "Next": "Treća godina",
+        "Kolizija": "Kolizija - 3"
+    },
+    "Treća godina": {
+        "Next": "Četvrta godina",
+        "Kolizija": "Kolizija - 4",
+        "Apsolvent": "Apsolvent",
+        "Alumni": "Alumni"
+    },
+    "Četvrta godina": {
+        "Apsolvent": "Apsolvent",
+        "Alumni": "Alumni"
+    },
+    "Apsolvent": {
+        "Imatrikulant": "Imatrikulant",
+        "Alumni": "Alumni"
+    },
+    "Imatrikulant": {
+        "Alumni": "Alumni"
+    },
+    "Kolizija - 2": "",
+    "Kolizija - 3": "",
+    "Kolizija - 4": ""
+}

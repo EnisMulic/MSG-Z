@@ -1,7 +1,7 @@
 # My sketchy files
-*.json
-*.ini
-*.txt
+# *.json
+# *.ini
+# *.txt
 .credentials/
 
 
