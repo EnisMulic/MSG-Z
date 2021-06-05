@@ -4,6 +4,7 @@ from discord.ext import commands
 import datetime
 
 from utils import logger
+from constants import roles
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -18,7 +19,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         try:
-            role = discord.utils.get(member.guild.roles, name = "Neregistrovan(a)")
+            role = discord.utils.get(member.guild.roles, name = roles.NEREGISTROVAN)
             
             action = discord.Embed(
                 title = 'Member Joined',
@@ -46,7 +47,7 @@ class Events(commands.Cog):
             action.set_thumbnail(url = member.avatar_url)
 
             await member.add_roles(role)
-            await logger.LogAction(self.client, action)      
+            await logger.log_action(self.client, action)      
         except:
             print("Error while adding role on join")
 
@@ -84,7 +85,7 @@ class Events(commands.Cog):
         
             action.set_thumbnail(url = member.avatar_url)
         
-            await logger.LogAction(self.client, action)
+            await logger.log_action(self.client, action)
 
             try:
                 user = self.session.query(User) \
@@ -132,7 +133,7 @@ class Events(commands.Cog):
                 )
                 
                 action.set_thumbnail(url = before.avatar_url)
-                await logger.LogAction(self.client, action)     
+                await logger.log_action(self.client, action)     
 
         # Role added           
         elif before.roles > after.roles:
@@ -163,7 +164,7 @@ class Events(commands.Cog):
                 
                 action.set_thumbnail(url = before.avatar_url)
 
-                await logger.LogAction(self.client, action)
+                await logger.log_action(self.client, action)
 
                 
         if before.nick != after.nick:
@@ -198,7 +199,7 @@ class Events(commands.Cog):
 
             action.set_thumbnail(url = before.avatar_url)
 
-            await logger.LogAction(self.client, action)
+            await logger.log_action(self.client, action)
             
             try:
                 user = self.session.query(User) \
@@ -276,7 +277,7 @@ class Events(commands.Cog):
         )
         
 
-        await logger.LogAction(self.client, action)
+        await logger.log_action(self.client, action)
 
 
 def setup(client):

@@ -1,15 +1,14 @@
-import discord
 from discord.ext import commands
-from discord.ext import tasks
 
 import json
+from constants import roles
 
 class Config(commands.Cog):
     def __init__(self, client):
         self.client = client
 
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def config(self, ctx, cog, key, value):
         cog_config = {}
         with open(f".\\config\{cog}.json", "r", encoding="utf-8") as jsonConfigFile:

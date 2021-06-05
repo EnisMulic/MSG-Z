@@ -1,15 +1,13 @@
-import discord
 from discord.ext import commands
 from discord.ext import tasks
 
-import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import re
-from datetime import datetime
 
 from utils import notifications
 from utils import misc
+from constants import channels
 import json
 
 class FitNews(commands.Cog):
@@ -64,7 +62,7 @@ class FitNews(commands.Cog):
 
             for notification in notifications_list or []:
                 if notification > last_notification and notification.link != last_notification.link:
-                    channel = self.client.get_channel(misc.getChannelID(self.client, "obavijesti"))
+                    channel = self.client.get_channel(misc.get_channel_id(self.client, channels.OBAVIJESTI))
                     if channel is not None:
                         await channel.send(notification.link)
                     lastSent = notification

@@ -1,21 +1,12 @@
-import discord
 from discord.ext import commands
 from discord.ext import tasks
-
 
 import requests
 import json
 from bs4 import BeautifulSoup
 
-import sqlalchemy.orm.query
-from sqlalchemy.exc import SQLAlchemyError
-
-
-from models.user import User
-
 from utils import notifications
 from utils import misc
-from utils import logger
 
 
 class Scraper(commands.Cog):
@@ -128,7 +119,7 @@ class Scraper(commands.Cog):
                         channelName = "obavijesti"
                         
                         
-                    channel = self.client.get_channel(misc.getChannelID(self.client, channelName))
+                    channel = self.client.get_channel(misc.get_channel_id(self.client, channelName))
                     if channel is not None:
                         await channel.send(embed = notification.getEmbed())
                     lastSent = notification

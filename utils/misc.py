@@ -1,5 +1,3 @@
-import discord
-
 def get_channel_id(client, channelName):
     for guild in client.guilds:
         for channel in guild.channels:

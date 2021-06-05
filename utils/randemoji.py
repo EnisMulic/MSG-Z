@@ -2,7 +2,7 @@ import json
 import random
 
 
-def Get():
+def get():
     with open(".\\emoji.json", "r", encoding="utf-8") as jsonDataFile:
         emojis = json.load(jsonDataFile)
 

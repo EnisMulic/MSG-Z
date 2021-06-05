@@ -1,19 +1,15 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
-import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
 import models.tag as tg
 from models.user import User
 import models.base as base
 
-import string
-import random
 import datetime
 import re
 
-from utils import misc
 
 from enum import Enum
 
