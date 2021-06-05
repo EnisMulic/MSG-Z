@@ -1,9 +1,9 @@
 # My sketchy files
-# *.json
-# *.ini
-# *.txt
-.credentials/
+*.json
+*.ini
+*.txt
 
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
