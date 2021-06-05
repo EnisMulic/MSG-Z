@@ -1,23 +1,14 @@
 import discord
 from discord.ext import commands
-from discord.ext import tasks
 
-import json
-import sqlalchemy.orm.query
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
-
 
 from models.base import Base, Session, engine
 from models.user import User
-from models.channel import Channel
-from models.youtube import Youtube
 import models.base as base
 
-import datetime
-
+from constants import roles
 from utils import misc
-
 
 class Database(commands.Cog):
     def __init__(self, client):
@@ -29,101 +20,77 @@ class Database(commands.Cog):
 
     def Session(self):
         return base.Session()
-
-                
-    @commands.command(aliases=["insert-channel"], description = "Add channel to the database")
-    @commands.has_any_role('Administrator') 
-    async def insert_channel(self, ctx, channel: discord.TextChannel):
-        """Insert channel into database."""
-
-        try:
-            newChannel = Channel(channel.id, channel.name)
-            self.session.add(newChannel)
-            self.session.commit()
-        except SQLAlchemyError as err:
-            await ctx.send(str(err))
-            self.session.rollback()
             
 
     @commands.command()
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def whois(self, ctx, user: discord.User):
-        """Get info of user by mention."""
+        """Get user info by mention."""
 
         try:
-            member = misc.getMember(self.client, user.id)
-            embed = discord.Embed(
-                description = member.mention
-            )
+            user = self.session.query(User) \
+                    .filter(User.UserId == user.id) \
+                    .one()
+            
+            member = misc.get_member(self.client, user.UserId)
 
-            embed.set_author(name = member.display_name, icon_url = member.avatar_url)
-            embed.set_thumbnail(url = member.avatar_url)
-            embed.add_field(
-                name = "Registered",
-                value = user.created_at.strftime("%a, %b %d, %Y,\n %H:%M %p")
-            )
-
-            embed.add_field(
-                name = "Joined",
-                value = member.joined_at.strftime("%a, %b %d, %Y,\n %H:%M %p")
-            )
-
-            roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
-            embed.add_field(
-                name = "Roles",
-                value = ' '.join(roles),
-                inline = False
-            )
+            embed = self._get_embed_for_member(user, member)
             
             await ctx.send(embed = embed)
 
             
         except NoResultFound as err:
             await ctx.send(str(err))
-        
-            
+         
 
     @commands.command()
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def student(self, ctx, user_index):
-        """Get info of user by student index."""
+        """Get user info by student index."""
 
         try:
             user = self.session.query(User) \
                     .filter(User.UserIndex == user_index) \
                     .one()
             
-            member = misc.getMember(self.client, user.UserId)
-            
-            embed = discord.Embed(
-                description = member.mention
-            )
+            member = misc.get_member(self.client, user.UserId)
 
-            embed.set_author(name = member.display_name, icon_url = member.avatar_url)
-            embed.set_thumbnail(url = member.avatar_url)
-            embed.add_field(
-                name = "Index",
-                value = user.UserIndex
-            )
-
-            embed.add_field(
-                name = "Discord status",
-                value = user.StatusDiscord
-            )
-
-            roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
-            embed.add_field(
-                name = "Roles",
-                value = ' '.join(roles),
-                inline = False
-            )
-            
-            await ctx.send(embed = embed)
+            if member is None:
+                embed = self._get_embed_for_user(user)
+                await ctx.send(embed = embed)
+            else:
+                embed = self._get_embed_for_member(user, member)
+                await ctx.send(embed = embed)
 
         except NoResultFound as err:
             await ctx.send(str(err))
 
-        self.session.rollback()
+    def _get_embed_for_user(self, user: User):
+        embed = discord.Embed()
+
+        embed.add_field(name="Mention", value=f'<@!{user.UserId}>', inline=True)
+        embed.add_field(name="Name", value=user.Name, inline=True)
+        embed.add_field(name="Index", value=user.UserIndex, inline=True)
+
+        return embed
+
+    def _get_embed_for_member(self, user: User, member: discord.User):
+        embed = discord.Embed()
+
+        embed.set_author(name = member.display_name, icon_url = member.avatar_url)
+        embed.set_thumbnail(url = member.avatar_url)
+
+        embed.add_field(name="Mention", value=f'<@{member.id}>', inline=True)
+        embed.add_field(name="Index", value=user.UserIndex, inline=True)
+
+        roles = [role.mention for role in member.roles[::-1] if role.name != '@everyone']
+        embed.add_field(
+            name = "Roles",
+            value = ' '.join(roles),
+            inline = False
+        )
+
+        return embed
 
 
 def setup(client):

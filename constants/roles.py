@@ -1,0 +1,2 @@
+ADMINISTRATOR = "Administrator"
+MODERATOR = "Moderator"
