@@ -2,8 +2,8 @@
 *.json
 *.ini
 *.txt
-.credentials/
 
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
