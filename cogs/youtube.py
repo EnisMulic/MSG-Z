@@ -4,18 +4,16 @@ from discord.ext import commands, tasks
 import requests
 from bs4 import BeautifulSoup
 
-import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
 
 import datetime
-import json
 
 import models.youtube as yt
 from models.user import User
 import models.base as base
 
 from utils import misc
-
+from constants import roles, channels
 
 class Youtube(commands.Cog):
     def __init__(self, client):
@@ -84,7 +82,7 @@ class Youtube(commands.Cog):
             await ctx.send(str(err))
 
     @commands.command(aliases=["remove-channel"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def remove_channel(self, ctx, channel_id: str):
         """Remove youtube channel from database."""
 
@@ -99,7 +97,7 @@ class Youtube(commands.Cog):
             await ctx.send(str(err))
     
     @commands.command(aliases=["add-channel"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def add_channel(self, ctx, channel_id: str, *channel_name: str, member: discord.Member = None):
         """Add youtube channel to database."""
 
@@ -124,7 +122,7 @@ class Youtube(commands.Cog):
             print(str(err))
 
     @commands.command(aliases=["link-channel"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def link_channel(self, ctx, member: discord.Member, channel_id: str):
         """Link youtube channel to discord user."""
 
@@ -146,7 +144,7 @@ class Youtube(commands.Cog):
             
             
     @commands.command(aliases=["toggle-channel"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def toggle_channel(self, ctx, *, channel_name: str):
         """Toggle youtube channel output."""
 
@@ -175,7 +173,7 @@ class Youtube(commands.Cog):
         print("Scraping Youtube...")
 
         youtube_channels = self._get_channels()
-        discord_channel = self.client.get_channel(misc.getChannelID(self.client, "youtube"))
+        discord_channel = self.client.get_channel(misc.get_channel_id(self.client, channels.YOUTUBE))
         
         
         for youtube_channel in youtube_channels:

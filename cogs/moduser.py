@@ -1,16 +1,14 @@
 import discord
 from discord.ext import commands
 
-import sqlalchemy.orm.query
 from sqlalchemy.exc import SQLAlchemyError
-
-import datetime
 
 from models.user import User
 import models.base as base
 
 from utils import logger
 from utils import misc
+from constants import roles
 
 class ModeratorUser(commands.Cog):
     def __init__(self, client):
@@ -18,7 +16,7 @@ class ModeratorUser(commands.Cog):
         self.session = base.Session()
 
     @commands.command(aliases=["add-member", "am"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def add_member(self, ctx, member: discord.Member, user_index):
         try:
             member_nick = member.nick if member.nick is not None else member.name
@@ -36,7 +34,7 @@ class ModeratorUser(commands.Cog):
             self.session.rollback()
 
     @commands.command(aliases=["remove-account", "remove-acc"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def remove_account(self, ctx, user_index):
         try:
             account = self.session.query(User) \
@@ -52,7 +50,7 @@ class ModeratorUser(commands.Cog):
             self.session.rollback()
 
     @commands.command(aliases=["change-account", "change-acc"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def change_account(self, ctx, old_account: discord.Member, new_account: discord.Member):
         try:
             account = self.session.query(User) \
@@ -71,7 +69,7 @@ class ModeratorUser(commands.Cog):
             self.session.rollback()
 
     @commands.command(aliases=["set-index"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def set_index(self, ctx, member: discord.Member, user_index: str):
         try:
             user = self.session.query(User) \
@@ -87,7 +85,7 @@ class ModeratorUser(commands.Cog):
 
          
     @commands.command(aliases=["add-role"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def add_role(self, ctx, member: discord.Member, *roles: discord.Role):
         new_roles = []
         for role in roles:
@@ -102,7 +100,7 @@ class ModeratorUser(commands.Cog):
         
         
     @commands.command(aliases=["remove-role"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def remove_role(self, ctx, member: discord.Member, *roles: discord.Role):
         for role in roles:
             old_role = discord.utils.get(member.guild.roles, name=str(role))
@@ -114,7 +112,7 @@ class ModeratorUser(commands.Cog):
         
         
     @commands.command(aliases=["set-name"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def set_name(self, ctx, member: discord.Member, *name: str):
         new_name = ' '.join(name)
         await member.edit(nick = new_name)
@@ -123,7 +121,7 @@ class ModeratorUser(commands.Cog):
             
     
     @commands.command()
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def kick(self, ctx, member: discord.Member, reason = None):
         await member.kick(reason = reason)
         action = discord.Embed(
@@ -151,7 +149,7 @@ class ModeratorUser(commands.Cog):
 
         action.set_thumbnail(url = member.avatar_url)
 
-        await logger.LogAction(self.client, action)
+        await logger.log_action(self.client, action)
 
         try: 
             user = self.session.query(User)\
@@ -165,7 +163,7 @@ class ModeratorUser(commands.Cog):
             await ctx.send(str(err))    
 
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def ban(self, ctx, member: discord.Member, reason = None):
         await member.ban()
         
@@ -194,14 +192,13 @@ class ModeratorUser(commands.Cog):
 
         action.set_thumbnail(url = member.avatar_url)
 
-        await logger.LogAction(self.client, action)
+        await logger.log_action(self.client, action)
 
         try:
             user = self.session.query(User) \
                 .filter(User.UserId == member.id) \
                 .one()
             
-            user.StatusDiscord = "Banned"
             self.session.commit()
                 
         except SQLAlchemyError as err:
@@ -209,13 +206,10 @@ class ModeratorUser(commands.Cog):
             
     
     @commands.command()
-    async def mute(self, ctx, member: discord.Member = None):
-        muteRole = misc.getRoleByName(self.client, "Muted")
-
-        if member is None:
-            member = ctx.author
-
-        await member.add_roles(muteRole)
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
+    async def mute(self, ctx, member: discord.Member ):
+        mute_role = misc.get_role_by_name(self.client, roles.MUTED)
+        await member.add_roles(mute_role)
 
 
 def setup(client):

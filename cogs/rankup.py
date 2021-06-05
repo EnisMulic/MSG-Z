@@ -1,28 +1,21 @@
 import discord
 from discord.ext import commands
-from discord.ext import tasks
 
-import sqlalchemy.orm.query
-from sqlalchemy.exc import SQLAlchemyError
-
-import datetime
 import json
 
-from models.user import User
 import models.base as base
 
 from utils import misc
 from utils import randemoji
+from constants import roles, channels
 
 def is_in_channel(ctx):
-    return ctx.channel.name == 'bot-commands' or ctx.channel.name == 'logger'
+    return ctx.channel.name == channels.BOT_COMMANDS or ctx.channel.name == channels.LOGGER
     
 
 class Rankup(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.role_name = "Registrovan"
-        self.role = misc.getRoleByName(self.client, self.role_name)
 
         with open(".\\config\\rankup.json", "r", encoding="utf-8") as jsonConfigFile:
             self.rankup_rules = json.load(jsonConfigFile)
@@ -31,7 +24,7 @@ class Rankup(commands.Cog):
         self.session = base.Session()
 
     def get_role(self, role_name):
-        return misc.getRoleByName(self.client, role_name)
+        return misc.get_role_by_name(self.client, role_name)
 
     def get_user_roles(self, user):
         return [role.name for role in user.roles]
@@ -52,11 +45,11 @@ class Rankup(commands.Cog):
 
     @commands.command()
     @commands.check(is_in_channel) 
-    @commands.has_any_role("Apsolvent", "Imatrikulant") 
+    @commands.has_any_role(roles.APSOLVENT, roles.IMATRIKULANT) 
     async def imatrikulant(self, ctx):
-        registrovan_role = self.get_role("Registrovan")
-        imatrikulant_role = self.get_role("Imatrikulant")
-        apsolvet_role = self.get_role("Apsolvent")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+        imatrikulant_role = self.get_role(roles.IMATRIKULANT)
+        apsolvet_role = self.get_role(roles.APSOLVENT)
 
         await ctx.author.add_roles(imatrikulant_role)
         await ctx.author.remove_roles(apsolvet_role)
@@ -73,20 +66,20 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
         
     @commands.command(aliases=["imatrikulant+"])
-    @commands.has_any_role("Apsolvent", "Imatrikulant")
+    @commands.has_any_role(roles.APSOLVENT, roles.IMATRIKULANT)
     @commands.check(is_in_channel) 
     async def imatrikulant_(self, ctx):
-        registrovan_role = self.get_role("Registrovan")
-        imatrikulant_role = self.get_role("Imatrikulant")
-        apsolvet_role = self.get_role("Apsolvent")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+        imatrikulant_role = self.get_role(roles.IMATRIKULANT)
+        apsolvet_role = self.get_role(roles.APSOLVENT)
 
         lower_role_name = "" 
-        highest_role = self.get_highest_ranked_role(ctx.author, ["Apsolvent", "Imatrikulant"])
+        highest_role = self.get_highest_ranked_role(ctx.author, [roles.APSOLVENT, roles.IMATRIKULANT])
         
-        if highest_role == "Četvrta godina":
-            lower_role_name = "Treća godina"
-        elif highest_role == "Treća godina":
-            lower_role_name = "Druga godina"
+        if highest_role == roles.CETVRTA_GODINA:
+            lower_role_name = roles.TRECA_GODINA
+        elif highest_role == roles.TRECA_GODINA:
+            lower_role_name = roles.DRUGA_GODINA
 
         if lower_role_name != "":
             lower_role = self.get_role(lower_role_name)
@@ -112,11 +105,11 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
     
     @commands.command()
-    @commands.has_any_role("Treća godina")
+    @commands.has_any_role(roles.TRECA_GODINA)
     @commands.check(is_in_channel) 
     async def apsolvent(self, ctx):
-        registrovan_role = self.get_role("Registrovan")
-        apsolvet_role = self.get_role("Apsolvent")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+        apsolvet_role = self.get_role(roles.APSOLVENT)
 
         await ctx.author.add_roles(apsolvet_role)
         await ctx.author.add_roles(registrovan_role)
@@ -134,19 +127,19 @@ class Rankup(commands.Cog):
         await ctx.send(embed = embed)
 
     @commands.command(aliases=["apsolvent+"])
-    @commands.has_any_role("Treća godina", "Četvrta godina")
+    @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @commands.check(is_in_channel) 
     async def apsolvent_(self, ctx):
-        registrovan_role = self.get_role("Registrovan")
-        apsolvet_role = self.get_role("Apsolvent")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+        apsolvet_role = self.get_role(roles.APSOLVENT)
 
         lower_role_name = "" 
-        highest_role = self.get_highest_ranked_role(ctx.author, ["Apsolvent"])
+        highest_role = self.get_highest_ranked_role(ctx.author, [roles.APSOLVENT])
         
-        if highest_role == "Četvrta godina":
-            lower_role_name = "Treća godina"
-        elif highest_role == "Treća godina":
-            lower_role_name = "Druga godina"
+        if highest_role == roles.CETVRTA_GODINA:
+            lower_role_name = roles.TRECA_GODINA
+        elif highest_role == roles.TRECA_GODINA:
+            lower_role_name = roles.DRUGA_GODINA
 
         if lower_role_name != "":
             lower_role = self.get_role(lower_role_name)
@@ -172,7 +165,7 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["diplomirao", "diplomirala"])
-    @commands.has_any_role("Treća godina", "Četvrta godina")
+    @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @commands.check(is_in_channel)
     async def diploma(self, ctx):
         
@@ -190,11 +183,11 @@ class Rankup(commands.Cog):
 
     
     @commands.command(aliases=["alumni", "alumna"])
-    @commands.has_any_role("Treća godina", "Četvrta godina") 
+    @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA) 
     @commands.check(is_in_channel) 
     async def alum(self, ctx):
         
-        alum_role = self.get_role("Alumni")
+        alum_role = self.get_role(roles.ALUMNI)
         await ctx.author.add_roles(alum_role)
 
         ranked_role = self.get_user_ranked_roles(ctx.author)
@@ -213,7 +206,7 @@ class Rankup(commands.Cog):
     
     
     @commands.command(aliases=["ocistio", "ocistila"])
-    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
+    @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @commands.check(is_in_channel) 
     async def cista(self, ctx):
         highest_role = self.get_highest_ranked_role(ctx.author)
@@ -223,7 +216,8 @@ class Rankup(commands.Cog):
             await ctx.author.remove_roles(role)
 
         next_role = self.get_role(self.rankup_rules[highest_role]["Next"])
-        registrovan_role = self.get_role("Registrovan")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+
         await ctx.author.add_roles(next_role)
         await ctx.author.add_roles(registrovan_role)
 
@@ -240,7 +234,7 @@ class Rankup(commands.Cog):
     
     
     @commands.command()
-    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
+    @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @commands.check(is_in_channel) 
     async def uslov(self, ctx):
         highest_role = self.get_highest_ranked_role(ctx.author)
@@ -251,7 +245,7 @@ class Rankup(commands.Cog):
                 await ctx.author.remove_roles(role)
 
         next_role = self.get_role(self.rankup_rules[highest_role]["Next"])
-        registrovan_role = self.get_role("Registrovan")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
 
         await ctx.author.add_roles(next_role)
         await ctx.author.add_roles(registrovan_role)
@@ -269,12 +263,12 @@ class Rankup(commands.Cog):
         
 
     @commands.command(aliases=["obnovio", "obnovila"])
-    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
+    @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @commands.check(is_in_channel) 
     async def obnova(self, ctx):
         
-        registrovan_role = self.get_role("Registrovan")
-        await ctx.author.add_roles(next_role)
+        registrovan_role = self.get_role(roles.REGISTROVAN)
+        await ctx.author.add_roles(registrovan_role)
         
         emoji = randemoji.Get()
         embed = discord.Embed(
@@ -289,13 +283,13 @@ class Rankup(commands.Cog):
 
     
     @commands.command()
-    @commands.has_any_role("Prva godina", "Druga godina", "Treća godina")
+    @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @commands.check(is_in_channel) 
     async def kolizija(self, ctx):
         highest_role = self.get_highest_ranked_role(ctx.author)
 
         next_role = self.get_role(self.rankup_rules[highest_role]["Kolizija"])
-        registrovan_role = self.get_role("Registrovan")
+        registrovan_role = self.get_role(roles.REGISTROVAN)
         
         await ctx.author.add_roles(next_role)
         await ctx.author.add_roles(registrovan_role)

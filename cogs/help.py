@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from discord.ext import tasks
 
 class Help(commands.Cog):
     def __init__(self, client):
@@ -25,7 +24,7 @@ class Help(commands.Cog):
             for command in self.client.get_cog(cog).walk_commands():
                 cmds_desc += f"{command.name} - {command.help}\n"
             
-            if cmds_desc is not '':
+            if cmds_desc != '':
                 helpEmbed.add_field(name = cog, value = cmds_desc, inline=False)
                 
 

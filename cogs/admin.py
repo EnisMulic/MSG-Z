@@ -1,15 +1,13 @@
-import discord
 from discord.ext import commands
 
-from utils import logger
-from utils import misc
+from constants import roles
 
 class Administrator(commands.Cog):
     def __init__(self, client):
         self.client = client
     
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def load(self, ctx, extension):
         self.client.load_extension(f"cogs.{extension}")
 
@@ -20,7 +18,7 @@ class Administrator(commands.Cog):
         await ctx.send(f"The following error occured:```\n{error}\n```")
 
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def unload(self, ctx, extension):
         self.client.unload_extension(f"cogs.{extension}")
 
@@ -31,7 +29,7 @@ class Administrator(commands.Cog):
         await ctx.send(f"The following error occured:```\n{error}\n```")
 
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def lock(self, ctx, channel = None):
         if channel is None:
             channel = ctx.channel
@@ -40,13 +38,13 @@ class Administrator(commands.Cog):
             channel = self.client.get_channel(channel_id)
         
         for role in channel.changed_roles:
-            if role.name != "@everyone":
+            if role.name != roles.EVERYONE:
                 await channel.set_permissions(
                     role, send_messages = False
                 )
 
     @commands.command()
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def unlock(self, ctx, channel = None):
         if channel is None:
             channel = ctx.channel
@@ -55,13 +53,13 @@ class Administrator(commands.Cog):
             channel = self.client.get_channel(channel_id)
         
         for role in channel.changed_roles:
-            if role.name != "@everyone":
+            if role.name != roles.EVERYONE:
                 await channel.set_permissions(
                     role, send_messages = True
                 )
 
     @commands.command(aliases=["full-lock", "f-lock"])
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def full_lock(self, ctx, channel = None):
         if channel is None:
             channel = ctx.channel
@@ -76,7 +74,7 @@ class Administrator(commands.Cog):
                   
 
     @commands.command(aliases=["full-unlock", "f-unlock"])
-    @commands.has_any_role('Administrator')
+    @commands.has_any_role(roles.ADMINISTRATOR)
     async def full_unlock(self, ctx, channel = None):
         if channel is None:
             channel = ctx.channel
@@ -85,7 +83,7 @@ class Administrator(commands.Cog):
             channel = self.client.get_channel(channel_id)
         
         for role in channel.changed_roles:
-            if role.name != "@everyone":
+            if role.name != roles.EVERYONE:
                 await channel.set_permissions(
                     role, read_messages = True
                 )    

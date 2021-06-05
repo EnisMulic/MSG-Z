@@ -1,13 +1,10 @@
 import discord
 from discord.ext import commands
 
-import datetime
-
-from models.user import User
 import models.base as base
 
 from utils import logger
-
+from constants import roles
 
 class ModeratorMsg(commands.Cog):
     def __init__(self, client):
@@ -15,7 +12,7 @@ class ModeratorMsg(commands.Cog):
         self.session = base.Session()
 
     @commands.command(description = "Delete N last messages")
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def purge(self, ctx, number_of_messages = 1):
         """Delete n number of messages in a channel"""
 
@@ -30,10 +27,10 @@ class ModeratorMsg(commands.Cog):
         )
         
         
-        await logger.LogAction(self.client, action)
+        await logger.log_action(self.client, action)
 
     @commands.command(aliases=["msg-echo"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def echo(self, ctx, channel, *, message = None):
         """Send message to a channel as the bot"""
 
@@ -48,7 +45,7 @@ class ModeratorMsg(commands.Cog):
         
 
     @commands.command(aliases=["msg-edit"])
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def edit(self, ctx, channel, id: int, *, new_message):
         """Edit message sent as the bot"""
 
@@ -60,7 +57,7 @@ class ModeratorMsg(commands.Cog):
     @commands.command(aliases=["msg-move"], 
                       description = "Move a message from one channel to another\
                                      \n\nOption: \n -d or --delete = delete message after move")
-    @commands.has_any_role('Administrator', 'Moderator')
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def move(self, ctx, old_channel, id: int, new_channel, option = None):
         """Move a message from one channel to another"""
         
