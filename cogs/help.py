@@ -1,5 +1,10 @@
 import discord
+from discord import channel
 from discord.ext import commands
+from discord.ext.commands.core import command
+
+from constants import channels
+from utils import misc
 
 class Help(commands.Cog):
     def __init__(self, client):
@@ -41,6 +46,19 @@ class Help(commands.Cog):
                     cmds_desc = '$[' + ' | '.join(alias for alias in command.aliases) + '] ' + command.signature
                     cmds_desc = '```\n' + cmds_desc + '```'
                     await ctx.send(cmds_desc)
+
+    @commands.command()
+    @commands.guild_only()
+    async def invite(self, ctx):
+        """Create a one time use invite"""
+
+        channel_lobby = self.client.get_channel(misc.get_channel_id(self.client, channels.LOBBY))
+        
+        invite_link = await channel_lobby.create_invite(max_uses = 1, unique = True, reason = f"Created by {ctx.author.display_name}")
+
+        channel_dm = await ctx.author.create_dm()
+        await channel_dm.send(invite_link)
+
 
 def setup(client):
     client.add_cog(Help(client))
