@@ -1,0 +1,1 @@
+NEREGISTROVAN = "Neregistrovan(a)"
