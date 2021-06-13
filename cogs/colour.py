@@ -3,39 +3,42 @@ from discord.ext import commands
 
 import random
 
-class Color(commands.Cog):
+class Colour(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["clr"])
-    async def color(self, ctx, hex):
-        """Get random color."""
+    @commands.command(aliases=["clr", "color"])
+    async def colour(self, ctx, hex):
+        """Convert hex code to colour."""
+
         hex = hex.strip("#")
         url = f"https://dummyimage.com/900x900/{hex}/{hex}"
         
         embed = discord.Embed(
-            title = "Color",
+            title = "Colour",
             description = "#" + hex
         )  
         
 
         embed.set_thumbnail(url = url)
-        await ctx.send(embed = embed)
+        await ctx.reply(embed = embed)
 
-    @commands.command(aliases=["randclr", "rand-clr"])
-    async def rand_color(self, ctx):
+    @commands.command(aliases=["randclr", "rand-clr", "rand-colour", "rand-color"])
+    async def rand_colour(self, ctx):
+        """Get random colour."""
+
         r = lambda: random.randint(0,255)
         hex = '{:02x}{:02x}{:02x}'.format(r(), r(), r())
         url = f"https://dummyimage.com/900x900/{hex}/{hex}"
         
         embed = discord.Embed(
-            title = "Color",
+            title = "Colour",
             description = "#" + hex
         )  
 
         embed.set_thumbnail(url = url)
-        await ctx.send(embed = embed)
+        await ctx.reply(embed = embed)
                 
 
 def setup(bot):
-    bot.add_cog(Color(bot))
+    bot.add_cog(Colour(bot))
