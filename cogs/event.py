@@ -6,7 +6,7 @@ import datetime
 from constants import roles
 from utils import logger
 
-class Events(commands.Cog):
+class Event(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -67,4 +67,4 @@ class Events(commands.Cog):
         return embed
 
 def setup(bot):
-    bot.add_cog(Events(bot))
+    bot.add_cog(Event(bot))
