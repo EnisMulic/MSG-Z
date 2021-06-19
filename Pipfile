@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 "discord.py" = {extras = ["voice"], version = "*"}
 python-dotenv = "*"
+alembic = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.9"
