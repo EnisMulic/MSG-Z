@@ -1,3 +1,4 @@
+from os import remove
 import discord
 from discord.ext import commands
 
@@ -125,7 +126,16 @@ class Member(commands.Cog):
         except NoResultFound as err:
             await ctx.reply(str(err))
 
+    @commands.command(aliases=["to-imatrikulant", "toi"])
+    @commands.has_any_role(roles.ADMINISTRATOR)
+    async def to_imatrikulant(self, ctx):
+        imatrikulant_role = discord.utils.get(ctx.guild.roles, name=roles.IMATRIKULANT)
+        apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)
 
+        for member in ctx.guild.members:
+            if apsolvet_role in member.roles:
+                await member.add_roles(imatrikulant_role)
+                await member.remove_roles(apsolvet_role)
 
 def setup(bot):
     bot.add_cog(Member(bot))
