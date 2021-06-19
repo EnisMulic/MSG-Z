@@ -7,7 +7,7 @@ import os
 
 from alembic import context
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = os.environ.get("CONNECTION_STRING")
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
