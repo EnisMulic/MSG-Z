@@ -10,6 +10,8 @@ verify_ssl = true
 python-dotenv = "*"
 alembic = "*"
 sqlalchemy = "*"
+beautifulsoup4 = "*"
+aiohttp = "*"
 
 [requires]
 python_version = "3.9"
