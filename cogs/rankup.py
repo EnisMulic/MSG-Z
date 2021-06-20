@@ -4,6 +4,8 @@ from discord.ext import commands
 
 import json
 
+from discord.ext.commands.core import check
+
 from constants import roles, channels
 from utils import checks
 
@@ -33,6 +35,7 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role(roles.APSOLVENT, roles.IMATRIKULANT)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def imatrikulant(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         imatrikulant_role = discord.utils.get(ctx.guild.roles, name=roles.IMATRIKULANT)
@@ -55,6 +58,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["imatrikulant+"])
     @commands.has_any_role(roles.APSOLVENT, roles.IMATRIKULANT)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def imatrikulant_(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         imatrikulant_role = discord.utils.get(ctx.guild.roles, name=roles.IMATRIKULANT)
@@ -89,6 +93,7 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def apsolvent(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)
@@ -111,6 +116,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["apsolvent+"])
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def apsolvent_(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)
@@ -165,6 +171,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["alumni", "alumna"])
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA) 
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def alum(self, ctx):
         alum_role = discord.utils.get(ctx.guild.roles, name=roles.ALUMNI)
         await ctx.author.add_roles(alum_role)
@@ -187,6 +194,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["ocistio", "ocistila"])
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def cista(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 
@@ -216,6 +224,7 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def uslov(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 
@@ -245,6 +254,7 @@ class Rankup(commands.Cog):
     @commands.command(aliases=["obnovio", "obnovila"])
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def obnova(self, ctx):
         
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
@@ -265,6 +275,7 @@ class Rankup(commands.Cog):
     @commands.command()
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
+    @checks.doesnt_have_any_role(roles.REGISTROVAN)
     async def kolizija(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 

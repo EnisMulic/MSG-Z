@@ -4,6 +4,8 @@ from discord.ext import commands
 import traceback
 import sys
 
+from utils import errors
+
 class CommandErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -44,7 +46,8 @@ class CommandErrorHandler(commands.Cog):
 
         if isinstance(error, commands.DisabledCommand):
             await ctx.reply(f'Command has been disabled.')
-
+        elif isinstance(error, errors.HasForbiddenRole):
+            await ctx.reply(f'{str(error)}')
         elif isinstance(error, commands.NoPrivateMessage):
             try:
                 await ctx.author.reply(f'Command can not be used in Private Messages.')
