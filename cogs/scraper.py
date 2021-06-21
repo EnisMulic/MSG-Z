@@ -2,21 +2,48 @@ import discord
 from discord.ext import commands, tasks
 
 import os
+import json
 
 from constants import channels
-from scrapers import fitba
-from utils import logger
+from scrapers import fitba, dlwms
 
 class Scraper(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+        with open("./config/dlwms.json", "r", encoding="utf-8") as json_config_file:
+            self.subjects = json.load(json_config_file)["subjects"]
+
         self.fitba_scraper = fitba.FitBaScraper()
         self.scrape_fitba.start()
 
+        self.dlwms_scraper = dlwms.DLWMSScraper()
+        self.scrape_dlwms.start()
+
     @tasks.loop(minutes=1)
     async def scrape_dlwms(self):
-        pass
+        GUILD_NAME = os.environ.get("GUILD_NAME")
+
+        news = [i async for i in self.dlwms_scraper.parse_data()]
+        for new in news:
+            embed = discord.Embed(title = new['title'], url = new['link'], colour = discord.Colour.blue().value)
+            embed.set_author(name = GUILD_NAME, url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
+            embed.add_field(name = "Obavijest", value = new['content'], inline = False)
+            embed.set_footer(text = f"Datum i vrijeme: {new['date']} • Autor: {new['author']}")
+            
+            try:
+                channelName = self.subjects[new["subject"]]
+            except:
+                channelName = "obavijesti"
+            
+            channel = discord.utils.get(self.bot.get_all_channels(), guild__name=GUILD_NAME, name=channelName)
+            if channel is not None:
+                await channel.send(embed = embed)
+
+    @scrape_dlwms.before_loop
+    async def before_scrape_fitba(self):
+        print('Scraper - Fit DLWMS: Waiting...')
+        await self.bot.wait_until_ready()
 
     @tasks.loop(minutes=30)
     async def scrape_fitba(self):
@@ -32,10 +59,6 @@ class Scraper(commands.Cog):
     async def before_scrape_fitba(self):
         print('Scraper - Fit News: Waiting...')
         await self.bot.wait_until_ready()
-
-    @tasks.loop(minutes=30)
-    async def scrape_youtube(self):
-        pass
-
+    
 def setup(bot):
     bot.add_cog(Scraper(bot))
