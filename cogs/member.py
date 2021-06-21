@@ -5,13 +5,11 @@ from discord.ext import commands
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 
-import datetime
-
 from models.user import User
 import models.base as base
 
-from constants import roles, channels
-
+from constants import roles
+from utils import logger
 class Member(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -136,6 +134,42 @@ class Member(commands.Cog):
             if apsolvet_role in member.roles:
                 await member.add_roles(imatrikulant_role)
                 await member.remove_roles(apsolvet_role)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        if before.nick != after.nick:
+            try:
+                user = self.session.query(User) \
+                    .filter(User.DiscordId == before.id) \
+                    .one()
+
+                if user is not None:
+                    user.Name = after.nick
+                    self.session.commit()
+                
+                
+            except SQLAlchemyError as err:
+                await logger.log_action(str(err))
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before: discord.User, after: discord.User):
+        try:
+            user = self.session.query(User) \
+                .filter(User.DiscordId == before.id) \
+                .one()
+            
+            if user is not None:
+                if before.name != after.name:
+                    user.Username = after.name
+
+                if before.discriminator != after.discriminator:
+                    user.Discriminator = after.discriminator
+                
+                self.session.commit()
+                    
+        except SQLAlchemyError as err:
+            await logger.log_action(str(err))
+            
 
 def setup(bot):
     bot.add_cog(Member(bot))
