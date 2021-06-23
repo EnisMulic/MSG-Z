@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 
 class DLWMSScraper:
     def __init__(self):
-        self.base_url = "https://fit.ba/student"
+        self.base_url = "https://fit.ba/student/"
         self.login_url = "https://fit.ba/student/login.aspx"
         self.date = date.today()
         self.news = []
