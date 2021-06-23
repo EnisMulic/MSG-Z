@@ -12,6 +12,7 @@ alembic = "*"
 sqlalchemy = "*"
 beautifulsoup4 = "*"
 aiohttp = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.9"
