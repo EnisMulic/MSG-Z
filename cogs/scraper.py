@@ -3,6 +3,10 @@ from discord.ext import commands, tasks
 
 import os
 import json
+import hashlib
+
+from models.news import News
+import models.base as base
 
 from constants import channels
 from scrapers import fitba, dlwms
@@ -10,6 +14,7 @@ from scrapers import fitba, dlwms
 class Scraper(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.session = base.Session()
 
         with open("./config/dlwms.json", "r", encoding="utf-8") as json_config_file:
             self.subjects = json.load(json_config_file)["subjects"]
@@ -26,19 +31,31 @@ class Scraper(commands.Cog):
 
         news = [i async for i in self.dlwms_scraper.parse_data()]
         for new in news:
-            embed = discord.Embed(title = new['title'], url = new['link'], colour = discord.Colour.blue().value)
-            embed.set_author(name = GUILD_NAME, url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
-            embed.add_field(name = "Obavijest", value = new['content'], inline = False)
-            embed.set_footer(text = f"Datum i vrijeme: {new['date']} • Autor: {new['author']}")
-            
             try:
-                channelName = self.subjects[new["subject"]]
+                notification = News(
+                    url = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
+                    dateTime = new["date"], 
+                    source = "dlwms"
+                )
+
+                self.session.add(notification)
+                self.session.commit()
+
+                embed = discord.Embed(title = new['title'], url = new['url'], colour = discord.Colour.blue().value)
+                embed.set_author(name = GUILD_NAME, url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
+                embed.add_field(name = "Obavijest", value = new['content'], inline = False)
+                embed.set_footer(text = f"Datum i vrijeme: {new['date']} • Autor: {new['author']}")
+
+                try:
+                    channelName = self.subjects[new["subject"]]
+                except:
+                    channelName = "obavijesti"
+                
+                channel = discord.utils.get(self.bot.get_all_channels(), guild__name=GUILD_NAME, name=channelName)
+                if channel is not None:
+                    await channel.send(embed = embed)
             except:
-                channelName = "obavijesti"
-            
-            channel = discord.utils.get(self.bot.get_all_channels(), guild__name=GUILD_NAME, name=channelName)
-            if channel is not None:
-                await channel.send(embed = embed)
+                pass
 
     @scrape_dlwms.before_loop
     async def before_scrape_fitba(self):
@@ -53,7 +70,19 @@ class Scraper(commands.Cog):
         news = [i async for i in self.fitba_scraper.parse_data()]
         for new in news:
             if channel is not None:
-                await channel.send(new)
+                try:
+                    notification = News(
+                        url = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
+                        dateTime = new["date"], 
+                        source = "fitba"
+                    )
+
+                    self.session.add(notification)
+                    self.session.commit()
+
+                    await channel.send(new["url"])
+                except:
+                    pass
 
     @scrape_fitba.before_loop
     async def before_scrape_fitba(self):
