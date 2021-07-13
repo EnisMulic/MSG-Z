@@ -8,9 +8,11 @@ class News(Base):
     Id = Column(Integer, primary_key = True)
     HashedUrl = Column(String, nullable = False, unique = True)
     DateTime = Column(DateTime, nullable = False)
+    Source = Column(String(5))
 
 
-    def __init__(self, id, hashedUrl, dateTime):
+    def __init__(self, id, hashedUrl, dateTime, source):
         self.Id = id
         self.HashedUrl = hashedUrl
         self.DateTime = dateTime,
+        self.Source = source
