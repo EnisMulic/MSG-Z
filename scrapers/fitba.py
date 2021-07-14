@@ -21,10 +21,9 @@ class FitBaScraper:
         for new in news:
             url = self.base_url + new.find("a", {"class": "cover"}).get("href")
             meta = new.find("small").text
-            date_str = re.search(r'\d{2}.\d{2}.\d{4}', meta).group()
-            new_date = datetime.strptime(date_str, "%d.%m.%Y")
+            date = re.search(r'\d{2}.\d{2}.\d{4}', meta).group()
 
             yield {
                 "url": url,
-                "date": new_date
+                "date": date
             }

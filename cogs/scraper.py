@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands, tasks
 
+from sqlalchemy.exc import SQLAlchemyError
+
+from datetime import datetime
 import os
 import json
 import hashlib
@@ -8,7 +11,7 @@ import hashlib
 from models.news import News
 import models.base as base
 
-from constants import channels
+from constants import channels, datetime as dtc
 from scrapers import fitba, dlwms
 
 class Scraper(commands.Cog):
@@ -33,8 +36,8 @@ class Scraper(commands.Cog):
         for new in news:
             try:
                 notification = News(
-                    url = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
-                    dateTime = new["date"], 
+                    hashedUrl = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
+                    dateTime = datetime.strptime(new["date"], dtc.EU_LONG_FORMAT),
                     source = "dlwms"
                 )
 
@@ -54,8 +57,9 @@ class Scraper(commands.Cog):
                 channel = discord.utils.get(self.bot.get_all_channels(), guild__name=GUILD_NAME, name=channelName)
                 if channel is not None:
                     await channel.send(embed = embed)
-            except:
-                pass
+            except SQLAlchemyError as err:
+                print("Error: ", err)
+                self.session.rollback()
 
     @scrape_dlwms.before_loop
     async def before_scrape_fitba(self):
@@ -72,8 +76,8 @@ class Scraper(commands.Cog):
             if channel is not None:
                 try:
                     notification = News(
-                        url = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
-                        dateTime = new["date"], 
+                        hashedUrl = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
+                        dateTime = datetime.strptime(new["date"], dtc.EU_SHORT_FORMAT), 
                         source = "fitba"
                     )
 
@@ -81,8 +85,9 @@ class Scraper(commands.Cog):
                     self.session.commit()
 
                     await channel.send(new["url"])
-                except:
-                    pass
+                except SQLAlchemyError as err:
+                    print("Error: ", err)
+                    self.session.rollback()
 
     @scrape_fitba.before_loop
     async def before_scrape_fitba(self):

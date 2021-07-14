@@ -11,8 +11,7 @@ class News(Base):
     Source = Column(String(5))
 
 
-    def __init__(self, id, hashedUrl, dateTime, source):
-        self.Id = id
+    def __init__(self, hashedUrl, dateTime, source):
         self.HashedUrl = hashedUrl
         self.DateTime = dateTime,
         self.Source = source
