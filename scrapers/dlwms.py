@@ -1,12 +1,11 @@
-from datetime import datetime, date
 import aiohttp
 import os
 from bs4 import BeautifulSoup
 
 class DLWMSScraper:
     def __init__(self):
-        self.base_url = "https://fit.ba/student/"
-        self.login_url = "https://fit.ba/student/login.aspx"
+        self.base_url = os.environ.get("DLWMS_BASE_URL")
+        self.login_url = os.environ.get("DLWMS_LOGIN_URL")
         self.accounts = []
         
         dlwms_username_1 = os.environ.get("DLWMS_USERNAME_1")
