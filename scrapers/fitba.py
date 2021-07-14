@@ -1,12 +1,12 @@
-from datetime import datetime, date
+from datetime import datetime
 import aiohttp
 from bs4 import BeautifulSoup
-import re
+import re, os
 
 class FitBaScraper:
     def __init__(self):
-        self.base_url = 'https://fit.ba'
-        self.news_url = 'https://fit.ba/news'
+        self.base_url = os.environ.get("FITBA_BASE_URL")
+        self.news_url = os.environ.get("FITBA_NEWS_URL")
 
     async def fetch_data(self):
         async with aiohttp.ClientSession() as session:
