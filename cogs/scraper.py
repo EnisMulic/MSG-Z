@@ -1,3 +1,4 @@
+from sqlalchemy.sql.sqltypes import DateTime
 import discord
 from discord.ext import commands, tasks
 
@@ -41,8 +42,19 @@ class Scraper(commands.Cog):
                     source = "dlwms"
                 )
 
-                self.session.add(notification)
-                self.session.commit()
+                entity = self.session.query(News) \
+                    .filter(News.HashedUrl == notification.HashedUrl) \
+                    .one_or_none()
+                
+                if entity is None:
+                    self.session.add(notification)
+                    self.session.commit()
+                elif entity.DateTime != notification.DateTime[0]:
+                    entity.DateTime = notification.DateTime
+                    self.session.commit()
+                else:
+                    break
+
 
                 embed = discord.Embed(title = new['title'], url = new['url'], colour = discord.Colour.blue().value)
                 embed.set_author(name = GUILD_NAME, url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
@@ -81,10 +93,22 @@ class Scraper(commands.Cog):
                         source = "fitba"
                     )
 
-                    self.session.add(notification)
-                    self.session.commit()
+                    entity = self.session.query(News) \
+                        .filter(News.HashedUrl == notification.HashedUrl) \
+                        .one_or_none()
+
+
+                    if entity is None:
+                        self.session.add(notification)
+                        self.session.commit()
+                    elif entity.DateTime != notification.DateTime[0]:
+                        entity.DateTime = notification.DateTime
+                        self.session.commit()
+                    else:
+                        break
 
                     await channel.send(new["url"])
+
                 except SQLAlchemyError as err:
                     print("Error: ", err)
                     self.session.rollback()
