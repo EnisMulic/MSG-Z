@@ -242,7 +242,7 @@ class Rankup(commands.Cog):
         emoji = ":tada:"
         embed = discord.Embed(
             colour = discord.Colour.gold(),
-            description = f"{emoji} {ctx.author.mention} jeispunio/ispunila uslov {emoji}"
+            description = f"{emoji} {ctx.author.mention} je ispunio/ispunila uslov {emoji}"
         )
 
         embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
