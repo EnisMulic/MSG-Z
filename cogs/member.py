@@ -125,7 +125,7 @@ class Member(commands.Cog):
             await ctx.reply(str(err))
 
     @commands.command(aliases=["to-imatrikulant", "toi"])
-    @commands.has_any_role(roles.ADMINISTRATOR)
+    @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def to_imatrikulant(self, ctx):
         imatrikulant_role = discord.utils.get(ctx.guild.roles, name=roles.IMATRIKULANT)
         apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)

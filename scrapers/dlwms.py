@@ -1,14 +1,11 @@
-from datetime import datetime, date
 import aiohttp
 import os
 from bs4 import BeautifulSoup
 
 class DLWMSScraper:
     def __init__(self):
-        self.base_url = "https://fit.ba/student/"
-        self.login_url = "https://fit.ba/student/login.aspx"
-        self.date = date.today()
-        self.news = []
+        self.base_url = os.environ.get("DLWMS_BASE_URL")
+        self.login_url = os.environ.get("DLWMS_LOGIN_URL")
         self.accounts = []
         
         dlwms_username_1 = os.environ.get("DLWMS_USERNAME_1")
@@ -93,26 +90,20 @@ class DLWMSScraper:
         
             news = html.select("ul.newslist")
             for new in news:         
-                link = self.base_url + new.find("a", {"class": "linkButton"}).get("href")
-                date_str = new.find("span", {"id": "lblDatum"}).text[:10]
-                new_data = datetime.strptime(date_str, "%d.%m.%Y")
-
-                if self.date == new_data.date() and link not in self.news:
-                    self.news.append(link)
+                url = self.base_url + new.find("a", {"class": "linkButton"}).get("href")
+                title = new.find("a", {"class": "linkButton"}).text
+                subject = new.find("span", {"id": "lblPredmet"}).text
+                author = new.find("a", {"id": "HyperLink9"}).text
+                content = new.find("div", {"class": "abstract"}).text
+                date = new.find("span", {"id": "lblDatum"}).text[:16]
+        
+                if content.isspace(): content = "N/A"
                 
-                    title = new.find("a", {"class": "linkButton"}).text
-                    subject = new.find("span", {"id": "lblPredmet"}).text
-                    author = new.find("a", {"id": "HyperLink9"}).text
-                    content = new.find("div", {"class": "abstract"}).text
-                    date = new.find("span", {"id": "lblDatum"}).text[:16]
-            
-                    if content.isspace(): content = "N/A"
-
-                    yield {
-                        "link": link,
-                        "date": date,
-                        "title": title,
-                        "author": author,
-                        "content": content,
-                        "subject": subject
-                    }
+                yield {
+                    "url": url,
+                    "date": date,
+                    "title": title,
+                    "author": author,
+                    "content": content,
+                    "subject": subject
+                }
