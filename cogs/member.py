@@ -87,7 +87,7 @@ class Member(commands.Cog):
                 .one()
             
             embed = discord.Embed()
-            embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url)
+            embed.set_author(name="FIT | Community", icon_url = self.bot.user.avatar_url)
 
             embed.add_field(name="Mention", value=f'<@!{user.DiscordId}>', inline=True)
             embed.add_field(name="Name", value=user.Name, inline=True)
@@ -116,7 +116,7 @@ class Member(commands.Cog):
                 .one()
             
             embed = discord.Embed()
-            embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
+            embed.set_author(name="FIT | Community", icon_url = self.bot.user.avatar_url)
 
             embed.add_field(name="Mention", value=member.mention, inline=True)
             embed.add_field(name="Name", value=user.Name, inline=True)
