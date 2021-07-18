@@ -1,4 +1,3 @@
-from os import remove
 import discord
 from discord.ext import commands
 
@@ -9,7 +8,7 @@ from models.user import User
 import models.base as base
 
 from constants import roles
-from utils import logger
+from utils import logger, members
 class Member(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -88,11 +87,17 @@ class Member(commands.Cog):
                 .one()
             
             embed = discord.Embed()
-            embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
+            embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url)
 
             embed.add_field(name="Mention", value=f'<@!{user.DiscordId}>', inline=True)
             embed.add_field(name="Name", value=user.Name, inline=True)
             embed.add_field(name="Index", value=user.Index, inline=True)
+
+            member = discord.utils.get(ctx.message.guild.members, id=user.DiscordId)
+
+            if member is not None:
+                embed.add_field(name="Roles", value=members.get_member_roles_as_string(member))
+            
 
             await ctx.reply(embed = embed)
 
@@ -118,6 +123,7 @@ class Member(commands.Cog):
             embed.add_field(name="Index", value=user.Index, inline=True)
             embed.add_field(name="Created", value=member.created_at.replace(microsecond=0).isoformat(' '), inline=True)
             embed.add_field(name="Joined", value=member.joined_at.replace(microsecond=0).isoformat(' '), inline=True)
+            embed.add_field(name="Roles", value=members.get_member_roles_as_string(member), inline=False)
 
             await ctx.reply(embed = embed)
 
