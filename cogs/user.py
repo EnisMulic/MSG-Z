@@ -4,6 +4,7 @@ from discord.ext import commands
 from constants import roles
 from utils import logger
 
+
 class User(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -48,14 +49,14 @@ class User(commands.Cog):
         embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
 
         await logger.log_action(ctx.guild, embed)
-    
+
     @commands.command()
     @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def ban(self, ctx, member: discord.Member, reason = None):
         """Ban member"""
 
         await member.ban()
-        
+
         embed = discord.Embed(
             title = "Member banned",
             colour = discord.Colour.red(),
@@ -81,7 +82,7 @@ class User(commands.Cog):
 
         mute_role = discord.utils.get(ctx.guild.roles, name=roles.MUTED_PLUS)
         await member.add_roles(mute_role)
-    
+
     @commands.command()
     @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def unmute(self, ctx, member: discord.Member):

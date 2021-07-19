@@ -1,4 +1,3 @@
-from sqlalchemy.sql.sqltypes import DateTime
 import discord
 from discord.ext import commands, tasks
 
@@ -14,6 +13,7 @@ import models.base as base
 
 from constants import channels, datetime as dtc
 from scrapers import fitba, dlwms
+
 
 class Scraper(commands.Cog):
     def __init__(self, bot):
@@ -45,7 +45,7 @@ class Scraper(commands.Cog):
                 entity = self.session.query(News) \
                     .filter(News.HashedUrl == notification.HashedUrl) \
                     .one_or_none()
-                
+
                 if entity is None:
                     self.session.add(notification)
                     self.session.commit()
@@ -55,17 +55,16 @@ class Scraper(commands.Cog):
                 else:
                     break
 
-
-                embed = discord.Embed(title = new['title'], url = new['url'], colour = discord.Colour.blue().value)
+                embed = discord.Embed(title=new['title'], url = new['url'], colour = discord.Colour.blue().value)
                 embed.set_author(name = GUILD_NAME, url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
                 embed.add_field(name = "Obavijest", value = new['content'], inline = False)
                 embed.set_footer(text = f"Datum i vrijeme: {new['date']} • Autor: {new['author']}")
 
                 try:
                     channelName = self.subjects[new["subject"]]
-                except:
+                except Exception:
                     channelName = "obavijesti"
-                
+
                 channel = discord.utils.get(self.bot.get_all_channels(), guild__name=GUILD_NAME, name=channelName)
                 if channel is not None:
                     await channel.send(embed = embed)
@@ -74,7 +73,7 @@ class Scraper(commands.Cog):
                 self.session.rollback()
 
     @scrape_dlwms.before_loop
-    async def before_scrape_fitba(self):
+    async def before_scrape_dlwms(self):
         print('Scraper - Fit DLWMS: Waiting...')
         await self.bot.wait_until_ready()
 
@@ -89,14 +88,13 @@ class Scraper(commands.Cog):
                 try:
                     notification = News(
                         hashedUrl = hashlib.md5(new["url"].encode('utf-8')).hexdigest(),
-                        dateTime = datetime.strptime(new["date"], dtc.EU_SHORT_FORMAT), 
+                        dateTime = datetime.strptime(new["date"], dtc.EU_SHORT_FORMAT),
                         source = "fitba"
                     )
 
                     entity = self.session.query(News) \
                         .filter(News.HashedUrl == notification.HashedUrl) \
                         .one_or_none()
-
 
                     if entity is None:
                         self.session.add(notification)
@@ -117,6 +115,7 @@ class Scraper(commands.Cog):
     async def before_scrape_fitba(self):
         print('Scraper - Fit News: Waiting...')
         await self.bot.wait_until_ready()
-    
+
+
 def setup(bot):
     bot.add_cog(Scraper(bot))

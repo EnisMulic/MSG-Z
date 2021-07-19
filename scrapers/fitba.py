@@ -1,7 +1,8 @@
-from datetime import datetime
 import aiohttp
 from bs4 import BeautifulSoup
-import re, os
+import re
+import os
+
 
 class FitBaScraper:
     def __init__(self):

@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, BigInteger
 
 from models.base import Base
 
+
 class User(Base):
     __tablename__ = "Users"
 

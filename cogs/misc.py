@@ -4,6 +4,7 @@ from discord.ext import commands
 from constants import channels
 from utils import checks
 
+
 class Misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -19,6 +20,7 @@ class Misc(commands.Cog):
 
         channel_dm = await ctx.author.create_dm()
         await channel_dm.send(invite_link)
+
 
 def setup(bot):
     bot.add_cog(Misc(bot))

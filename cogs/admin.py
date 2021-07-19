@@ -2,6 +2,7 @@ from discord.ext import commands
 
 from constants import roles
 
+
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -27,6 +28,7 @@ class Admin(commands.Cog):
     @unload.error
     async def unload_error(self, ctx, error):
         await ctx.send(f"The following error occured:```\n{error}\n```")
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
