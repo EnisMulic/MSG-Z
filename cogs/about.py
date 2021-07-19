@@ -11,7 +11,6 @@ class About(commands.Cog):
         
         await ctx.send('https://github.com/EnisMulic/MSG-Z')
 
-      
 
 def setup(bot):
     bot.add_cog(About(bot))

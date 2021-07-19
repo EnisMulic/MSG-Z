@@ -6,7 +6,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-import json
 
 def main():
     load_dotenv()
@@ -20,13 +19,14 @@ def main():
             try:
                 filename = Path(file).stem
                 cog = f"cogs.{filename}"
-                bot.load_extension(cog)  
+                bot.load_extension(cog)
             except Exception as error:
                 print(file + ": Error - " + str(error))
 
     DISCORD_TOKEN = os.environ.get("DISCORD_TOKEN")
 
     bot.run(DISCORD_TOKEN)
+
 
 if __name__ == '__main__':
     main()

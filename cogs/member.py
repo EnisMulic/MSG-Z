@@ -9,6 +9,8 @@ import models.base as base
 
 from constants import roles
 from utils import logger, members
+
+
 class Member(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -18,16 +20,17 @@ class Member(commands.Cog):
     @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
     async def add_member(self, ctx, member: discord.Member, index: str):
         try:
-            member_nick = member.nick if member.nick is not None else member.name
+            member_nick = member.nick if member.nick is not None \
+                else member.name
 
             user = User(
-                member.id, index, member_nick, 
+                member.id, index, member_nick,
                 member.name, member.discriminator
             )
 
             self.session.add(user)
             self.session.commit()
-                            
+
             await ctx.reply("Member added")
         except SQLAlchemyError as err:
             await ctx.reply(str(err))
@@ -40,7 +43,7 @@ class Member(commands.Cog):
             user = self.session.query(User) \
                 .filter(User.Index == index) \
                 .one()
-            
+
             if user is not None:
                 old_account = discord.utils.get(self.bot.get_all_members(), id=user.DiscordId)
 
@@ -52,7 +55,7 @@ class Member(commands.Cog):
                 user.Name = member_nick
 
                 await old_account.kick()
-                
+
                 self.session.commit()
 
                 await ctx.reply("Member changed")
@@ -67,11 +70,11 @@ class Member(commands.Cog):
             user = self.session.query(User) \
                 .filter(User.DiscordId == member.id) \
                 .one()
-            
+
             if user is not None:
                 user.Index = index
                 self.session.commit()
-            
+
                 await ctx.reply("Index set")
         except SQLAlchemyError as err:
             await ctx.reply(str(err))
@@ -85,7 +88,7 @@ class Member(commands.Cog):
             user = self.session.query(User) \
                 .filter(User.Index == index) \
                 .one()
-            
+
             embed = discord.Embed()
             embed.set_author(name="FIT | Community", icon_url = self.bot.user.avatar_url)
 
@@ -97,13 +100,11 @@ class Member(commands.Cog):
 
             if member is not None:
                 embed.add_field(name="Roles", value=members.get_member_roles_as_string(member))
-            
 
             await ctx.reply(embed = embed)
 
         except NoResultFound as err:
             await ctx.reply(str(err))
-
 
     @commands.command()
     @commands.has_any_role(roles.ADMINISTRATOR, roles.MODERATOR)
@@ -114,7 +115,7 @@ class Member(commands.Cog):
             user = self.session.query(User) \
                 .filter(User.DiscordId == member.id) \
                 .one()
-            
+
             embed = discord.Embed()
             embed.set_author(name="FIT | Community", icon_url = self.bot.user.avatar_url)
 
@@ -152,8 +153,7 @@ class Member(commands.Cog):
                 if user is not None:
                     user.Name = after.nick
                     self.session.commit()
-                
-                
+
             except SQLAlchemyError as err:
                 await logger.log_action(str(err))
 
@@ -163,19 +163,19 @@ class Member(commands.Cog):
             user = self.session.query(User) \
                 .filter(User.DiscordId == before.id) \
                 .one()
-            
+
             if user is not None:
                 if before.name != after.name:
                     user.Username = after.name
 
                 if before.discriminator != after.discriminator:
                     user.Discriminator = after.discriminator
-                
+
                 self.session.commit()
-                    
+
         except SQLAlchemyError as err:
             await logger.log_action(str(err))
-            
+
 
 def setup(bot):
     bot.add_cog(Member(bot))

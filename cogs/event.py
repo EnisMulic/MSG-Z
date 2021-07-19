@@ -6,6 +6,7 @@ import datetime
 from constants import roles
 from utils import logger
 
+
 class Event(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -44,30 +45,28 @@ class Event(commands.Cog):
             roles = [role.mention for role in role_set]
 
             embed = discord.Embed(
-                title = 'Role removed', 
+                title = 'Role removed',
                 colour = discord.Colour.green(),
                 description = f"{' '.join(roles)} removed from {before.mention}"
             )
             embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
                 
-            await logger.log_to_guild(self.bot, embed)        
+            await logger.log_to_guild(self.bot, embed)
                    
-
-        # Roles added           
+        # Roles added
         elif before.roles > after.roles:
             role_set = set(after.roles) - set(before.roles)
             roles = [role.mention for role in role_set]
 
             embed = discord.Embed(
-                title = 'Role added', 
+                title = 'Role added',
                 colour = discord.Colour.green(),
                 description = f"{' '.join(roles)} added to {before.mention}"
             )
             embed.set_author(name="FIT | Community", url = self.bot.user.avatar_url, icon_url = self.bot.user.avatar_url)
                 
-            await logger.log_to_guild(self.bot, embed)  
-
-                
+            await logger.log_to_guild(self.bot, embed)
+ 
         if before.nick != after.nick:
             embed = discord.Embed(
                 title = "Name changed",
@@ -82,7 +81,7 @@ class Event(commands.Cog):
     async def on_user_update(self, before: discord.User, after: discord.User):
         if before.name != after.name:
             embed = discord.Embed(
-                title = "User changed name", 
+                title = "User changed name",
                 colour = discord.Colour.greyple(),
                 description = f"{before.mention} changed username from {before.name} to {after.name}"
             )
@@ -92,7 +91,7 @@ class Event(commands.Cog):
 
         if before.discriminator != after.discriminator:
             embed = discord.Embed(
-                title = "User changed discriminator", 
+                title = "User changed discriminator",
                 colour = discord.Colour.greyple(),
                 description = f"{before.mention} changed discriminator from {before.discriminator} to {after.discriminator}"
             )
@@ -121,6 +120,7 @@ class Event(commands.Cog):
         embed.add_field(name = "Deleted", value = datetime.datetime.now().replace(microsecond=0).isoformat(' '), inline = True)
 
         return embed
+
 
 def setup(bot):
     bot.add_cog(Event(bot))

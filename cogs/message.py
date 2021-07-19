@@ -4,6 +4,7 @@ from discord.ext import commands
 from constants import roles
 from utils import logger
 
+
 class Message(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -51,6 +52,7 @@ class Message(commands.Cog):
 
         message = await channel.fetch_message(id)
         await message.edit(content = new_message)
+
 
 def setup(bot):
     bot.add_cog(Message(bot))
