@@ -71,6 +71,8 @@ class Scraper(commands.Cog):
             except SQLAlchemyError as err:
                 print("Error: ", err)
                 self.session.rollback()
+            finally:
+                continue
 
     @scrape_dlwms.before_loop
     async def before_scrape_dlwms(self):
