@@ -25,6 +25,14 @@ class DLWMSScraper:
             "password": dlwms_password_2
         })
 
+        dlwms_username_3 = os.environ.get("DLWMS_USERNAME_3")
+        dlwms_password_3 = os.environ.get("DLWMS_PASSWORD_3")
+
+        self.accounts.append({
+            "username": dlwms_username_3,
+            "password": dlwms_password_3
+        })
+
     def _get_value_for_input(self, html, inputName):
         return "" if html.find("input", {"name": inputName}) is None\
             else html.find("input", {"name": inputName})["value"]
