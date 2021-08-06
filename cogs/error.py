@@ -48,6 +48,8 @@ class CommandErrorHandler(commands.Cog):
             await ctx.reply('Command has been disabled.')
         elif isinstance(error, errors.HasForbiddenRole):
             await ctx.reply(f'{str(error)}')
+        elif isinstance(error, errors.NotInDateTimeRange):
+            await ctx.reply(f'{str(error)}')
         elif isinstance(error, commands.MemberNotFound):
             await ctx.reply(f'{str(error)}')
         elif isinstance(error, commands.NoPrivateMessage):
