@@ -3,7 +3,7 @@ from discord.ext import commands
 
 import json
 
-from constants import roles, channels
+from constants import roles, channels, datetime
 from utils import checks
 
 
@@ -90,6 +90,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_APSOLVENT, datetime.STOP_DATE_APSOLVENT)
     async def apsolvent(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)
@@ -111,6 +112,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_APSOLVENT, datetime.STOP_DATE_APSOLVENT)
     async def apsolvent_(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         apsolvet_role = discord.utils.get(ctx.guild.roles, name=roles.APSOLVENT)
@@ -181,6 +183,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_CISTA, datetime.STOP_DATE_CISTA)
     async def cista(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 
@@ -208,6 +211,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_USLOV, datetime.STOP_DATE_USLOV)
     async def uslov(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 
@@ -236,6 +240,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_OBNOVA, datetime.STOP_DATE_OBNOVA)
     async def obnova(self, ctx):
         registrovan_role = discord.utils.get(ctx.guild.roles, name=roles.REGISTROVAN)
         await ctx.author.add_roles(registrovan_role)
@@ -254,6 +259,7 @@ class Rankup(commands.Cog):
     @commands.has_any_role(roles.PRVA_GODINA, roles.DRUGA_GODINA, roles.TRECA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
+    @checks.in_date_range(datetime.START_DATE_KOLIZIJA, datetime.STOP_DATE_KOLIZIJA)
     async def kolizija(self, ctx):
         highest_role = self._get_highest_ranked_role(ctx.author)
 
