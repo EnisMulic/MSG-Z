@@ -24,7 +24,6 @@ class Misc(commands.Cog):
         channel_dm = await ctx.author.create_dm()
         await channel_dm.send(invite_link)
     
-    @commands.command()
     @commands.command(aliases=["inv"])
     @commands.has_permissions(administrator = True)
     async def invite_(self, ctx, max_uses = 0, max_age = 0):
