@@ -16,7 +16,7 @@ class Misc(commands.Cog):
 
         channel_lobby = discord.utils.get(ctx.guild.text_channels, name=channels.LOBBY)
         
-        invite_link = await channel_lobby.create_invite(max_uses = 1, unique = True, reason = f"Created by {ctx.author.display_name}")
+        invite_link = await channel_lobby.create_invite(max_uses = 1, max_age = 48 * 60 * 60, unique = True, reason = f"Created by {ctx.author.display_name}")
 
         channel_dm = await ctx.author.create_dm()
         await channel_dm.send(invite_link)
