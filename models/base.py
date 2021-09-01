@@ -10,3 +10,4 @@ engine = create_engine(DATABASE_URL, max_overflow = -1)
 Session = sessionmaker(bind = engine)
 
 Base = declarative_base()
+print(DATABASE_URL)

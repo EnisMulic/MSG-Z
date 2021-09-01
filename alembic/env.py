@@ -4,8 +4,12 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 import os
+import sys
 
 from alembic import context
+
+from models import base
+target_metadata = base.Base.metadata
 
 DATABASE_URL = os.environ.get("CONNECTION_STRING")
 
@@ -23,15 +27,10 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-import sys
-import os
-
 current_path = os.path.dirname(os.path.abspath(__file__))
 ROOT_PATH = os.path.join(current_path, '..')
 sys.path.append(ROOT_PATH)
 
-from models import base, user, news
-target_metadata = base.Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
