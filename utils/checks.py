@@ -16,7 +16,7 @@ def doesnt_have_any_role(*roles):
     def predicate(ctx) -> Literal[True]:
         for role in ctx.author.roles:
             if role.name in roles:
-                raise errors.HasForbiddenRole('You have a role that prevents you from using this command')
+                raise errors.HasForbiddenRole('Nije ti ovo Adil pravio, pokusaj `/mahalusa` da uklonis ulogu za prethodnu godinu')
         return True
     return commands.check(predicate)
 
