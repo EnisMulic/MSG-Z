@@ -142,23 +142,7 @@ class Rankup(commands.Cog):
 
         await ctx.send(embed = embed)
 
-    @commands.command(aliases=["diplomirao", "diplomirala"])
-    @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
-    @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
-    async def diploma(self, ctx):
-        await ctx.author.kick(reason = "Diplomirao/Diplomirala")
-
-        emoji = ":mortar_board:"
-        embed = discord.Embed(
-            colour = discord.Colour.gold(),
-            description = f"{emoji} {ctx.author.mention} je diplomirao/diplomirala {emoji}"
-        )
-
-        embed.set_author(name = ctx.author.display_name, icon_url = ctx.author.avatar_url)
-
-        await ctx.send(embed = embed)
-
-    @commands.command(aliases=["alumni", "alumna"])
+    @commands.command(aliases=["alumni", "alumna", "diplomirao", "diplomirala"])
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
