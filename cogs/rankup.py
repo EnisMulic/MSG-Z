@@ -142,7 +142,7 @@ class Rankup(commands.Cog):
 
         await ctx.send(embed = embed)
 
-    @commands.command(aliases=["alumni", "alumna", "diplomirao", "diplomirala"])
+    @commands.command(aliases=["alumni", "alumna", "diploma", "diplomirao", "diplomirala"])
     @commands.has_any_role(roles.TRECA_GODINA, roles.CETVRTA_GODINA)
     @checks.in_channel(channels.BOT_COMMANDS, channels.LOGGER)
     @checks.doesnt_have_any_role(roles.REGISTROVAN)
